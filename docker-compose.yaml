@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: frontend
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./mongo-data:/data/db
+      - ./certs:/etc/mongo/certs:ro
+    command: >
+      mongod
+      --auth
+      --tlsMode requireTLS
+      --tlsCertificateKeyFile /etc/mongo/certs/mongodb.pem
+      --tlsCAFile /etc/mongo/certs/ca.pem
+    environment:
+      MONGO_INITDB_DATABASE: poll_app
