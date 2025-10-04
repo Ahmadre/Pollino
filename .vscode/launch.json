@@ -6,9 +6,15 @@
   "configurations": [
     {
       "name": "Flutter Web",
+      "cwd": "${workspaceFolder}/frontend",
       "request": "launch",
       "type": "dart",
-      "args": ["-d", "web-server", "--web-port", "8080", "--wasm"]
+      "args": [
+        "-d",
+        "web-server",
+        "--web-port",
+        "8080",
+      ]
     },
   ]
 }
