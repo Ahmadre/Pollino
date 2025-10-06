@@ -11,7 +11,8 @@ class Poll with _$Poll {
   const factory Poll({
     @HiveField(0) required String id,
     @HiveField(1) required String title,
-    @HiveField(2) required List<Option> options,
+    @HiveField(2) String? description,
+    @HiveField(3) required List<Option> options,
   }) = _Poll;
 
   factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);

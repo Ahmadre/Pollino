@@ -1,12 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:pollino/bloc/poll.dart';
-import 'package:pollino/bloc/pull_bloc.dart';
+import 'package:pollino/bloc/poll_bloc.dart';
+import 'package:pollino/env.dart';
 import 'package:routemaster/routemaster.dart';
-import 'package:i18next/i18next.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'routes.dart';
 
@@ -19,6 +19,8 @@ Future<void> main() async {
 
   final pollBloc = PollBloc(hiveBox);
   pollBloc.synchronizeWithBackend();
+
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
   runApp(MyApp(pollBloc: pollBloc));
 }

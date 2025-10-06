@@ -1,13 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart' as http;
 import 'package:pollino/bloc/poll.dart';
-import 'package:pollino/env.dart';
+import 'package:pollino/services/supabase_service.dart';
 
-part 'pull_bloc.freezed.dart';
+part 'poll_bloc.freezed.dart';
 
 @freezed
 class PollEvent with _$PollEvent {
@@ -32,9 +30,9 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<LoadPolls>((event, emit) async {
       emit(const PollState.loading());
       try {
-        // Try fetching from backend
-        final response = await fetchPolls(event.page, event.limit);
-        final polls = (response['polls'] as List).map((poll) => Poll.fromJson(poll)).toList();
+        // Try fetching from Supabase database
+        final response = await SupabaseService.fetchPolls(event.page, event.limit);
+        final polls = response['polls'] as List<Poll>;
         final total = response['total'];
 
         // Cache results in Hive
@@ -58,8 +56,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<RefreshPolls>((event, emit) async {
       emit(const PollState.loading());
       try {
-        final response = await fetchPolls(1, 10);
-        final polls = response['polls'];
+        final response = await SupabaseService.fetchPolls(1, 10);
+        final polls = response['polls'] as List<Poll>;
         final total = response['total'];
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
@@ -70,7 +68,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<LoadPoll>((event, emit) async {
       emit(const PollState.loading());
       try {
-        final poll = await fetchPoll(event.pollId);
+        final poll = await SupabaseService.fetchPoll(event.pollId);
         emit(PollState.loaded([poll], false));
       } catch (e) {
         emit(PollState.error(e.toString()));
@@ -81,8 +79,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
       if (state is Loaded) {
         final currentState = state as Loaded;
         try {
-          final response = await fetchPolls(event.page, event.limit);
-          final newPolls = response['polls'];
+          final response = await SupabaseService.fetchPolls(event.page, event.limit);
+          final newPolls = response['polls'] as List<Poll>;
           final total = response['total'];
           emit(PollState.loaded(currentState.polls + newPolls, currentState.polls.length + newPolls.length < total));
         } catch (e) {
@@ -92,9 +90,10 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     });
 
     on<Vote>((event, emit) async {
+      emit(PollState.loading());
       try {
-        // Try sending vote to backend
-        await sendVote(event.pollId, event.optionId);
+        // Send vote to Supabase database
+        await SupabaseService.sendVote(event.pollId, event.optionId);
 
         // Update local cache
         final poll = hiveBox.get(event.pollId);
@@ -107,9 +106,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           }).toList();
           final updatedPoll = poll.copyWith(options: updatedOptions);
           hiveBox.put(event.pollId, updatedPoll);
+          emit(PollState.loaded([updatedPoll], false));
         }
-
-        add(LoadPolls(page: 1, limit: 10)); // Reload polls
       } catch (e) {
         emit(PollState.error('Failed to submit vote: ${e.toString()}'));
       }
@@ -119,46 +117,11 @@ class PollBloc extends Bloc<PollEvent, PollState> {
   Future<void> synchronizeWithBackend() async {
     try {
       final cachedPolls = hiveBox.values.toList();
-      for (var poll in cachedPolls) {
-        // Send cached data to backend
-        await http.post(
-          Uri.parse('$backendUri/sync'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(poll.toJson()),
-        );
-      }
-      add(LoadPolls(page: 1, limit: 10)); // Reload polls after sync
+      // Synchronize with Supabase database
+      await SupabaseService.synchronizePolls(cachedPolls);
+      add(const LoadPolls(page: 1, limit: 10)); // Reload polls after sync
     } catch (e) {
-      debugPrint('Failed to synchronize with backend: ${e.toString()}');
-    }
-  }
-
-  Future<Map<String, dynamic>> fetchPolls(int page, int limit) async {
-    final response = await http.get(Uri.parse('$backendUri/polls?page=$page&limit=$limit'));
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load polls');
-    }
-  }
-
-  Future<Poll> fetchPoll(String pollId) async {
-    final response = await http.get(Uri.parse('$backendUri/polls/$pollId'));
-    if (response.statusCode == 200) {
-      return Poll.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load poll');
-    }
-  }
-
-  Future<void> sendVote(String pollId, String optionId) async {
-    final response = await http.post(
-      Uri.parse('$backendUri/vote'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'pollId': pollId, 'optionId': optionId}),
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Failed to submit vote');
+      debugPrint('Failed to synchronize with Supabase: ${e.toString()}');
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pollino/bloc/pull_bloc.dart';
+import 'package:pollino/bloc/poll_bloc.dart';
 
 class PollScreen extends StatelessWidget {
   final String pollId;
@@ -9,10 +9,8 @@ class PollScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          PollBloc(context.read<PollBloc>().hiveBox)
-            ..add(PollEvent.loadPoll(pollId)),
+    return BlocProvider<PollBloc>(
+      create: (_) => PollBloc(context.read<PollBloc>().hiveBox)..add(PollEvent.loadPoll(pollId)),
       child: Scaffold(
         appBar: AppBar(title: const Text('Poll')),
         body: BlocBuilder<PollBloc, PollState>(
@@ -26,10 +24,7 @@ class PollScreen extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      poll.title,
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
+                    child: Text(poll.title, style: Theme.of(context).textTheme.headlineLarge),
                   ),
                   Expanded(
                     child: ListView.builder(
@@ -40,9 +35,7 @@ class PollScreen extends StatelessWidget {
                           title: Text(option.text),
                           trailing: Text('${option.votes} votes'),
                           onTap: () {
-                            context.read<PollBloc>().add(
-                              PollEvent.vote(pollId, option.id),
-                            );
+                            context.read<PollBloc>().add(PollEvent.vote(pollId, option.id));
                           },
                         );
                       },

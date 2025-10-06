@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pollino/bloc/pull_bloc.dart';
+import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:routemaster/routemaster.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,7 +52,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 final poll = state.polls[index];
                 return ListTile(
                   title: Text(poll.title),
-                  subtitle: Text('Votes: ${poll.options.fold<int>(0, (sum, option) => sum + option.votes)}'),
+                  subtitle: StreamBuilder<List<Map<String, dynamic>>>(
+                    stream: Supabase.instance.client
+                        .from('poll_options')
+                        .stream(primaryKey: ['id'])
+                        .eq('poll_id', poll.id),
+                    builder: (context, snapshot) {
+                      debugPrint('Poll options snapshot for poll ${poll.id}: ${snapshot.data}');
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Text('Votes: ...');
+                      }
+
+                      int totalVotes = 0;
+                      if (snapshot.hasData && snapshot.data != null) {
+                        totalVotes = snapshot.data!.fold<int>(0, (sum, option) => sum + (option['votes'] as int? ?? 0));
+                      } else {
+                        // Fallback zu den lokalen Daten
+                        totalVotes = poll.options.fold<int>(0, (sum, option) => sum + option.votes);
+                      }
+
+                      return Text('Votes: $totalVotes');
+                    },
+                  ),
                   onTap: () => Routemaster.of(context).push('/poll/${poll.id}'),
                 );
               },
