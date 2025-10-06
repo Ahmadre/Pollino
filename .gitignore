@@ -1,2 +1,2 @@
-backend/volumes/db/data/*
-backend/.env
+volumes/db/data/*
+.env

@@ -1,0 +1,62 @@
+# Flutter
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.packages
+
+# Development
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Testing
+coverage/
+test/.test_coverage.dart
+
+# Documentation
+doc/api/
+
+# Web specific
+web/env.js
+
+# Git
+.git/
+.gitignore
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node.js (if any)
+node_modules/
+
+# IDE
+*.swp
+*.swo
+
+# Build outputs that shouldn't be in image
+*.so
+*.dll
+*.dylib
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production

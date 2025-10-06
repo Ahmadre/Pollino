@@ -20,7 +20,7 @@ Future<void> main() async {
   final pollBloc = PollBloc(hiveBox);
   pollBloc.synchronizeWithBackend();
 
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
+  await Supabase.initialize(url: Environment.supabaseUrl, anonKey: Environment.supabaseAnonKey);
 
   runApp(MyApp(pollBloc: pollBloc));
 }
