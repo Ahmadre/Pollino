@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
     return BlocProvider(
       create: (_) => PollBloc(pollBloc.hiveBox)..add(const PollEvent.loadPolls(page: 1, limit: 20)),
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         routerDelegate: RoutemasterDelegate(routesBuilder: (context) => routes),
         routeInformationParser: const RoutemasterParser(),
         // supportedLocales: const [Locale('en', 'GB'), Locale('de', 'DE')],
