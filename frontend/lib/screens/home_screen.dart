@@ -83,13 +83,16 @@ class _HomeScreenState extends State<HomeScreen> {
             // Filter Tabs (Pins, Polls, Files, Photos)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _FilterTab(icon: Icons.push_pin, label: 'Pins', isSelected: false),
-                  _FilterTab(icon: Icons.poll, label: 'Umfragen', isSelected: true),
-                  _FilterTab(icon: Icons.description, label: 'Dateien', isSelected: false),
-                  _FilterTab(icon: Icons.photo, label: 'Fotos', isSelected: false),
-                ],
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _FilterTab(icon: Icons.push_pin, label: 'Pins', isSelected: false),
+                    _FilterTab(icon: Icons.poll, label: 'Umfragen', isSelected: true),
+                    _FilterTab(icon: Icons.description, label: 'Dateien', isSelected: false),
+                    _FilterTab(icon: Icons.photo, label: 'Fotos', isSelected: false),
+                  ],
+                ),
               ),
             ),
 
