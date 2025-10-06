@@ -11,12 +11,10 @@ part 'pull_bloc.freezed.dart';
 
 @freezed
 class PollEvent with _$PollEvent {
-  const factory PollEvent.loadPolls({required int page, required int limit}) =
-      LoadPolls;
+  const factory PollEvent.loadPolls({required int page, required int limit}) = LoadPolls;
   const factory PollEvent.refreshPolls() = RefreshPolls;
   const factory PollEvent.loadPoll(String pollId) = LoadPoll;
-  const factory PollEvent.loadMore({required int page, required int limit}) =
-      LoadMore;
+  const factory PollEvent.loadMore({required int page, required int limit}) = LoadMore;
   const factory PollEvent.vote(String pollId, String optionId) = Vote;
 }
 
@@ -33,30 +31,28 @@ class PollBloc extends Bloc<PollEvent, PollState> {
   PollBloc(this.hiveBox) : super(const PollState.initial()) {
     on<LoadPolls>((event, emit) async {
       emit(const PollState.loading());
-    try {
-      // Try fetching from backend
-      final response = await fetchPolls(event.page, event.limit);
-      final polls = (response['polls'] as List)
-          .map((poll) => Poll.fromJson(poll))
-          .toList();
-      final total = response['total'];
+      try {
+        // Try fetching from backend
+        final response = await fetchPolls(event.page, event.limit);
+        final polls = (response['polls'] as List).map((poll) => Poll.fromJson(poll)).toList();
+        final total = response['total'];
 
-      // Cache results in Hive
-      await hiveBox.clear();
-      for (var poll in polls) {
-        hiveBox.put(poll.id, poll);
-      }
+        // Cache results in Hive
+        await hiveBox.clear();
+        for (var poll in polls) {
+          hiveBox.put(poll.id, poll);
+        }
 
-      emit(PollState.loaded(polls, polls.length < total));
-    } catch (e) {
-      // Fallback to Hive if backend is unreachable
-      final cachedPolls = hiveBox.values.toList();
-      if (cachedPolls.isNotEmpty) {
-        emit(PollState.loaded(cachedPolls, false));
-      } else {
-        emit(PollState.error('Failed to load polls: ${e.toString()}'));
+        emit(PollState.loaded(polls, polls.length < total));
+      } catch (e) {
+        // Fallback to Hive if backend is unreachable
+        final cachedPolls = hiveBox.values.toList();
+        if (cachedPolls.isNotEmpty) {
+          emit(PollState.loaded(cachedPolls, false));
+        } else {
+          emit(PollState.error('Failed to load polls: ${e.toString()}'));
+        }
       }
-    }
     });
 
     on<RefreshPolls>((event, emit) async {
@@ -88,12 +84,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           final response = await fetchPolls(event.page, event.limit);
           final newPolls = response['polls'];
           final total = response['total'];
-          emit(
-            PollState.loaded(
-              currentState.polls + newPolls,
-              currentState.polls.length + newPolls.length < total,
-            ),
-          );
+          emit(PollState.loaded(currentState.polls + newPolls, currentState.polls.length + newPolls.length < total));
         } catch (e) {
           emit(PollState.error(e.toString()));
         }
@@ -102,26 +93,26 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<Vote>((event, emit) async {
       try {
-      // Try sending vote to backend
-      await sendVote(event.pollId, event.optionId);
+        // Try sending vote to backend
+        await sendVote(event.pollId, event.optionId);
 
-      // Update local cache
-      final poll = hiveBox.get(event.pollId);
-      if (poll != null) {
-        final updatedOptions = poll.options.map((option) {
-          if (option.id == event.optionId) {
-            return option.copyWith(votes: option.votes + 1);
-          }
-          return option;
-        }).toList();
-        final updatedPoll = poll.copyWith(options: updatedOptions);
-        hiveBox.put(event.pollId, updatedPoll);
+        // Update local cache
+        final poll = hiveBox.get(event.pollId);
+        if (poll != null) {
+          final updatedOptions = poll.options.map((option) {
+            if (option.id == event.optionId) {
+              return option.copyWith(votes: option.votes + 1);
+            }
+            return option;
+          }).toList();
+          final updatedPoll = poll.copyWith(options: updatedOptions);
+          hiveBox.put(event.pollId, updatedPoll);
+        }
+
+        add(LoadPolls(page: 1, limit: 10)); // Reload polls
+      } catch (e) {
+        emit(PollState.error('Failed to submit vote: ${e.toString()}'));
       }
-
-      add(LoadPolls(page: 1, limit: 10)); // Reload polls
-    } catch (e) {
-      emit(PollState.error('Failed to submit vote: ${e.toString()}'));
-    }
     });
   }
 
@@ -131,7 +122,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
       for (var poll in cachedPolls) {
         // Send cached data to backend
         await http.post(
-          Uri.parse('$BACKEND_URI/sync'),
+          Uri.parse('$backendUri/sync'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(poll.toJson()),
         );
@@ -143,9 +134,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
   }
 
   Future<Map<String, dynamic>> fetchPolls(int page, int limit) async {
-    final response = await http.get(
-      Uri.parse('$BACKEND_URI/polls?page=$page&limit=$limit'),
-    );
+    final response = await http.get(Uri.parse('$backendUri/polls?page=$page&limit=$limit'));
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -154,9 +143,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
   }
 
   Future<Poll> fetchPoll(String pollId) async {
-    final response = await http.get(
-      Uri.parse('$BACKEND_URI/polls/$pollId'),
-    );
+    final response = await http.get(Uri.parse('$backendUri/polls/$pollId'));
     if (response.statusCode == 200) {
       return Poll.fromJson(jsonDecode(response.body));
     } else {
@@ -166,7 +153,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
   Future<void> sendVote(String pollId, String optionId) async {
     final response = await http.post(
-      Uri.parse('$BACKEND_URI/vote'),
+      Uri.parse('$backendUri/vote'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'pollId': pollId, 'optionId': optionId}),
     );
