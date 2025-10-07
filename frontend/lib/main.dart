@@ -33,8 +33,8 @@ Future<void> main() async {
   final pollBloc = PollBloc(hiveBox);
   pollBloc.synchronizeWithBackend();
 
-  // Note: Poll cleanup is now handled automatically by the database
-  // No frontend timers needed - the PostgreSQL triggers handle expiration
+  // Note: Poll cleanup is now handled by a dedicated Docker container with CRON
+  // See docker-compose.yml "poll-cleanup" service for automatic cleanup
 
   runApp(MyApp(pollBloc: pollBloc));
 }

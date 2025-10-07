@@ -420,6 +420,27 @@ services:
     networks:
       - default
 
+  # Poll Cleanup Service - CRON Job for automatic cleanup of expired polls
+  poll-cleanup:
+    container_name: pollino-cleanup
+    build:
+      context: ./poll-cleanup
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./volumes/logs:/var/log:Z
+    networks:
+      - default
+
   # Comment out everything below this point if you are using an external Postgres database
   db:
     container_name: supabase-db

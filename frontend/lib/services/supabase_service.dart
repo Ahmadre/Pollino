@@ -11,8 +11,13 @@ class SupabaseService {
     final offset = (page - 1) * limit;
 
     try {
-      // Zähle die Gesamtanzahl der Umfragen
-      final countResponse = await _client.from('polls').select('id').count(CountOption.exact);
+      // Zähle die Gesamtanzahl der SICHTBAREN Umfragen (mit denselben Filtern wie die Abfrage)
+      final countResponse = await _client
+          .from('polls')
+          .select('id')
+          .eq('is_active', true)
+          .or('expires_at.is.null,expires_at.gt.now(),and(expires_at.lt.now(),auto_delete_after_expiry.is.false)')
+          .count(CountOption.exact);
       final total = countResponse.count;
 
       // Hole die Umfragen (inklusive nicht abgelaufener oder nicht auto-gelöschter)
