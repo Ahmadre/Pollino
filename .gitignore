@@ -1,2 +1,3 @@
 volumes/db/data/*
 .env
+*.log
