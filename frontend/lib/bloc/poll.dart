@@ -13,6 +13,9 @@ class Poll with _$Poll {
     @HiveField(1) required String title,
     @HiveField(2) String? description,
     @HiveField(3) required List<Option> options,
+    @HiveField(4) @Default(true) bool isAnonymous,
+    @HiveField(5) String? createdByName,
+    @HiveField(6) String? createdBy,
   }) = _Poll;
 
   factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);

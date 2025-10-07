@@ -15,6 +15,125 @@ class PollScreen extends StatefulWidget {
 class _PollScreenState extends State<PollScreen> {
   String? _selectedOptionId;
   bool _hasVoted = false;
+  bool _isAnonymousVote = true;
+  String _voterName = '';
+  final _voterNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _voterNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showVotingDialog(BuildContext context, poll, String optionId, String optionText) async {
+    bool tempIsAnonymous = true;
+    final tempController = TextEditingController();
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Abstimmen'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Du wählst: "$optionText"'),
+                  const SizedBox(height: 20),
+
+                  // Anonymous Toggle
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: tempIsAnonymous,
+                        onChanged: (value) {
+                          setDialogState(() {
+                            tempIsAnonymous = value ?? true;
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text('Anonym abstimmen'),
+                      ),
+                    ],
+                  ),
+
+                  // Name Input (if not anonymous)
+                  if (!tempIsAnonymous) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: tempController,
+                      decoration: const InputDecoration(
+                        labelText: 'Dein Name',
+                        border: OutlineInputBorder(),
+                        hintText: 'Gib deinen Namen ein...',
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Abbrechen'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (!tempIsAnonymous && tempController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Bitte gib deinen Namen ein')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await context.read<PollBloc>().voteWithName(
+                            widget.pollId,
+                            optionId,
+                            isAnonymous: tempIsAnonymous,
+                            voterName: tempIsAnonymous ? null : tempController.text.trim(),
+                          );
+
+                      setState(() {
+                        _selectedOptionId = optionId;
+                        _hasVoted = true;
+                        _isAnonymousVote = tempIsAnonymous;
+                        _voterName = tempIsAnonymous ? '' : tempController.text.trim();
+                      });
+
+                      Navigator.of(context).pop();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Stimme erfolgreich abgegeben!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } catch (e) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Fehler beim Abstimmen: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+
+                    tempController.dispose();
+                  },
+                  child: const Text('Abstimmen'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   // Farben für die Optionen wie im Screenshot
   final List<Color> _optionColors = [
@@ -93,8 +212,7 @@ class _PollScreenState extends State<PollScreen> {
                       return StreamBuilder<List<Map<String, dynamic>>>(
                         stream: Supabase.instance.client
                             .from('poll_options')
-                            .stream(primaryKey: ['id'])
-                            .eq('poll_id', widget.pollId),
+                            .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
                         builder: (context, snapshot) {
                           List<dynamic> liveOptions = poll.options;
                           int totalVotes = poll.options.fold<int>(0, (sum, option) => sum + option.votes);
@@ -115,20 +233,28 @@ class _PollScreenState extends State<PollScreen> {
                                 // User Info
                                 Row(
                                   children: [
-                                    const CircleAvatar(
+                                    CircleAvatar(
                                       radius: 20,
-                                      backgroundColor: Color(0xFFE3F2FD),
-                                      child: Text('LU', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      backgroundColor: const Color(0xFFE3F2FD),
+                                      child: Text(
+                                        poll.createdByName != null
+                                            ? poll.createdByName!.substring(0, 2).toUpperCase()
+                                            : '??',
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Lara Ulrich',
-                                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                        Text(
+                                          poll.createdByName ?? 'Anonymer Ersteller',
+                                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                         ),
-                                        Text('21 minutes ago', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                                        Text(
+                                          poll.isAnonymous ? 'Anonyme Umfrage' : 'Nicht-anonyme Umfrage',
+                                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                        ),
                                       ],
                                     ),
                                     const Spacer(),
@@ -169,9 +295,8 @@ class _PollScreenState extends State<PollScreen> {
                                       final option = liveOptions[index];
                                       final optionId = snapshot.hasData ? option['id'].toString() : option.id;
                                       final optionText = snapshot.hasData ? option['text'] : option.text;
-                                      final optionVotes = snapshot.hasData
-                                          ? (option['votes'] as int? ?? 0)
-                                          : option.votes;
+                                      final optionVotes =
+                                          snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes;
                                       final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
 
                                       return Padding(
@@ -185,13 +310,7 @@ class _PollScreenState extends State<PollScreen> {
                                           hasVoted: _hasVoted,
                                           onTap: _hasVoted
                                               ? null
-                                              : () {
-                                                  setState(() {
-                                                    _selectedOptionId = optionId;
-                                                    _hasVoted = true;
-                                                  });
-                                                  context.read<PollBloc>().add(PollEvent.vote(widget.pollId, optionId));
-                                                },
+                                              : () => _showVotingDialog(context, poll, optionId, optionText),
                                         ),
                                       );
                                     },

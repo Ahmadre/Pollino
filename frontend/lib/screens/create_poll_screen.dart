@@ -14,6 +14,7 @@ class CreatePollScreen extends StatefulWidget {
 class _CreatePollScreenState extends State<CreatePollScreen> {
   final _formKey = GlobalKey<FormState>();
   final _questionController = TextEditingController();
+  final _creatorNameController = TextEditingController();
   final List<TextEditingController> _optionControllers = [];
   bool _isLoading = false;
   bool _allowMultipleOptions = false;
@@ -30,6 +31,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   @override
   void dispose() {
     _questionController.dispose();
+    _creatorNameController.dispose();
     for (final controller in _optionControllers) {
       controller.dispose();
     }
@@ -60,10 +62,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
 
     try {
       final question = _questionController.text.trim();
-      final options = _optionControllers
-          .map((controller) => controller.text.trim())
-          .where((text) => text.isNotEmpty)
-          .toList();
+      final options =
+          _optionControllers.map((controller) => controller.text.trim()).where((text) => text.isNotEmpty).toList();
 
       if (options.length < 2) {
         throw Exception('Mindestens 2 Optionen sind erforderlich');
@@ -72,11 +72,13 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
       await SupabaseService.createPoll(
         title: question,
         optionTexts: options,
+        isAnonymous: _enableAnonymousVoting,
+        creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
       );
 
       if (mounted) {
         context.read<PollBloc>().add(const PollEvent.refreshPolls());
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Row(
@@ -89,7 +91,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        
+
         Routemaster.of(context).pop();
       }
     } catch (e) {
@@ -161,7 +163,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      
+
                       Container(
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8F9FA),
@@ -222,7 +224,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   size: 16,
                                 ),
                               ),
-                              
+
                               // Option input
                               Expanded(
                                 child: Container(
@@ -255,7 +257,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   ),
                                 ),
                               ),
-                              
+
                               // Remove button
                               if (_optionControllers.length > 2)
                                 IconButton(
@@ -368,7 +370,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
-                                    'Enable Anonymous Voting',
+                                    'Anonyme Umfrage',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -377,7 +379,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    'Your vote will not be disclosed to others.',
+                                    _enableAnonymousVoting
+                                        ? 'Umfrage wird anonym erstellt - kein Ersteller sichtbar'
+                                        : 'Dein Name wird als Ersteller angezeigt',
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -398,6 +402,53 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                           ],
                         ),
                       ),
+
+                      // Creator Name Field (nur wenn nicht anonym)
+                      if (!_enableAnonymousVoting) ...[
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Dein Name*',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE9ECEF)),
+                          ),
+                          child: TextFormField(
+                            controller: _creatorNameController,
+                            decoration: const InputDecoration(
+                              hintText: 'Gib deinen Namen ein...',
+                              hintStyle: TextStyle(
+                                color: Color(0xFFADB5BD),
+                                fontSize: 16,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.all(16),
+                              prefixIcon: Icon(
+                                Icons.person_outline,
+                                color: Color(0xFFADB5BD),
+                              ),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
+                            validator: (value) {
+                              if (!_enableAnonymousVoting && (value == null || value.trim().isEmpty)) {
+                                return 'Bitte gib deinen Namen ein';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 20),
 

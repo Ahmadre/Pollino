@@ -17,7 +17,7 @@ class SupabaseService {
       // Hole die Umfragen
       final pollsResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active')
+          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by')
           .eq('is_active', true)
           .range(offset, offset + limit - 1)
           .order('created_at', ascending: false);
@@ -30,11 +30,8 @@ class SupabaseService {
       for (final pollData in pollsResponse) {
         final pollId = pollData['id'];
 
-        final optionsResponse = await _client
-            .from('poll_options')
-            .select('id, text, votes')
-            .eq('poll_id', pollId)
-            .order('id');
+        final optionsResponse =
+            await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
 
         debugPrint('Options for poll $pollId: $optionsResponse');
 
@@ -52,6 +49,9 @@ class SupabaseService {
             title: pollData['title'] ?? '',
             description: pollData['description'] ?? '',
             options: options,
+            isAnonymous: pollData['is_anonymous'] ?? true,
+            createdByName: pollData['created_by_name'],
+            createdBy: pollData['created_by'],
           ),
         );
       }
@@ -69,18 +69,15 @@ class SupabaseService {
       // Hole die Umfrage
       final pollResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active')
+          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by')
           .eq('id', pollId)
           .single();
 
       debugPrint('Single poll response: $pollResponse');
 
       // Hole die Optionen für diese Umfrage
-      final optionsResponse = await _client
-          .from('poll_options')
-          .select('id, text, votes')
-          .eq('poll_id', pollId)
-          .order('id');
+      final optionsResponse =
+          await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
 
       debugPrint('Options response: $optionsResponse');
 
@@ -93,6 +90,9 @@ class SupabaseService {
         title: pollResponse['title'] ?? '',
         description: pollResponse['description'] ?? '',
         options: options,
+        isAnonymous: pollResponse['is_anonymous'] ?? true,
+        createdByName: pollResponse['created_by_name'],
+        createdBy: pollResponse['created_by'],
       );
     } catch (e) {
       debugPrint('Error in fetchPoll: $e');
@@ -101,21 +101,23 @@ class SupabaseService {
   }
 
   /// Sendet eine Stimme für eine Umfrageoption
-  static Future<void> sendVote(String pollId, String optionId) async {
-    // Prüfe ob die Option zur Umfrage gehört
-    final optionExists = await _client
-        .from('poll_options')
-        .select('id')
-        .eq('id', optionId)
-        .eq('poll_id', pollId)
-        .maybeSingle();
-
-    if (optionExists == null) {
-      throw Exception('Option nicht in dieser Umfrage gefunden');
+  static Future<void> sendVote(
+    String pollId,
+    String optionId, {
+    String? voterName,
+    bool isAnonymous = true,
+  }) async {
+    try {
+      await _client.rpc('cast_vote', params: {
+        'p_poll_id': int.parse(pollId),
+        'p_option_id': int.parse(optionId),
+        'p_user_name': voterName,
+        'p_is_anonymous': isAnonymous,
+      });
+    } catch (e) {
+      debugPrint('Error in sendVote: $e');
+      rethrow;
     }
-
-    // Erhöhe die Anzahl der Stimmen für diese Option
-    await _client.rpc('increment_votes', params: {'option_id': optionId});
   }
 
   /// Synchronisiert lokale Daten mit Supabase (falls erforderlich)
@@ -146,17 +148,12 @@ class SupabaseService {
         // Umfrage existiert, ggf. aktualisieren
         await _client
             .from('polls')
-            .update({'title': poll.title, 'description': poll.description ?? '', 'is_active': true})
-            .eq('id', poll.id);
+            .update({'title': poll.title, 'description': poll.description ?? '', 'is_active': true}).eq('id', poll.id);
 
         // Optionen synchronisieren
         for (final option in poll.options) {
-          final existingOption = await _client
-              .from('poll_options')
-              .select('id')
-              .eq('id', option.id)
-              .eq('poll_id', poll.id)
-              .maybeSingle();
+          final existingOption =
+              await _client.from('poll_options').select('id').eq('id', option.id).eq('poll_id', poll.id).maybeSingle();
 
           if (existingOption == null) {
             // Option existiert nicht, anlegen
@@ -179,31 +176,106 @@ class SupabaseService {
     }
   }
 
-  /// Erstellt eine neue Umfrage (für zukünftige Erweiterungen)
+  /// Erstellt eine neue Umfrage
   static Future<Poll> createPoll({
     required String title,
     required List<String> optionTexts,
     String? description,
+    bool isAnonymous = true,
+    String? creatorName,
   }) async {
-    // Erstelle die Umfrage
-    final pollResponse = await _client
-        .from('polls')
-        .insert({'title': title, 'description': description ?? ''})
-        .select()
-        .single();
+    try {
+      String? createdBy;
 
-    final pollId = pollResponse['id'];
+      // Falls nicht anonym, erstelle oder finde den User
+      if (!isAnonymous && creatorName != null && creatorName.isNotEmpty) {
+        final userResult = await _client.rpc('create_or_get_user', params: {
+          'user_name': creatorName,
+        });
+        createdBy = userResult.toString();
+      }
 
-    // Erstelle die Optionen
-    final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+      // Erstelle die Umfrage
+      final pollResponse = await _client
+          .from('polls')
+          .insert({
+            'title': title,
+            'description': description ?? '',
+            'is_anonymous': isAnonymous,
+            'created_by': createdBy,
+            'created_by_name': creatorName,
+          })
+          .select()
+          .single();
 
-    final optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+      final pollId = pollResponse['id'];
 
-    // Erstelle die Poll-Instanz
-    final options = optionsResponse.map((optionData) {
-      return Option(id: optionData['id'].toString(), text: optionData['text'], votes: optionData['votes'] ?? 0);
-    }).toList();
+      // Erstelle die Optionen
+      final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
 
-    return Poll(id: pollId.toString(), title: title, description: description ?? '', options: options);
+      final optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+
+      // Erstelle die Poll-Instanz
+      final options = optionsResponse.map((optionData) {
+        return Option(
+          id: optionData['id'].toString(),
+          text: optionData['text'],
+          votes: optionData['votes'] ?? 0,
+        );
+      }).toList();
+
+      return Poll(
+        id: pollId.toString(),
+        title: title,
+        description: description ?? '',
+        options: options,
+        isAnonymous: isAnonymous,
+        createdByName: creatorName,
+        createdBy: createdBy,
+      );
+    } catch (e) {
+      debugPrint('Error in createPoll: $e');
+      rethrow;
+    }
+  }
+
+  /// Prüft ob ein Benutzer bereits für eine Umfrage abgestimmt hat
+  static Future<bool> hasUserVoted(String pollId, String userName) async {
+    try {
+      final result =
+          await _client.from('user_votes').select('id').eq('poll_id', pollId).eq('voter_name', userName).maybeSingle();
+
+      return result != null;
+    } catch (e) {
+      debugPrint('Error in hasUserVoted: $e');
+      return false;
+    }
+  }
+
+  /// Erstellt oder findet einen Benutzer basierend auf dem Namen
+  static Future<String?> createOrGetUser(String userName) async {
+    try {
+      final result = await _client.rpc('create_or_get_user', params: {
+        'user_name': userName,
+      });
+      return result?.toString();
+    } catch (e) {
+      debugPrint('Error in createOrGetUser: $e');
+      return null;
+    }
+  }
+
+  /// Löscht eine Umfrage vollständig (mit CASCADE für Options und Votes)
+  static Future<void> deletePoll(String pollId) async {
+    try {
+      // Da wir CASCADE DELETE in der Datenbank konfiguriert haben,
+      // werden poll_options und user_votes automatisch mitgelöscht
+      await _client.from('polls').delete().eq('id', pollId);
+
+      debugPrint('Poll $pollId successfully deleted');
+    } catch (e) {
+      debugPrint('Error in deletePoll: $e');
+      rethrow;
+    }
   }
 }

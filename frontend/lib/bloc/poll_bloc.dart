@@ -14,6 +14,9 @@ class PollEvent with _$PollEvent {
   const factory PollEvent.loadPoll(String pollId) = LoadPoll;
   const factory PollEvent.loadMore({required int page, required int limit}) = LoadMore;
   const factory PollEvent.vote(String pollId, String optionId) = Vote;
+  const factory PollEvent.voteWithName(String pollId, String optionId,
+      {@Default(true) bool isAnonymous, String? voterName}) = VoteWithName;
+  const factory PollEvent.deletePoll(String pollId) = DeletePoll;
 }
 
 @freezed
@@ -112,6 +115,54 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         emit(PollState.error('Failed to submit vote: ${e.toString()}'));
       }
     });
+
+    on<VoteWithName>((event, emit) async {
+      emit(PollState.loading());
+      try {
+        // Send vote to Supabase database with name info
+        await SupabaseService.sendVote(
+          event.pollId,
+          event.optionId,
+          voterName: event.voterName,
+          isAnonymous: event.isAnonymous,
+        );
+
+        // Update local cache
+        final poll = hiveBox.get(event.pollId);
+        if (poll != null) {
+          final updatedOptions = poll.options.map((option) {
+            if (option.id == event.optionId) {
+              return option.copyWith(votes: option.votes + 1);
+            }
+            return option;
+          }).toList();
+          final updatedPoll = poll.copyWith(options: updatedOptions);
+          hiveBox.put(event.pollId, updatedPoll);
+          emit(PollState.loaded([updatedPoll], false));
+        }
+      } catch (e) {
+        emit(PollState.error('Failed to submit vote: ${e.toString()}'));
+      }
+    });
+
+    on<DeletePoll>((event, emit) async {
+      try {
+        // Lösche Poll in Supabase (CASCADE löscht automatisch Options und Votes)
+        await SupabaseService.deletePoll(event.pollId);
+
+        // Entferne Poll aus lokalem Cache
+        await hiveBox.delete(event.pollId);
+
+        // Aktualisiere State - entferne Poll aus der aktuellen Liste
+        if (state is Loaded) {
+          final currentState = state as Loaded;
+          final updatedPolls = currentState.polls.where((poll) => poll.id != event.pollId).toList();
+          emit(PollState.loaded(updatedPolls, currentState.hasMore));
+        }
+      } catch (e) {
+        emit(PollState.error('Failed to delete poll: ${e.toString()}'));
+      }
+    });
   }
 
   Future<void> synchronizeWithBackend() async {
@@ -123,5 +174,19 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     } catch (e) {
       debugPrint('Failed to synchronize with Supabase: ${e.toString()}');
     }
+  }
+
+  Future<void> voteWithName(
+    String pollId,
+    String optionId, {
+    bool isAnonymous = true,
+    String? voterName,
+  }) async {
+    add(PollEvent.voteWithName(
+      pollId,
+      optionId,
+      isAnonymous: isAnonymous,
+      voterName: voterName,
+    ));
   }
 }

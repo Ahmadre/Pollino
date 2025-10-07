@@ -49,6 +49,55 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _handlePollAction(String action, dynamic poll) {
+    switch (action) {
+      case 'delete':
+        _showDeleteConfirmation(poll);
+        break;
+    }
+  }
+
+  Future<void> _showDeleteConfirmation(dynamic poll) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Umfrage löschen'),
+        content: Text(
+            'Möchtest du die Umfrage "${poll.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Löschen', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && mounted) {
+      try {
+        context.read<PollBloc>().add(PollEvent.deletePoll(poll.id));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Umfrage erfolgreich gelöscht'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Löschen: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,6 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               colorIndex: index,
                               optionColors: _optionColors,
                               demoVoters: _demoVoters,
+                              onPollAction: _handlePollAction,
                             ),
                           );
                         },
@@ -243,8 +293,15 @@ class _PollCard extends StatelessWidget {
   final int colorIndex;
   final List<Color> optionColors;
   final List<List<String>> demoVoters;
+  final Function(String, dynamic)? onPollAction;
 
-  const _PollCard({required this.poll, required this.colorIndex, required this.optionColors, required this.demoVoters});
+  const _PollCard({
+    required this.poll,
+    required this.colorIndex,
+    required this.optionColors,
+    required this.demoVoters,
+    this.onPollAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -255,29 +312,78 @@ class _PollCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Info
-            Row(
-              children: [
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Color(0xFFE3F2FD),
-                  child: Text('LU', style: TextStyle(fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Lara Ulrich', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    Text('21 minutes ago', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                  ],
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                ),
-              ],
-            ),
+            // User Info (nur bei nicht-anonymen Umfragen anzeigen)
+            if (!poll.isAnonymous) ...[
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: const Color(0xFFE3F2FD),
+                    child: Text(
+                      poll.createdByName != null ? poll.createdByName!.substring(0, 2).toUpperCase() : '??',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          poll.createdByName ?? 'Unbekannter Ersteller',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          'vor kurzer Zeit',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    onSelected: (value) => onPollAction?.call(value, poll),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Löschen', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ] else ...[
+              // Für anonyme Umfragen - nur Delete-Button rechtsbündig
+              Row(
+                children: [
+                  const Spacer(),
+                  PopupMenuButton<String>(
+                    onSelected: (value) => onPollAction?.call(value, poll),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Löschen', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+            ],
 
             const SizedBox(height: 12),
 
