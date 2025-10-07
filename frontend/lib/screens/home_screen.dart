@@ -432,9 +432,11 @@ class _PollCard extends StatelessWidget {
                             ),
 
                             // Content
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            Container(
+                              height: 44,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   // Check mark for highest voted option
                                   if (percentage > 0.3)

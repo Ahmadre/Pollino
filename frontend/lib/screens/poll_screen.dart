@@ -613,9 +613,11 @@ class _PollOption extends StatelessWidget {
               ),
 
             // Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            Container(
+              height: 54,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Selection indicator
                   if (!hasVoted)
