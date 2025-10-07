@@ -387,13 +387,7 @@ services:
   # Flutter Web Application
   flutter-web:
     container_name: pollino
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        SUPABASE_URL: http://kong:8000
-        SUPABASE_ANON_KEY: ${ANON_KEY}
-        SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+    image: ahmadre/pollino-frontend:latest
     restart: unless-stopped
     ports:
       - "3001:8080"
@@ -417,15 +411,17 @@ services:
       # Additional environment variables for the web app
       NODE_ENV: production
       FLUTTER_WEB_USE_SKIA: true
+      # Supabase configuration via environment variables
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_ANON_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
     networks:
       - default
 
   # Poll Cleanup Service - CRON Job for automatic cleanup of expired polls
   poll-cleanup:
     container_name: pollino-cleanup
-    build:
-      context: ./poll-cleanup
-      dockerfile: Dockerfile
+    image: ahmadre/pollino-cleanup:latest
     restart: unless-stopped
     depends_on:
       db:
