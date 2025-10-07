@@ -13,15 +13,16 @@ RUN flutter pub get
 # Copy source code
 COPY . .
 
-# Build arguments for Supabase configuration
+# Build arguments for Supabase configuration (will be passed at runtime)
 ARG SUPABASE_URL
-ARG SUPABASE_ANON_KEY
+ARG SUPABASE_ANON_KEY  
 ARG SUPABASE_SERVICE_ROLE_KEY
 
 # Enable web platform (if not already enabled)
 RUN flutter config --enable-web
 
 # Build Flutter web app for production
+# Note: Supabase configuration will be injected at runtime via environment variables
 RUN flutter build web --release --web-renderer canvaskit --base-href /
 
 # Production stage with Nginx
