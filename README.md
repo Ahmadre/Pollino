@@ -74,6 +74,7 @@ graph TB
         META[Postgres Meta<br/>Port: 8080<br/>DB Schema Management]
         IMGPROXY[Image Proxy<br/>Port: 5001<br/>Image Processing]
         VECTOR[Vector Logging<br/>Port: 9001<br/>Log Aggregation]
+        CLEANUP[Poll Cleanup Service<br/>Automated Cleanup<br/>15min Intervals]
     end
 
     %% Data Flow Connections
@@ -109,6 +110,10 @@ graph TB
 
     VECTOR -.-> ANALYTICS
     
+    %% Cleanup Service Connections
+    CLEANUP --> DB
+    CLEANUP -.-> ANALYTICS
+    
     %% Styling
     classDef frontend fill:#e1f5fe
     classDef gateway fill:#f3e5f5
@@ -120,7 +125,7 @@ graph TB
     class KONG gateway
     class AUTH,REST,REALTIME,STORAGE,FUNCTIONS,STUDIO service
     class DB,POOLER,VOLUMES database
-    class ANALYTICS,META,IMGPROXY,VECTOR infrastructure
+    class ANALYTICS,META,IMGPROXY,VECTOR,CLEANUP infrastructure
 ```
 
 ## 🗃️ Datenbankschema
@@ -137,6 +142,9 @@ erDiagram
         timestamp updated_at
         uuid created_by FK
         boolean is_active
+        integer likes_count
+        timestamp expires_at
+        boolean auto_delete_after_expiry
     }
     
     POLL_OPTIONS {
@@ -177,6 +185,9 @@ erDiagram
 - `description`: Optionale Beschreibung
 - `created_by`: Referenz zum Ersteller (User UUID)
 - `is_active`: Status der Umfrage (aktiv/inaktiv)
+- `likes_count`: Anzahl der Likes (Standard: 0)
+- `expires_at`: Ablaufzeitpunkt der Umfrage
+- `auto_delete_after_expiry`: Automatische Löschung nach Ablauf
 
 **poll_options Tabelle:**
 - `id`: Eindeutige Options-ID
@@ -319,21 +330,50 @@ export JWT_SECRET=your_production_jwt_secret
 
 ```
 Pollino/
-├── 📱 frontend/              # Flutter Web Application
+├── 📱 frontend/                    # Flutter Web Application
 │   ├── lib/
-│   │   ├── bloc/            # BLoC State Management
-│   │   ├── screens/         # UI Screens
-│   │   ├── services/        # API Services
-│   │   └── main.dart        # App Entry Point
-│   ├── Dockerfile           # Flutter Web Container
-│   └── pubspec.yaml         # Flutter Dependencies
-├── 🗄️ volumes/              # Persistent Data
-│   ├── db/                 # Database Scripts & Data
-│   ├── functions/          # Supabase Edge Functions
-│   └── storage/            # File Storage
-├── 🐳 docker-compose.yml    # Main Services Definition
-├── 🔧 dev/                 # Development Tools
-└── 📋 README.md            # This file
+│   │   ├── bloc/                  # BLoC State Management
+│   │   ├── core/                  # Core Architecture
+│   │   │   ├── error/             # Error Handling
+│   │   │   ├── localization/      # I18n Service & Language Support
+│   │   │   ├── network/           # Network Utilities
+│   │   │   ├── usecase/           # Use Case Abstractions
+│   │   │   └── utils/             # Timezone & Helper Functions
+│   │   ├── features/              # Feature-based Architecture
+│   │   │   └── polls/             # Poll Feature Module
+│   │   │       ├── data/          # Data Layer (Models, DataSources, Repositories)
+│   │   │       └── domain/        # Domain Layer (Entities, UseCases, Interfaces)
+│   │   ├── screens/               # UI Screens (Home, Poll Detail, Create)
+│   │   └── services/              # Application Services (Supabase, Like System)
+│   ├── assets/                    # Static Assets & Translations (6 Languages)
+│   ├── web/                       # Web-specific Files & PWA Configuration
+│   ├── test/                      # Unit & Widget Tests
+│   └── build/                     # Flutter Build Output
+├── 🗄️ volumes/                    # Persistent Data & Configuration
+│   ├── db/                        # Database Configuration
+│   │   ├── init/                  # Database Initialization Scripts
+│   │   ├── migrations/            # Database Schema Migrations (5 Files)
+│   │   └── data/                  # PostgreSQL Data Directory
+│   ├── functions/                 # Supabase Edge Functions
+│   ├── api/                       # API Gateway Configuration
+│   ├── logs/                      # Logging Configuration
+│   ├── pooler/                    # Connection Pooling
+│   └── storage/                   # File Storage
+├── 🧹 poll-cleanup/               # Automated Poll Cleanup Service
+│   ├── cleanup-script.sh          # Cleanup Logic Script
+│   ├── start.sh                   # Service Startup Script
+│   └── Dockerfile                 # Cleanup Service Container
+├── 🔧 dev/                        # Development Tools
+│   ├── docker-compose.dev.yml     # Development Override
+│   └── data.sql                   # Development Sample Data
+├── 🐳 docker-compose.yml          # Main Services Definition
+├── 🐳 docker-compose.s3.yml       # S3 Storage Extension
+├── 🔄 reset.sh                    # Database Reset Script
+├── 📋 README.md                   # This Documentation
+├── 📝 CHANGELOG.md                # Version History & Changes
+├── 🔧 .env.example                # Environment Variables Template
+└── 📊 .vscode/                    # VS Code Configuration
+    └── launch.json                # Debug Configuration
 ```
 
 ## 🤝 Beitragen
