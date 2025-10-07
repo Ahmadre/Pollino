@@ -1,5 +1,6 @@
 -- Migration: Add expiration functionality to polls
 -- Date: 2024-01-20
+-- Fixed version for Synology NAS deployment
 
 -- Add expiration columns to polls table (only if they don't exist)
 DO $$ 
@@ -43,7 +44,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create function to cleanup expired polls
+-- Create simple cleanup function (single parameter for backward compatibility)
 CREATE OR REPLACE FUNCTION cleanup_expired_polls()
 RETURNS INTEGER AS $$
 DECLARE
@@ -73,13 +74,13 @@ CREATE TABLE IF NOT EXISTS poll_cleanup_log (
   triggered_by TEXT DEFAULT 'system'
 );
 
--- Enhanced cleanup function with logging and batch processing
+-- Enhanced cleanup function with logging and batch processing (two parameters)
 CREATE OR REPLACE FUNCTION cleanup_expired_polls_with_log(trigger_source TEXT DEFAULT 'system', batch_size INTEGER DEFAULT 100)
 RETURNS INTEGER AS $$
 DECLARE
   deleted_count INTEGER := 0;
   total_deleted INTEGER := 0;
-  poll_ids_to_delete BIGINT[];
+  poll_ids_to_delete UUID[];
 BEGIN
   -- Process in batches to avoid long-running transactions
   LOOP
@@ -123,6 +124,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Overloaded function with single parameter for backward compatibility
+CREATE OR REPLACE FUNCTION cleanup_expired_polls_with_log(trigger_source TEXT)
+RETURNS INTEGER AS $$
+BEGIN
+  RETURN cleanup_expired_polls_with_log(trigger_source, 100);
+END;
+$$ LANGUAGE plpgsql;
+
 -- Function to check if cleanup is needed (based on time and pending expired polls)
 CREATE OR REPLACE FUNCTION should_run_cleanup()
 RETURNS BOOLEAN AS $$
@@ -158,7 +167,7 @@ RETURNS INTEGER AS $$
 BEGIN
   -- Only run if cleanup is actually needed
   IF should_run_cleanup() THEN
-    RETURN cleanup_expired_polls_with_log('auto-trigger'::TEXT, 100);
+    RETURN cleanup_expired_polls_with_log('auto-trigger', 100);
   ELSE
     RETURN 0;
   END IF;
@@ -188,20 +197,12 @@ CREATE TRIGGER trigger_cleanup_on_poll_activity
   FOR EACH ROW
   EXECUTE FUNCTION trigger_cleanup_on_activity();
 
--- Alternative: Use pg_cron if available (uncomment if pg_cron extension is installed)
--- DO $$
--- BEGIN
---   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
---     -- Schedule cleanup every 30 minutes
---     PERFORM cron.schedule('poll-cleanup', '*/30 * * * *', 'SELECT cleanup_expired_polls_with_log(''pg_cron'', 100);');
---   END IF;
--- END $$;
-
 -- Comments for documentation
 COMMENT ON COLUMN polls.expires_at IS 'Timestamp when the poll expires. NULL means no expiration.';
 COMMENT ON COLUMN polls.auto_delete_after_expiry IS 'Whether to automatically delete the poll after it expires.';
 COMMENT ON FUNCTION get_poll_status(UUID) IS 'Returns the status information of a poll including expiration state.';
-COMMENT ON FUNCTION cleanup_expired_polls() IS 'Deletes all expired polls that have auto_delete_after_expiry set to true. Returns the number of deleted polls.';
-COMMENT ON FUNCTION cleanup_expired_polls_with_log(TEXT, INTEGER) IS 'Enhanced cleanup function with logging support for tracking cleanup operations.';
+COMMENT ON FUNCTION cleanup_expired_polls() IS 'Simple cleanup function - deletes all expired polls that have auto_delete_after_expiry set to true.';
+COMMENT ON FUNCTION cleanup_expired_polls_with_log(TEXT, INTEGER) IS 'Enhanced cleanup function with logging support and batch processing.';
+COMMENT ON FUNCTION cleanup_expired_polls_with_log(TEXT) IS 'Single parameter version of cleanup function for backward compatibility.';
 COMMENT ON FUNCTION run_automatic_poll_cleanup() IS 'Runs cleanup if more than 15 minutes have passed since last cleanup.';
 COMMENT ON TABLE poll_cleanup_log IS 'Tracks automatic poll cleanup operations with timestamps and counts.';

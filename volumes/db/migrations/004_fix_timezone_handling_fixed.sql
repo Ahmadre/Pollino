@@ -1,4 +1,4 @@
--- Migration: Fix timezone handling for poll expiration
+-- Migration: Fix timezone handling for poll expiration (Fixed Version)
 -- Date: 2025-10-07
 
 -- Convert expires_at from TIMESTAMP to TIMESTAMPTZ (UTC storage)
@@ -25,9 +25,11 @@ BEGIN
     END IF;
 END $$;
 
--- Drop and recreate poll-related functions to handle TIMESTAMPTZ properly
+-- Drop existing functions that might have different return types
 DROP FUNCTION IF EXISTS get_poll_status(UUID);
+DROP FUNCTION IF EXISTS get_poll_with_timezone_info(BIGINT, TEXT);
 
+-- Recreate poll-related functions to handle TIMESTAMPTZ properly
 CREATE OR REPLACE FUNCTION get_poll_status(poll_id UUID)
 RETURNS TABLE (
   id UUID,
@@ -58,6 +60,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Enhanced function to help with timezone conversions in the API
+-- Note: Using BIGINT for id to match your actual polls table structure
 CREATE OR REPLACE FUNCTION get_poll_with_timezone_info(poll_id BIGINT, user_timezone TEXT DEFAULT 'UTC')
 RETURNS TABLE (
   id BIGINT,
@@ -121,13 +124,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Update comments for documentation
-COMMENT ON COLUMN polls.expires_at IS 'Timestamp when the poll expires in UTC. NULL means no expiration. Always stored as TIMESTAMPTZ (UTC).';
-COMMENT ON FUNCTION get_poll_with_timezone_info(BIGINT, TEXT) IS 'Returns poll information with timezone conversion for user display.';
-COMMENT ON FUNCTION convert_user_datetime_to_utc(TIMESTAMP, TEXT) IS 'Converts user local datetime to UTC for database storage.';
-COMMENT ON FUNCTION get_current_time_in_timezone(TEXT) IS 'Returns current time in specified timezone for user display.';
+-- Function to safely set poll expiry from user input with timezone handling
+CREATE OR REPLACE FUNCTION set_poll_expiry(
+  poll_id BIGINT,
+  expiry_datetime TIMESTAMP,
+  user_timezone TEXT DEFAULT 'UTC'
+) RETURNS BOOLEAN AS $$
+DECLARE
+  utc_expiry TIMESTAMPTZ;
+BEGIN
+  -- Convert user datetime to UTC
+  utc_expiry := convert_user_datetime_to_utc(expiry_datetime, user_timezone);
+  
+  -- Update the poll
+  UPDATE polls 
+  SET expires_at = utc_expiry
+  WHERE id = poll_id;
+  
+  -- Return true if update was successful
+  RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql;
 
--- Create a view for easier timezone handling in queries
+-- Drop and recreate the view to handle TIMESTAMPTZ
+DROP VIEW IF EXISTS polls_with_timezone_info;
+
 CREATE OR REPLACE VIEW polls_with_timezone_info AS
 SELECT 
   p.*,
@@ -140,7 +161,18 @@ SELECT
     WHEN p.expires_at IS NULL THEN NULL
     WHEN p.expires_at > NOW() THEN (p.expires_at - NOW())
     ELSE INTERVAL '0'
-  END AS time_until_expiry
+  END AS time_until_expiry,
+  -- Add timezone-aware display fields
+  (p.expires_at AT TIME ZONE 'UTC')::TIMESTAMP AS expires_at_utc,
+  (p.expires_at AT TIME ZONE 'Europe/Berlin')::TIMESTAMP AS expires_at_berlin,
+  (p.expires_at AT TIME ZONE 'America/New_York')::TIMESTAMP AS expires_at_ny
 FROM polls p;
 
-COMMENT ON VIEW polls_with_timezone_info IS 'View that includes timezone-aware expiration status and time calculations.';
+-- Update comments for documentation
+COMMENT ON COLUMN polls.expires_at IS 'Timestamp when the poll expires in UTC. NULL means no expiration. Always stored as TIMESTAMPTZ (UTC).';
+COMMENT ON FUNCTION get_poll_status(UUID) IS 'Returns poll status with timezone-aware expiration checking (UTC-based).';
+COMMENT ON FUNCTION get_poll_with_timezone_info(BIGINT, TEXT) IS 'Returns poll information with timezone conversion for user display.';
+COMMENT ON FUNCTION convert_user_datetime_to_utc(TIMESTAMP, TEXT) IS 'Converts user local datetime to UTC for database storage.';
+COMMENT ON FUNCTION get_current_time_in_timezone(TEXT) IS 'Returns current time in specified timezone for user display.';
+COMMENT ON FUNCTION set_poll_expiry(BIGINT, TIMESTAMP, TEXT) IS 'Safely sets poll expiry with timezone conversion from user input.';
+COMMENT ON VIEW polls_with_timezone_info IS 'View that includes timezone-aware expiration status and common timezone conversions.';
