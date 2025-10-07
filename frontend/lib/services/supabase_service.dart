@@ -17,7 +17,7 @@ class SupabaseService {
       // Hole die Umfragen
       final pollsResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by')
+          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
           .eq('is_active', true)
           .range(offset, offset + limit - 1)
           .order('created_at', ascending: false);
@@ -52,6 +52,7 @@ class SupabaseService {
             isAnonymous: pollData['is_anonymous'] ?? true,
             createdByName: pollData['created_by_name'],
             createdBy: pollData['created_by'],
+            allowsMultipleVotes: pollData['allows_multiple_votes'] ?? false,
           ),
         );
       }
@@ -69,7 +70,7 @@ class SupabaseService {
       // Hole die Umfrage
       final pollResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by')
+          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
           .eq('id', pollId)
           .single();
 
@@ -93,6 +94,7 @@ class SupabaseService {
         isAnonymous: pollResponse['is_anonymous'] ?? true,
         createdByName: pollResponse['created_by_name'],
         createdBy: pollResponse['created_by'],
+        allowsMultipleVotes: pollResponse['allows_multiple_votes'] ?? false,
       );
     } catch (e) {
       debugPrint('Error in fetchPoll: $e');
@@ -117,6 +119,54 @@ class SupabaseService {
     } catch (e) {
       debugPrint('Error in sendVote: $e');
       rethrow;
+    }
+  }
+
+  /// Sendet multiple Stimmen für eine Umfrage (für Multiple Choice Polls)
+  static Future<void> sendMultipleVotes(
+    String pollId,
+    List<String> optionIds, {
+    String? voterName,
+    bool isAnonymous = true,
+  }) async {
+    if (optionIds.isEmpty) {
+      throw Exception('Keine Optionen zum Abstimmen ausgewählt');
+    }
+
+    try {
+      // Erst prüfen ob Poll Multiple Voting erlaubt
+      final poll = await fetchPoll(pollId);
+      if (!poll.allowsMultipleVotes && optionIds.length > 1) {
+        throw Exception('Diese Umfrage erlaubt nur eine Auswahl');
+      }
+
+      for (final optionId in optionIds) {
+        await _client.rpc('cast_vote', params: {
+          'p_poll_id': int.parse(pollId),
+          'p_option_id': int.parse(optionId),
+          'p_user_name': voterName,
+          'p_is_anonymous': isAnonymous,
+        });
+      }
+    } catch (e) {
+      debugPrint('Error in sendMultipleVotes: $e');
+      rethrow;
+    }
+  }
+
+  /// Prüft welche Optionen ein User bereits gewählt hat (für Multiple Choice)
+  static Future<List<String>> getUserVotedOptions(String pollId, String userName) async {
+    try {
+      final result = await _client
+          .from('user_votes')
+          .select('option_id')
+          .eq('poll_id', pollId)
+          .eq('voter_name', userName);
+
+      return result.map<String>((vote) => vote['option_id'].toString()).toList();
+    } catch (e) {
+      debugPrint('Error in getUserVotedOptions: $e');
+      return [];
     }
   }
 
@@ -182,6 +232,7 @@ class SupabaseService {
     required List<String> optionTexts,
     String? description,
     bool isAnonymous = true,
+    bool allowsMultipleVotes = false,
     String? creatorName,
   }) async {
     try {
@@ -202,6 +253,7 @@ class SupabaseService {
             'title': title,
             'description': description ?? '',
             'is_anonymous': isAnonymous,
+            'allows_multiple_votes': allowsMultipleVotes,
             'created_by': createdBy,
             'created_by_name': creatorName,
           })
@@ -230,6 +282,7 @@ class SupabaseService {
         description: description ?? '',
         options: options,
         isAnonymous: isAnonymous,
+        allowsMultipleVotes: allowsMultipleVotes,
         createdByName: creatorName,
         createdBy: createdBy,
       );

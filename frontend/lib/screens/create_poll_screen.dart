@@ -73,6 +73,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         title: question,
         optionTexts: options,
         isAnonymous: _enableAnonymousVoting,
+        allowsMultipleVotes: _allowMultipleOptions,
         creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
       );
 

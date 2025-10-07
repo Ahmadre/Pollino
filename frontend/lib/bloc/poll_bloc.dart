@@ -16,6 +16,8 @@ class PollEvent with _$PollEvent {
   const factory PollEvent.vote(String pollId, String optionId) = Vote;
   const factory PollEvent.voteWithName(String pollId, String optionId,
       {@Default(true) bool isAnonymous, String? voterName}) = VoteWithName;
+  const factory PollEvent.voteMultiple(String pollId, List<String> optionIds,
+      {@Default(true) bool isAnonymous, String? voterName}) = VoteMultiple;
   const factory PollEvent.deletePoll(String pollId) = DeletePoll;
 }
 
@@ -39,19 +41,24 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         final total = response['total'];
 
         // Cache results in Hive
-        await hiveBox.clear();
+        if (event.page == 1) {
+          await hiveBox.clear();
+        }
         for (var poll in polls) {
           hiveBox.put(poll.id, poll);
         }
 
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
+        debugPrint('Error loading polls from backend: $e');
+        
         // Fallback to Hive if backend is unreachable
         final cachedPolls = hiveBox.values.toList();
         if (cachedPolls.isNotEmpty) {
+          debugPrint('Using cached polls: ${cachedPolls.length} polls');
           emit(PollState.loaded(cachedPolls, false));
         } else {
-          emit(PollState.error('Failed to load polls: ${e.toString()}'));
+          emit(PollState.error('Fehler beim Laden der Umfragen. Bitte überprüfen Sie Ihre Internetverbindung.'));
         }
       }
     });
@@ -93,31 +100,28 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     });
 
     on<Vote>((event, emit) async {
-      emit(PollState.loading());
       try {
         // Send vote to Supabase database
         await SupabaseService.sendVote(event.pollId, event.optionId);
 
-        // Update local cache
-        final poll = hiveBox.get(event.pollId);
-        if (poll != null) {
-          final updatedOptions = poll.options.map((option) {
-            if (option.id == event.optionId) {
-              return option.copyWith(votes: option.votes + 1);
-            }
-            return option;
-          }).toList();
-          final updatedPoll = poll.copyWith(options: updatedOptions);
-          hiveBox.put(event.pollId, updatedPoll);
-          emit(PollState.loaded([updatedPoll], false));
+        // Reload all polls to get updated vote counts
+        final response = await SupabaseService.fetchPolls(1, 20);
+        final polls = response['polls'] as List<Poll>;
+        final total = response['total'];
+
+        // Update cache
+        await hiveBox.clear();
+        for (var poll in polls) {
+          hiveBox.put(poll.id, poll);
         }
+
+        emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
         emit(PollState.error('Failed to submit vote: ${e.toString()}'));
       }
     });
 
     on<VoteWithName>((event, emit) async {
-      emit(PollState.loading());
       try {
         // Send vote to Supabase database with name info
         await SupabaseService.sendVote(
@@ -127,21 +131,95 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           isAnonymous: event.isAnonymous,
         );
 
-        // Update local cache
-        final poll = hiveBox.get(event.pollId);
-        if (poll != null) {
-          final updatedOptions = poll.options.map((option) {
-            if (option.id == event.optionId) {
-              return option.copyWith(votes: option.votes + 1);
-            }
-            return option;
-          }).toList();
-          final updatedPoll = poll.copyWith(options: updatedOptions);
-          hiveBox.put(event.pollId, updatedPoll);
-          emit(PollState.loaded([updatedPoll], false));
+        debugPrint('Vote submitted successfully for poll ${event.pollId}');
+
+        // Reload all polls to get updated vote counts
+        try {
+          final response = await SupabaseService.fetchPolls(1, 20);
+          final polls = response['polls'] as List<Poll>;
+          final total = response['total'];
+
+          // Update cache
+          await hiveBox.clear();
+          for (var poll in polls) {
+            hiveBox.put(poll.id, poll);
+          }
+
+          emit(PollState.loaded(polls, polls.length < total));
+        } catch (reloadError) {
+          debugPrint('Error reloading polls after vote: $reloadError');
+          
+          // Fallback: Update only the specific poll locally
+          final poll = hiveBox.get(event.pollId);
+          if (poll != null) {
+            final updatedOptions = poll.options.map((option) {
+              if (option.id == event.optionId) {
+                return option.copyWith(votes: option.votes + 1);
+              }
+              return option;
+            }).toList();
+            final updatedPoll = poll.copyWith(options: updatedOptions);
+            hiveBox.put(event.pollId, updatedPoll);
+            
+            // Emit all cached polls
+            final allPolls = hiveBox.values.toList();
+            emit(PollState.loaded(allPolls, false));
+          }
         }
       } catch (e) {
-        emit(PollState.error('Failed to submit vote: ${e.toString()}'));
+        debugPrint('Error submitting vote: $e');
+        emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
+      }
+    });
+
+    on<VoteMultiple>((event, emit) async {
+      try {
+        // Send multiple votes to Supabase database
+        await SupabaseService.sendMultipleVotes(
+          event.pollId,
+          event.optionIds,
+          voterName: event.voterName,
+          isAnonymous: event.isAnonymous,
+        );
+
+        debugPrint('Multiple votes submitted successfully for poll ${event.pollId}, options: ${event.optionIds}');
+
+        // Reload all polls to get updated vote counts
+        try {
+          final response = await SupabaseService.fetchPolls(1, 20);
+          final polls = response['polls'] as List<Poll>;
+          final total = response['total'];
+
+          // Update cache
+          await hiveBox.clear();
+          for (var poll in polls) {
+            hiveBox.put(poll.id, poll);
+          }
+
+          emit(PollState.loaded(polls, polls.length < total));
+        } catch (reloadError) {
+          debugPrint('Error reloading polls after multiple votes: $reloadError');
+          
+          // Fallback: Update the specific poll locally
+          final poll = hiveBox.get(event.pollId);
+          if (poll != null) {
+            final updatedOptions = poll.options.map((option) {
+              if (event.optionIds.contains(option.id)) {
+                return option.copyWith(votes: option.votes + 1);
+              }
+              return option;
+            }).toList();
+            final updatedPoll = poll.copyWith(options: updatedOptions);
+            hiveBox.put(event.pollId, updatedPoll);
+            
+            // Emit all cached polls
+            final allPolls = hiveBox.values.toList();
+            emit(PollState.loaded(allPolls, false));
+          }
+        }
+      } catch (e) {
+        debugPrint('Error submitting multiple votes: $e');
+        emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
       }
     });
 

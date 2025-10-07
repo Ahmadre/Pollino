@@ -16,6 +16,7 @@ class Poll with _$Poll {
     @HiveField(4) @Default(true) bool isAnonymous,
     @HiveField(5) String? createdByName,
     @HiveField(6) String? createdBy,
+    @HiveField(7) @Default(false) bool allowsMultipleVotes,
   }) = _Poll;
 
   factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);

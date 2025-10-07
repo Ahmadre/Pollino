@@ -13,10 +13,9 @@ class PollScreen extends StatefulWidget {
 }
 
 class _PollScreenState extends State<PollScreen> {
-  String? _selectedOptionId;
+  List<String> _selectedOptionIds = [];
   bool _hasVoted = false;
   bool _isAnonymousVote = true;
-  String _voterName = '';
   final _voterNameController = TextEditingController();
 
   @override
@@ -25,114 +24,102 @@ class _PollScreenState extends State<PollScreen> {
     super.dispose();
   }
 
-  Future<void> _showVotingDialog(BuildContext context, poll, String optionId, String optionText) async {
-    bool tempIsAnonymous = true;
-    final tempController = TextEditingController();
+  void _toggleOptionSelection(String optionId, bool allowsMultiple) {
+    setState(() {
+      if (allowsMultiple) {
+        // Multiple selection
+        if (_selectedOptionIds.contains(optionId)) {
+          _selectedOptionIds.remove(optionId);
+        } else {
+          _selectedOptionIds.add(optionId);
+        }
+      } else {
+        // Single selection
+        if (_selectedOptionIds.contains(optionId)) {
+          _selectedOptionIds.clear();
+        } else {
+          _selectedOptionIds = [optionId];
+        }
+      }
+    });
+  }
 
-    return showDialog<void>(
+  Future<void> _submitVote() async {
+    if (_selectedOptionIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte wähle mindestens eine Option')),
+      );
+      return;
+    }
+
+    if (!_isAnonymousVote && _voterNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bitte gib deinen Namen ein')),
+      );
+      return;
+    }
+
+    // Zeige Loading Indicator
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Abstimmen'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Du wählst: "$optionText"'),
-                  const SizedBox(height: 20),
-
-                  // Anonymous Toggle
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: tempIsAnonymous,
-                        onChanged: (value) {
-                          setDialogState(() {
-                            tempIsAnonymous = value ?? true;
-                          });
-                        },
-                      ),
-                      const Expanded(
-                        child: Text('Anonym abstimmen'),
-                      ),
-                    ],
-                  ),
-
-                  // Name Input (if not anonymous)
-                  if (!tempIsAnonymous) ...[
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: tempController,
-                      decoration: const InputDecoration(
-                        labelText: 'Dein Name',
-                        border: OutlineInputBorder(),
-                        hintText: 'Gib deinen Namen ein...',
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Abbrechen'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (!tempIsAnonymous && tempController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Bitte gib deinen Namen ein')),
-                      );
-                      return;
-                    }
-
-                    try {
-                      await context.read<PollBloc>().voteWithName(
-                            widget.pollId,
-                            optionId,
-                            isAnonymous: tempIsAnonymous,
-                            voterName: tempIsAnonymous ? null : tempController.text.trim(),
-                          );
-
-                      setState(() {
-                        _selectedOptionId = optionId;
-                        _hasVoted = true;
-                        _isAnonymousVote = tempIsAnonymous;
-                        _voterName = tempIsAnonymous ? '' : tempController.text.trim();
-                      });
-
-                      Navigator.of(context).pop();
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Stimme erfolgreich abgegeben!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } catch (e) {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Fehler beim Abstimmen: ${e.toString()}'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-
-                    tempController.dispose();
-                  },
-                  child: const Text('Abstimmen'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
+
+    try {
+      if (_selectedOptionIds.length == 1) {
+        // Single vote
+        context.read<PollBloc>().add(PollEvent.voteWithName(
+          widget.pollId,
+          _selectedOptionIds.first,
+          isAnonymous: _isAnonymousVote,
+          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+        ));
+      } else {
+        // Multiple votes
+        context.read<PollBloc>().add(PollEvent.voteMultiple(
+          widget.pollId,
+          _selectedOptionIds,
+          isAnonymous: _isAnonymousVote,
+          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+        ));
+      }
+
+      setState(() {
+        _hasVoted = true;
+      });
+
+      // Verstecke Loading Indicator
+      if (mounted) Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_selectedOptionIds.length == 1 
+            ? 'Stimme erfolgreich abgegeben!' 
+            : '${_selectedOptionIds.length} Stimmen erfolgreich abgegeben!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Kurz warten dann zurück zur Hauptübersicht navigieren
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+    } catch (e) {
+      // Verstecke Loading Indicator
+      if (mounted) Navigator.of(context).pop();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Fehler beim Abstimmen: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   // Farben für die Optionen wie im Screenshot
@@ -287,33 +274,141 @@ class _PollScreenState extends State<PollScreen> {
 
                                 const SizedBox(height: 20),
 
+                                // Voting Controls (nur wenn noch nicht abgestimmt)
+                                if (!_hasVoted) ...[
+                                  // Anonymous Toggle
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey[300]!),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _isAnonymousVote ? 'Anonym abstimmen' : 'Mit Name abstimmen',
+                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                        Switch(
+                                          value: !_isAnonymousVote,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _isAnonymousVote = !value;
+                                            });
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Name Input (wenn nicht anonym)
+                                  if (!_isAnonymousVote)
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      child: TextField(
+                                        controller: _voterNameController,
+                                        decoration: InputDecoration(
+                                          labelText: 'Dein Name',
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+
+                                  // Multiple Choice Info
+                                  if (poll.allowsMultipleVotes)
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue[50],
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.blue[200]!),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Du kannst mehrere Optionen wählen',
+                                              style: TextStyle(color: Colors.blue, fontSize: 14),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+
                                 // Poll Options
                                 Expanded(
-                                  child: ListView.builder(
-                                    itemCount: liveOptions.length,
-                                    itemBuilder: (context, index) {
-                                      final option = liveOptions[index];
-                                      final optionId = snapshot.hasData ? option['id'].toString() : option.id;
-                                      final optionText = snapshot.hasData ? option['text'] : option.text;
-                                      final optionVotes =
-                                          snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes;
-                                      final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
+                                  child: Column(
+                                    children: [
+                                      Expanded(
+                                        child: ListView.builder(
+                                          itemCount: liveOptions.length,
+                                          itemBuilder: (context, index) {
+                                            final option = liveOptions[index];
+                                            final optionId = snapshot.hasData ? option['id'].toString() : option.id;
+                                            final optionText = snapshot.hasData ? option['text'] : option.text;
+                                            final optionVotes =
+                                                snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes;
+                                            final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
+                                            final isSelected = _selectedOptionIds.contains(optionId);
 
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 12),
-                                        child: _PollOption(
-                                          text: optionText,
-                                          votes: optionVotes,
-                                          percentage: percentage,
-                                          color: _optionColors[index % _optionColors.length],
-                                          voters: _demoVoters[index % _demoVoters.length],
-                                          hasVoted: _hasVoted,
-                                          onTap: _hasVoted
-                                              ? null
-                                              : () => _showVotingDialog(context, poll, optionId, optionText),
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 12),
+                                              child: _PollOption(
+                                                text: optionText,
+                                                votes: optionVotes,
+                                                percentage: percentage,
+                                                color: _optionColors[index % _optionColors.length],
+                                                voters: _demoVoters[index % _demoVoters.length],
+                                                hasVoted: _hasVoted,
+                                                isSelected: isSelected,
+                                                allowsMultiple: poll.allowsMultipleVotes,
+                                                onTap: _hasVoted
+                                                    ? null
+                                                    : () => _toggleOptionSelection(optionId, poll.allowsMultipleVotes),
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      );
-                                    },
+                                      ),
+
+                                      // Vote Button (nur wenn noch nicht abgestimmt)
+                                      if (!_hasVoted && _selectedOptionIds.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 16),
+                                          child: SizedBox(
+                                            width: double.infinity,
+                                            height: 50,
+                                            child: ElevatedButton(
+                                              onPressed: _submitVote,
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.blue,
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                              ),
+                                              child: Text(
+                                                poll.allowsMultipleVotes && _selectedOptionIds.length > 1
+                                                    ? 'Abstimmen (${_selectedOptionIds.length} ausgewählt)'
+                                                    : 'Abstimmen',
+                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
 
@@ -410,6 +505,8 @@ class _PollOption extends StatelessWidget {
   final Color color;
   final List<String> voters;
   final bool hasVoted;
+  final bool isSelected;
+  final bool allowsMultiple;
   final VoidCallback? onTap;
 
   const _PollOption({
@@ -419,6 +516,8 @@ class _PollOption extends StatelessWidget {
     required this.color,
     required this.voters,
     required this.hasVoted,
+    required this.isSelected,
+    required this.allowsMultiple,
     this.onTap,
   });
 
@@ -428,7 +527,11 @@ class _PollOption extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 54,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(27), color: Colors.white),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(27),
+          color: Colors.white,
+          border: !hasVoted && isSelected ? Border.all(color: color, width: 2) : null,
+        ),
         child: Stack(
           children: [
             // Background progress bar
@@ -444,8 +547,31 @@ class _PollOption extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
+                  // Selection indicator
+                  if (!hasVoted)
+                    Container(
+                      width: 20,
+                      height: 20,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        shape: allowsMultiple ? BoxShape.rectangle : BoxShape.circle,
+                        borderRadius: allowsMultiple ? BorderRadius.circular(4) : null,
+                        border: Border.all(
+                          color: isSelected ? color : Colors.grey[400]!,
+                          width: 2,
+                        ),
+                        color: isSelected ? color : Colors.white,
+                      ),
+                      child: isSelected
+                          ? Icon(
+                              allowsMultiple ? Icons.check : Icons.circle,
+                              size: allowsMultiple ? 14 : 10,
+                              color: Colors.white,
+                            )
+                          : null,
+                    )
                   // Check mark for voted option
-                  if (hasVoted)
+                  else if (hasVoted)
                     Container(
                       width: 20,
                       height: 20,
