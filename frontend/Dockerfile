@@ -13,10 +13,10 @@ RUN flutter pub get
 # Copy source code
 COPY . .
 
-# Build arguments for Supabase configuration (will be passed at runtime)
-# Note: These are not secrets in the traditional sense for a web app
+# Build arguments for Supabase configuration (must be set at BUILD time)
+# These will be passed from docker-compose build args
 ARG SUPABASE_URL
-ARG SUPABASE_ANON_KEY  
+ARG SUPABASE_ANON_KEY
 ARG SUPABASE_SERVICE_ROLE_KEY
 
 # Enable web platform (if not already enabled)
@@ -25,9 +25,13 @@ RUN flutter config --enable-web
 # Generate code (freezed, json_serializable, etc.)
 RUN dart run build_runner build --delete-conflicting-outputs
 
-# Build Flutter web app for production
-# Note: Supabase configuration will be injected at runtime via environment variables
-RUN flutter build web --release --web-renderer canvaskit --base-href /
+# Build Flutter web app for production with compile-time configuration
+RUN flutter build web --release \
+    --web-renderer canvaskit \
+    --base-href / \
+    --dart-define SUPABASE_URL=${SUPABASE_URL} \
+    --dart-define SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \
+    --dart-define SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 
 # Production stage with Nginx
 FROM nginx:1.25-alpine

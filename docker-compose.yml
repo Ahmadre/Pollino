@@ -412,7 +412,7 @@ services:
       NODE_ENV: production
       FLUTTER_WEB_USE_SKIA: true
       # Supabase configuration via environment variables
-      SUPABASE_URL: http://kong:8000
+      SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
     networks:

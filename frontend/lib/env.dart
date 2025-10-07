@@ -1,7 +1,7 @@
 // Supabase configuration with fallbacks for different environments
 class Environment {
   // Default values for development/local testing
-  static const String _defaultSupabaseUrl = 'http://localhost:8005';
+  static const String _defaultSupabaseUrl = 'https://supabase.asta.hn';
   static const String _defaultAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InBvbGxpbm8tc3VwYWJhc2UiLCJpYXQiOjE3Mjg0MDMyMDAsImV4cCI6MjA0Mzk3OTIwMH0.Xj5K8mN2qP9sT7vY4bF1eH6gL3aR8cW0zI5uO7nM9xQ2';
 
