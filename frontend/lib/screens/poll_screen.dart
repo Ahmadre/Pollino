@@ -72,19 +72,19 @@ class _PollScreenState extends State<PollScreen> {
       if (_selectedOptionIds.length == 1) {
         // Single vote
         context.read<PollBloc>().add(PollEvent.voteWithName(
-          widget.pollId,
-          _selectedOptionIds.first,
-          isAnonymous: _isAnonymousVote,
-          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
-        ));
+              widget.pollId,
+              _selectedOptionIds.first,
+              isAnonymous: _isAnonymousVote,
+              voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+            ));
       } else {
         // Multiple votes
         context.read<PollBloc>().add(PollEvent.voteMultiple(
-          widget.pollId,
-          _selectedOptionIds,
-          isAnonymous: _isAnonymousVote,
-          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
-        ));
+              widget.pollId,
+              _selectedOptionIds,
+              isAnonymous: _isAnonymousVote,
+              voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+            ));
       }
 
       setState(() {
@@ -96,9 +96,9 @@ class _PollScreenState extends State<PollScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_selectedOptionIds.length == 1 
-            ? 'Stimme erfolgreich abgegeben!' 
-            : '${_selectedOptionIds.length} Stimmen erfolgreich abgegeben!'),
+          content: Text(_selectedOptionIds.length == 1
+              ? 'Stimme erfolgreich abgegeben!'
+              : '${_selectedOptionIds.length} Stimmen erfolgreich abgegeben!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -112,7 +112,7 @@ class _PollScreenState extends State<PollScreen> {
     } catch (e) {
       // Verstecke Loading Indicator
       if (mounted) Navigator.of(context).pop();
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Fehler beim Abstimmen: ${e.toString()}'),

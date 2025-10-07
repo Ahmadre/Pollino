@@ -51,7 +51,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
         debugPrint('Error loading polls from backend: $e');
-        
+
         // Fallback to Hive if backend is unreachable
         final cachedPolls = hiveBox.values.toList();
         if (cachedPolls.isNotEmpty) {
@@ -148,7 +148,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           emit(PollState.loaded(polls, polls.length < total));
         } catch (reloadError) {
           debugPrint('Error reloading polls after vote: $reloadError');
-          
+
           // Fallback: Update only the specific poll locally
           final poll = hiveBox.get(event.pollId);
           if (poll != null) {
@@ -160,7 +160,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
             }).toList();
             final updatedPoll = poll.copyWith(options: updatedOptions);
             hiveBox.put(event.pollId, updatedPoll);
-            
+
             // Emit all cached polls
             final allPolls = hiveBox.values.toList();
             emit(PollState.loaded(allPolls, false));
@@ -199,7 +199,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           emit(PollState.loaded(polls, polls.length < total));
         } catch (reloadError) {
           debugPrint('Error reloading polls after multiple votes: $reloadError');
-          
+
           // Fallback: Update the specific poll locally
           final poll = hiveBox.get(event.pollId);
           if (poll != null) {
@@ -211,7 +211,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
             }).toList();
             final updatedPoll = poll.copyWith(options: updatedOptions);
             hiveBox.put(event.pollId, updatedPoll);
-            
+
             // Emit all cached polls
             final allPolls = hiveBox.values.toList();
             emit(PollState.loaded(allPolls, false));

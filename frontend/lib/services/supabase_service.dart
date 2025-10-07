@@ -17,7 +17,8 @@ class SupabaseService {
       // Hole die Umfragen
       final pollsResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
+          .select(
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
           .eq('is_active', true)
           .range(offset, offset + limit - 1)
           .order('created_at', ascending: false);
@@ -70,7 +71,8 @@ class SupabaseService {
       // Hole die Umfrage
       final pollResponse = await _client
           .from('polls')
-          .select('id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
+          .select(
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
           .eq('id', pollId)
           .single();
 
@@ -157,11 +159,8 @@ class SupabaseService {
   /// Prüft welche Optionen ein User bereits gewählt hat (für Multiple Choice)
   static Future<List<String>> getUserVotedOptions(String pollId, String userName) async {
     try {
-      final result = await _client
-          .from('user_votes')
-          .select('option_id')
-          .eq('poll_id', pollId)
-          .eq('voter_name', userName);
+      final result =
+          await _client.from('user_votes').select('option_id').eq('poll_id', pollId).eq('voter_name', userName);
 
       return result.map<String>((vote) => vote['option_id'].toString()).toList();
     } catch (e) {
