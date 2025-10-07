@@ -6,7 +6,7 @@
   > **Your comprehensive Poll App by your side**
 </div>
 
-[![Version](https://img.shields.io/badge/Version-0.1.0--alpha-blue.svg)](https://github.com/Ahmadre/Pollino/releases)
+[![CI Build](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27.1-blue.svg)](https://flutter.dev)
 [![Supabase](https://img.shields.io/badge/Supabase-2.x-green.svg)](https://supabase.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com)

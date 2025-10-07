@@ -1,4 +1,4 @@
-name: Build and Push Poll-Cleanup Docker Image
+name: CI Poll-Cleanup
 
 on:
   push:
