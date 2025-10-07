@@ -1,9 +1,9 @@
 // Supabase configuration with fallbacks for different environments
 class Environment {
   // Default values for development/local testing
-  static const String _defaultSupabaseUrl = 'http://localhost:8000';
+  static const String _defaultSupabaseUrl = 'http://localhost:8005';
   static const String _defaultAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InBvbGxpbm8tc3VwYWJhc2UiLCJpYXQiOjE3Mjg0MDMyMDAsImV4cCI6MjA0Mzk3OTIwMH0.Xj5K8mN2qP9sT7vY4bF1eH6gL3aR8cW0zI5uO7nM9xQ2';
 
   // Get configuration from compile-time or runtime environment
   static String get supabaseUrl {
@@ -34,7 +34,7 @@ class Environment {
       return compileTimeKey;
     }
 
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoicG9sbGluby1zdXBhYmFzZSIsImlhdCI6MTcyODQwMzIwMCwiZXhwIjoyMDQzOTc5MjAwfQ.F2aE8xK5nM9cV7wL3pR6tY4uI2oB8fG1hJ0qS7vZ9xN';
   }
 
   // Environment detection
