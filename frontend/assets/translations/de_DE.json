@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Pollino",
+    "subtitle": "Deine umfassende Umfrage-App"
+  },
+  "navigation": {
+    "home": "Startseite",
+    "create": "Erstellen",
+    "poll": "Umfrage",
+    "settings": "Einstellungen",
+    "recent_activity": "Letzte Aktivität",
+    "pins": "Anheftungen",
+    "polls": "Umfragen", 
+    "files": "Dateien",
+    "photos": "Fotos"
+  },
+  "home": {
+    "title": "Umfragen",
+    "empty": {
+      "title": "Keine Umfragen vorhanden",
+      "subtitle": "Erstelle deine erste Umfrage!",
+      "button": "Umfrage erstellen"
+    },
+    "loading": "Lade Umfragen...",
+    "error": "Fehler beim Laden der Umfragen",
+    "refresh": "Aktualisieren"
+  },
+  "poll": {
+    "title": "Umfrage",
+    "description": "Beschreibung",
+    "options": "Optionen",
+    "votes": "Stimmen",
+    "voteButton": "Abstimmen",
+    "voted": "Abgestimmt",
+    "anonymous": "Anonym",
+    "multipleChoice": "Mehrfachauswahl möglich",
+    "creator": {
+      "label": "Erstellt von",
+      "anonymous": "Anonymer Ersteller",
+      "named": "Nicht-anonyme Umfrage"
+    },
+    "createdAt": "Erstellt am",
+    "status": {
+      "active": "Aktiv",
+      "expired": "Abgelaufen",
+      "expiring": "Läuft ab"
+    },
+    "expiration": {
+      "never": "Läuft nie ab",
+      "expired": "Abgelaufen",
+      "expiresIn": "Ablauf: {{time}}",
+      "expiresAt": "Läuft ab am",
+      "autoDelete": "Wird automatisch gelöscht"
+    },
+    "voting": {
+      "select": "Option wählen",
+      "selectMultiple": "Du kannst mehrere Optionen wählen",
+      "submit": "Abstimmen",
+      "submitMultiple": "Abstimmen ({{count}} ausgewählt)",
+      "success": "Erfolgreich abgestimmt!",
+      "error": "Fehler beim Abstimmen",
+      "already": "Du hast bereits abgestimmt",
+      "expired": "Du kannst nicht mehr abstimmen",
+      "anonymous": "Anonym abstimmen",
+      "named": "Mit Name abstimmen",
+      "nameLabel": "Dein Name",
+      "votesSummary": "{{votes}} Stimmen • Abstimmen um Ergebnisse zu sehen",
+      "expiresIn": "Läuft ab in: {{time}}"
+    },
+    "delete": {
+      "confirmation": "Möchtest du die Umfrage \"{{title}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "error": "Fehler beim Löschen"
+    }
+  },
+  "create": {
+    "title": "Umfrage erstellen",
+    "question": {
+      "label": "Frage",
+      "placeholder": "Wie lautet deine Frage?",
+      "required": "Eine Frage ist erforderlich"
+    },
+    "description": {
+      "label": "Beschreibung (optional)",
+      "placeholder": "Zusätzliche Details zur Umfrage..."
+    },
+    "options": {
+      "title": "Antwortmöglichkeiten",
+      "placeholder": "Antwortmöglichkeit {{number}}",
+      "add": "Option hinzufügen",
+      "remove": "Entfernen",
+      "minimum": "Mindestens 2 Optionen sind erforderlich"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "anonymous": {
+        "title": "Anonyme Abstimmung",
+        "description": "Namen werden nicht angezeigt"
+      },
+      "multiple": {
+        "title": "Mehrfachauswahl",
+        "description": "Teilnehmer können mehrere Optionen wählen"
+      },
+      "creator": {
+        "label": "Dein Name (optional)",
+        "placeholder": "Wie sollen andere dich nennen?"
+      }
+    },
+    "expiration": {
+      "title": "Ablaufzeit festlegen",
+      "description": "Lege optional ein Ablaufdatum für diese Umfrage fest",
+      "never": "Nie ablaufend",
+      "presets": {
+        "1hour": "1 Stunde",
+        "1day": "1 Tag", 
+        "1week": "1 Woche",
+        "custom": "Benutzerdefiniert"
+      },
+      "customDate": "Datum und Uhrzeit wählen",
+      "autoDelete": {
+        "title": "Automatisches Löschen",
+        "description": "Umfrage nach Ablauf automatisch löschen"
+      },
+      "format": "{{date}} {{time}} Uhr"
+    },
+    "validation": {
+      "questionRequired": "Eine Frage ist erforderlich",
+      "optionsMinimum": "Mindestens 2 Optionen sind erforderlich",
+      "optionEmpty": "Alle Optionen müssen ausgefüllt sein"
+    },
+    "actions": {
+      "create": "Umfrage erstellen",
+      "creating": "Wird erstellt...",
+      "cancel": "Abbrechen"
+    },
+    "success": "Umfrage erfolgreich erstellt!",
+    "error": "Fehler beim Erstellen der Umfrage"
+  },
+  "time": {
+    "units": {
+      "second": "Sekunde",
+      "second_plural": "Sekunden", 
+      "minute": "Minute",
+      "minute_plural": "Minuten",
+      "hour": "Stunde", 
+      "hour_plural": "Stunden",
+      "day": "Tag",
+      "day_plural": "Tagen",
+      "week": "Woche",
+      "week_plural": "Wochen",
+      "month": "Monat",
+      "month_plural": "Monaten",
+      "year": "Jahr",
+      "year_plural": "Jahren"
+    },
+    "relative": {
+      "now": "Jetzt",
+      "justNow": "Gerade eben",
+      "fewSeconds": "In wenigen Sekunden",
+      "in": "in {{time}}",
+      "ago": "vor {{time}}",
+      "today": "Heute",
+      "yesterday": "Gestern", 
+      "tomorrow": "Morgen"
+    },
+    "format": {
+      "date": "{{day}}.{{month}}.{{year}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{day}}.{{month}}.{{year}} {{hour}}:{{minute}} Uhr",
+      "timeOnly": "{{hour}}:{{minute}} Uhr"
+    }
+  },
+  "errors": {
+    "network": "Netzwerkfehler - Bitte überprüfe deine Internetverbindung",
+    "server": "Serverfehler - Bitte versuche es später erneut", 
+    "unknown": "Ein unbekannter Fehler ist aufgetreten",
+    "validation": "Validierungsfehler",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "forbidden": "Zugriff verweigert"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Abbrechen",
+    "retry": "Erneut versuchen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "share": "Teilen",
+    "copy": "Kopieren",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Fertig",
+    "continue": "Fortfahren"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "email": "Bitte gib eine gültige E-Mail-Adresse ein",
+    "minLength": "Mindestens {{min}} Zeichen erforderlich",
+    "maxLength": "Maximal {{max}} Zeichen erlaubt"
+  }
+}

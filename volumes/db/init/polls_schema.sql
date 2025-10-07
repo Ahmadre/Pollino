@@ -16,10 +16,12 @@ CREATE TABLE IF NOT EXISTS polls (
     created_by_name TEXT NULL,
     is_anonymous BOOLEAN DEFAULT TRUE,
     allows_multiple_votes BOOLEAN DEFAULT FALSE,
+    expires_at TIMESTAMP WITH TIME ZONE NULL,
+    auto_delete_after_expiry BOOLEAN DEFAULT FALSE,
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Füge allows_multiple_votes Spalte hinzu falls sie nicht existiert (für bestehende DBs)
+-- Füge neue Spalten hinzu falls sie nicht existieren (für bestehende DBs)
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -27,6 +29,20 @@ BEGIN
         WHERE table_name = 'polls' AND column_name = 'allows_multiple_votes'
     ) THEN
         ALTER TABLE polls ADD COLUMN allows_multiple_votes BOOLEAN DEFAULT FALSE;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'polls' AND column_name = 'expires_at'
+    ) THEN
+        ALTER TABLE polls ADD COLUMN expires_at TIMESTAMP WITH TIME ZONE NULL;
+    END IF;
+    
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'polls' AND column_name = 'auto_delete_after_expiry'
+    ) THEN
+        ALTER TABLE polls ADD COLUMN auto_delete_after_expiry BOOLEAN DEFAULT FALSE;
     END IF;
 END $$;
 
@@ -152,8 +168,55 @@ $$ LANGUAGE plpgsql;
 -- Vereinfachte Richtlinien für Entwicklung (alle Operationen erlaubt)
 -- Für Produktion sollten diese aktiviert und angepasst werden
 
+-- Funktion zum automatischen Löschen abgelaufener Umfragen
+CREATE OR REPLACE FUNCTION cleanup_expired_polls()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER := 0;
+BEGIN
+    -- Lösche Umfragen die abgelaufen sind und auto_delete_after_expiry aktiviert haben
+    WITH deleted AS (
+        DELETE FROM polls 
+        WHERE expires_at IS NOT NULL 
+        AND expires_at < NOW() 
+        AND auto_delete_after_expiry = TRUE 
+        RETURNING id
+    )
+    SELECT COUNT(*) INTO deleted_count FROM deleted;
+    
+    RAISE NOTICE 'Cleanup: % expired polls with auto-delete deleted', deleted_count;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Funktion um Umfragen-Status zu prüfen (abgelaufen aber nicht gelöscht)
+CREATE OR REPLACE FUNCTION get_poll_status(poll_id BIGINT)
+RETURNS TEXT AS $$
+DECLARE
+    poll_expires_at TIMESTAMP WITH TIME ZONE;
+    poll_auto_delete BOOLEAN;
+BEGIN
+    SELECT expires_at, auto_delete_after_expiry 
+    INTO poll_expires_at, poll_auto_delete
+    FROM polls 
+    WHERE id = poll_id;
+    
+    IF poll_expires_at IS NULL THEN
+        RETURN 'active'; -- Kein Ablaufdatum
+    ELSIF poll_expires_at > NOW() THEN
+        RETURN 'active'; -- Noch nicht abgelaufen
+    ELSIF poll_auto_delete THEN
+        RETURN 'auto_deleted'; -- Sollte automatisch gelöscht worden sein
+    ELSE
+        RETURN 'expired'; -- Abgelaufen aber nicht auto-gelöscht
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Indizes für bessere Performance
 CREATE INDEX IF NOT EXISTS idx_polls_created_at ON polls(created_at);
+CREATE INDEX IF NOT EXISTS idx_polls_expires_at ON polls(expires_at);
+CREATE INDEX IF NOT EXISTS idx_polls_auto_delete ON polls(auto_delete_after_expiry);
 CREATE INDEX IF NOT EXISTS idx_poll_options_poll_id ON poll_options(poll_id);
 CREATE INDEX IF NOT EXISTS idx_user_votes_poll_id ON user_votes(poll_id);
 CREATE INDEX IF NOT EXISTS idx_user_votes_user_id ON user_votes(user_id);
@@ -204,6 +267,12 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM polls WHERE title = 'Arbeitsplatz-Präferenz') THEN
         INSERT INTO polls (title, description, is_anonymous, created_by_name, is_active) VALUES 
             ('Arbeitsplatz-Präferenz', 'Wo arbeitest du am liebsten?', true, null, true);
+    END IF;
+    
+    -- Beispiel-Umfrage mit Ablaufzeit (in 7 Tagen)
+    IF NOT EXISTS (SELECT 1 FROM polls WHERE title = 'Team Building Event 2025') THEN
+        INSERT INTO polls (title, description, is_anonymous, created_by_name, expires_at, auto_delete_after_expiry, is_active) VALUES 
+            ('Team Building Event 2025', 'Welches Event sollen wir dieses Jahr machen? (Läuft in 7 Tagen ab)', false, 'Event Team', NOW() + INTERVAL '7 days', false, true);
     END IF;
 END $$;
 

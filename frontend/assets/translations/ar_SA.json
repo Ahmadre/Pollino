@@ -1,0 +1,223 @@
+{
+  "app": {
+    "title": "بولينو",
+    "subtitle": "تطبيق الاستطلاع الشامل الخاص بك"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "create": "إنشاء",
+    "poll": "استطلاع",
+    "settings": "الإعدادات",
+    "recent_activity": "النشاط الحديث",
+    "pins": "المثبتة",
+    "polls": "الاستطلاعات",
+    "files": "الملفات", 
+    "photos": "الصور"
+  },
+  "home": {
+    "title": "الاستطلاعات",
+    "empty": {
+      "title": "لا توجد استطلاعات متاحة",
+      "subtitle": "أنشئ أول استطلاع لك!",
+      "button": "إنشاء استطلاع"
+    },
+    "loading": "جاري تحميل الاستطلاعات...",
+    "error": "خطأ في تحميل الاستطلاعات",
+    "refresh": "تحديث"
+  },
+  "poll": {
+    "title": "استطلاع",
+    "description": "الوصف",
+    "options": "الخيارات",
+    "votes": "الأصوات",
+    "voteButton": "صوت",
+    "voted": "تم التصويت",
+    "anonymous": "مجهول",
+    "multipleChoice": "الاختيار المتعدد مسموح",
+    "creator": {
+      "label": "أنشأ بواسطة",
+      "anonymous": "منشئ مجهول",
+      "named": "استطلاع غير مجهول"
+    },
+    "createdAt": "تاريخ الإنشاء",
+    "status": {
+      "active": "نشط",
+      "expired": "منتهي الصلاحية",
+      "expiring": "قارب على الانتهاء"
+    },
+    "expiration": {
+      "never": "لا ينتهي أبداً",
+      "expired": "منتهي الصلاحية",
+      "expiresIn": "ينتهي في {{time}}",
+      "expiresAt": "ينتهي في",
+      "autoDelete": "سيتم حذفه تلقائياً"
+    },
+    "voting": {
+      "select": "اختر خياراً",
+      "selectMultiple": "يمكنك اختيار عدة خيارات",
+      "submit": "صوت",
+      "submitMultiple": "صوت ({{count}} محددة)",
+      "success": "تم إرسال الصوت بنجاح!",
+      "error": "خطأ في التصويت",
+      "already": "لقد صوتت بالفعل",
+      "expired": "لا يمكنك التصويت بعد الآن",
+      "anonymous": "صوت بشكل مجهول",
+      "named": "صوت بالاسم",
+      "nameLabel": "اسمك",
+      "votesSummary": "{{votes}} أصوات • صوت لرؤية النتائج",
+      "expiresIn": "ينتهي في: {{time}}"
+    },
+    "delete": {
+      "confirmation": "هل تريد حقاً حذف الاستطلاع \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "error": "خطأ في الحذف"
+    }
+  },
+  "create": {
+    "title": "إنشاء استطلاع",
+    "question": {
+      "label": "السؤال",
+      "placeholder": "ما هو سؤالك؟",
+      "required": "السؤال مطلوب"
+    },
+    "description": {
+      "label": "الوصف (اختياري)",
+      "placeholder": "تفاصيل إضافية حول الاستطلاع..."
+    },
+    "options": {
+      "title": "خيارات الإجابة",
+      "placeholder": "خيار الإجابة {{number}}",
+      "add": "إضافة خيار",
+      "remove": "حذف",
+      "minimum": "مطلوب خياران على الأقل"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "anonymous": {
+        "title": "تصويت مجهول",
+        "description": "لن تظهر الأسماء"
+      },
+      "multiple": {
+        "title": "اختيار متعدد",
+        "description": "يمكن للمشاركين اختيار خيارات متعددة"
+      },
+      "creator": {
+        "label": "اسمك (اختياري)",
+        "placeholder": "كيف يجب أن يناديك الآخرون؟"
+      }
+    },
+    "expiration": {
+      "title": "تحديد وقت الانتهاء",
+      "description": "حدد تاريخ انتهاء اختياري لهذا الاستطلاع",
+      "never": "لا ينتهي أبداً",
+      "presets": {
+        "1hour": "ساعة واحدة",
+        "1day": "يوم واحد",
+        "1week": "أسبوع واحد",
+        "custom": "مخصص"
+      },
+      "customDate": "اختر التاريخ والوقت",
+      "autoDelete": {
+        "title": "حذف تلقائي",
+        "description": "حذف الاستطلاع تلقائياً بعد الانتهاء"
+      },
+      "format": "{{date}} {{time}}"
+    },
+    "validation": {
+      "questionRequired": "السؤال مطلوب",
+      "optionsMinimum": "مطلوب خياران على الأقل",
+      "optionEmpty": "يجب ملء جميع الخيارات"
+    },
+    "actions": {
+      "create": "إنشاء الاستطلاع",
+      "creating": "جاري الإنشاء...",
+      "cancel": "إلغاء"
+    },
+    "success": "تم إنشاء الاستطلاع بنجاح!",
+    "error": "خطأ في إنشاء الاستطلاع"
+  },
+  "time": {
+    "units": {
+      "second": "ثانية",
+      "second_dual": "ثانيتان",
+      "second_few": "ثواني",
+      "second_many": "ثانية",
+      "second_plural": "ثانية",
+      "minute": "دقيقة",
+      "minute_dual": "دقيقتان",
+      "minute_few": "دقائق",
+      "minute_many": "دقيقة",
+      "minute_plural": "دقيقة",
+      "hour": "ساعة",
+      "hour_dual": "ساعتان",
+      "hour_few": "ساعات",
+      "hour_many": "ساعة",
+      "hour_plural": "ساعة",
+      "day": "يوم",
+      "day_dual": "يومان",
+      "day_few": "أيام",
+      "day_many": "يوماً",
+      "day_plural": "يوم",
+      "week": "أسبوع",
+      "week_dual": "أسبوعان",
+      "week_few": "أسابيع",
+      "week_many": "أسبوعاً",
+      "week_plural": "أسبوع",
+      "month": "شهر",
+      "month_dual": "شهران",
+      "month_few": "أشهر",
+      "month_many": "شهراً",
+      "month_plural": "شهر",
+      "year": "سنة",
+      "year_dual": "سنتان",
+      "year_few": "سنوات",
+      "year_many": "سنة",
+      "year_plural": "سنة"
+    },
+    "relative": {
+      "now": "الآن",
+      "justNow": "الآن",
+      "fewSeconds": "خلال ثوان قليلة",
+      "in": "خلال {{time}}",
+      "ago": "منذ {{time}}",
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "tomorrow": "غداً"
+    },
+    "format": {
+      "date": "{{day}}/{{month}}/{{year}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{day}}/{{month}}/{{year}} {{hour}}:{{minute}}",
+      "timeOnly": "{{hour}}:{{minute}}"
+    }
+  },
+  "errors": {
+    "network": "خطأ في الشبكة - يرجى التحقق من اتصال الإنترنت",
+    "server": "خطأ في الخادم - يرجى المحاولة مرة أخرى لاحقاً",
+    "unknown": "حدث خطأ غير معروف",
+    "validation": "خطأ في التحقق",
+    "notFound": "غير موجود",
+    "unauthorized": "غير مخول",
+    "forbidden": "الوصول مرفوض"
+  },
+  "actions": {
+    "ok": "موافق",
+    "cancel": "إلغاء",
+    "retry": "إعادة المحاولة",
+    "close": "إغلاق",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تحرير",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "back": "رجوع",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "continue": "متابعة"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+    "minLength": "مطلوب {{min}} حرف على الأقل",
+    "maxLength": "الحد الأقصى {{max}} حرف مسموح"
+  }
+}

@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
+import 'package:pollino/core/utils/timezone_helper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pollino/core/localization/i18n_service.dart';
 
 class PollScreen extends StatefulWidget {
   final String pollId;
@@ -44,7 +47,28 @@ class _PollScreenState extends State<PollScreen> {
     });
   }
 
+  bool _isPollExpired(dynamic poll) {
+    if (poll.expiresAt == null) return false;
+    // poll.expiresAt ist UTC von der DB, verwende TimezoneHelper für korrekten Vergleich
+    return TimezoneHelper.isExpired(poll.expiresAt!);
+  }
+
   Future<void> _submitVote() async {
+    // Get current poll to check expiration
+    final currentState = context.read<PollBloc>().state;
+    if (currentState is Loaded && currentState.polls.isNotEmpty) {
+      final poll = currentState.polls.first;
+      if (_isPollExpired(poll)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Diese Umfrage ist bereits abgelaufen und kann nicht mehr bearbeitet werden.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
     if (_selectedOptionIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Bitte wähle mindestens eine Option')),
@@ -115,7 +139,7 @@ class _PollScreenState extends State<PollScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Fehler beim Abstimmen: ${e.toString()}'),
+          content: Text('${I18nService.instance.translate('poll.voting.error')}: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -160,9 +184,9 @@ class _PollScreenState extends State<PollScreen> {
                       constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Recent Activity',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
+                    Text(
+                      I18nService.instance.translate('navigation.recent_activity'),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
                     ),
                     const Spacer(),
                     IconButton(onPressed: () {}, icon: const Icon(Icons.tune, size: 20)),
@@ -177,10 +201,22 @@ class _PollScreenState extends State<PollScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _FilterTab(icon: Icons.push_pin, label: 'Pins', isSelected: false),
-                      _FilterTab(icon: Icons.poll, label: 'Umfragen', isSelected: true),
-                      _FilterTab(icon: Icons.description, label: 'Dateien', isSelected: false),
-                      _FilterTab(icon: Icons.photo, label: 'Fotos', isSelected: false),
+                      _FilterTab(
+                          icon: Icons.push_pin,
+                          label: I18nService.instance.translate('navigation.pins'),
+                          isSelected: false),
+                      _FilterTab(
+                          icon: Icons.poll,
+                          label: I18nService.instance.translate('navigation.polls'),
+                          isSelected: true),
+                      _FilterTab(
+                          icon: Icons.description,
+                          label: I18nService.instance.translate('navigation.files'),
+                          isSelected: false),
+                      _FilterTab(
+                          icon: Icons.photo,
+                          label: I18nService.instance.translate('navigation.photos'),
+                          isSelected: false),
                     ],
                   ),
                 ),
@@ -235,11 +271,14 @@ class _PollScreenState extends State<PollScreen> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          poll.createdByName ?? 'Anonymer Ersteller',
+                                          poll.createdByName ??
+                                              I18nService.instance.translate('poll.creator.anonymous'),
                                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                         ),
                                         Text(
-                                          poll.isAnonymous ? 'Anonyme Umfrage' : 'Nicht-anonyme Umfrage',
+                                          poll.isAnonymous
+                                              ? I18nService.instance.translate('poll.anonymous')
+                                              : I18nService.instance.translate('poll.creator.named'),
                                           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                         ),
                                       ],
@@ -266,16 +305,26 @@ class _PollScreenState extends State<PollScreen> {
 
                                 const SizedBox(height: 8),
 
-                                // Vote count
-                                Text(
-                                  '$totalVotes votes • Vote to see results',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                // Vote count and expiration info
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      I18nService.instance
+                                          .translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    ),
+                                    if (poll.expiresAt != null) ...[
+                                      const SizedBox(height: 4),
+                                      _ExpirationIndicator(poll: poll),
+                                    ],
+                                  ],
                                 ),
 
                                 const SizedBox(height: 20),
 
-                                // Voting Controls (nur wenn noch nicht abgestimmt)
-                                if (!_hasVoted) ...[
+                                // Voting Controls (nur wenn noch nicht abgestimmt und nicht abgelaufen)
+                                if (!_hasVoted && !_isPollExpired(poll)) ...[
                                   // Anonymous Toggle
                                   Container(
                                     padding: const EdgeInsets.all(16),
@@ -289,7 +338,9 @@ class _PollScreenState extends State<PollScreen> {
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            _isAnonymousVote ? 'Anonym abstimmen' : 'Mit Name abstimmen',
+                                            _isAnonymousVote
+                                                ? I18nService.instance.translate('poll.voting.anonymous')
+                                                : I18nService.instance.translate('poll.voting.named'),
                                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                                           ),
                                         ),
@@ -312,7 +363,7 @@ class _PollScreenState extends State<PollScreen> {
                                       child: TextField(
                                         controller: _voterNameController,
                                         decoration: InputDecoration(
-                                          labelText: 'Dein Name',
+                                          labelText: I18nService.instance.translate('poll.voting.nameLabel'),
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(12),
                                           ),
@@ -332,14 +383,14 @@ class _PollScreenState extends State<PollScreen> {
                                         borderRadius: BorderRadius.circular(8),
                                         border: Border.all(color: Colors.blue[200]!),
                                       ),
-                                      child: const Row(
+                                      child: Row(
                                         children: [
-                                          Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                                          SizedBox(width: 8),
+                                          const Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                                          const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              'Du kannst mehrere Optionen wählen',
-                                              style: TextStyle(color: Colors.blue, fontSize: 14),
+                                              I18nService.instance.translate('poll.voting.selectMultiple'),
+                                              style: const TextStyle(color: Colors.blue, fontSize: 14),
                                             ),
                                           ),
                                         ],
@@ -374,7 +425,7 @@ class _PollScreenState extends State<PollScreen> {
                                                 hasVoted: _hasVoted,
                                                 isSelected: isSelected,
                                                 allowsMultiple: poll.allowsMultipleVotes,
-                                                onTap: _hasVoted
+                                                onTap: (_hasVoted || _isPollExpired(poll))
                                                     ? null
                                                     : () => _toggleOptionSelection(optionId, poll.allowsMultipleVotes),
                                               ),
@@ -383,31 +434,71 @@ class _PollScreenState extends State<PollScreen> {
                                         ),
                                       ),
 
-                                      // Vote Button (nur wenn noch nicht abgestimmt)
-                                      if (!_hasVoted && _selectedOptionIds.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 16),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: _submitVote,
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue,
-                                                foregroundColor: Colors.white,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
+                                      // Vote Button oder Expired Message
+                                      if (!_hasVoted) ...[
+                                        if (_isPollExpired(poll))
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 16),
+                                            child: Container(
+                                              width: double.infinity,
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red[50],
+                                                borderRadius: BorderRadius.circular(12),
+                                                border: Border.all(color: Colors.red[200]!),
                                               ),
-                                              child: Text(
-                                                poll.allowsMultipleVotes && _selectedOptionIds.length > 1
-                                                    ? 'Abstimmen (${_selectedOptionIds.length} ausgewählt)'
-                                                    : 'Abstimmen',
-                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                              child: Column(
+                                                children: [
+                                                  Icon(Icons.access_time_filled, color: Colors.red[600], size: 24),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    'Diese Umfrage ist abgelaufen',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.red[700],
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    I18nService.instance.translate('poll.voting.expired'),
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: Colors.red[600],
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        else if (_selectedOptionIds.isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 16),
+                                            child: SizedBox(
+                                              width: double.infinity,
+                                              height: 50,
+                                              child: ElevatedButton(
+                                                onPressed: _submitVote,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.blue,
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  poll.allowsMultipleVotes && _selectedOptionIds.length > 1
+                                                      ? I18nService.instance.translate('poll.voting.submitMultiple',
+                                                          params: {'count': '${_selectedOptionIds.length}'})
+                                                      : I18nService.instance.translate('poll.voting.submit'),
+                                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                ),
                                               ),
                                             ),
                                           ),
-                                        ),
+                                      ],
                                     ],
                                   ),
                                 ),
@@ -629,6 +720,138 @@ class _PollOption extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ExpirationIndicator extends StatefulWidget {
+  final dynamic poll;
+
+  const _ExpirationIndicator({required this.poll});
+
+  @override
+  _ExpirationIndicatorState createState() => _ExpirationIndicatorState();
+}
+
+class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
+  late Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Update every minute to show countdown
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final poll = widget.poll;
+    if (poll.expiresAt == null) return const SizedBox.shrink();
+
+    // poll.expiresAt ist UTC, verwende TimezoneHelper für korrekte Berechnungen
+    final expiresAt = poll.expiresAt!;
+    final isExpired = TimezoneHelper.isExpired(expiresAt);
+    final timeRemaining = TimezoneHelper.timeUntilExpiry(expiresAt) ?? Duration.zero;
+
+    if (isExpired) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.red[200]!),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.access_time_filled, size: 14, color: Colors.red[600]),
+            const SizedBox(width: 6),
+            Text(
+              'Diese Umfrage ist abgelaufen',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.red[700],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (poll.autoDeleteAfterExpiry) ...[
+              const SizedBox(width: 8),
+              Icon(Icons.auto_delete, size: 14, color: Colors.red[600]),
+              const SizedBox(width: 4),
+              Text(
+                '(wird automatisch gelöscht)',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.red[500],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    // Format time remaining with correct singular/plural
+    final timeText = TimezoneHelper.formatTimeRemaining(timeRemaining);
+    Color backgroundColor;
+    Color textColor;
+    Color iconColor;
+
+    if (timeRemaining.inDays > 0) {
+      backgroundColor = Colors.green[50]!;
+      textColor = Colors.green[700]!;
+      iconColor = Colors.green[600]!;
+    } else if (timeRemaining.inHours > 0) {
+      if (timeRemaining.inHours < 24) {
+        backgroundColor = Colors.orange[50]!;
+        textColor = Colors.orange[700]!;
+        iconColor = Colors.orange[600]!;
+      } else {
+        backgroundColor = Colors.green[50]!;
+        textColor = Colors.green[700]!;
+        iconColor = Colors.green[600]!;
+      }
+    } else if (timeRemaining.inMinutes > 0) {
+      backgroundColor = Colors.red[50]!;
+      textColor = Colors.red[700]!;
+      iconColor = Colors.red[600]!;
+    } else {
+      backgroundColor = Colors.red[100]!;
+      textColor = Colors.red[800]!;
+      iconColor = Colors.red[700]!;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.access_time, size: 14, color: iconColor),
+          const SizedBox(width: 6),
+          Text(
+            I18nService.instance.translate('poll.voting.expiresIn', params: {'time': timeText}),
+            style: TextStyle(
+              fontSize: 13,
+              color: textColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/services/supabase_service.dart';
 import 'package:routemaster/routemaster.dart';
+import 'package:pollino/core/utils/timezone_helper.dart';
+import 'package:pollino/core/localization/i18n_service.dart';
 
 class CreatePollScreen extends StatefulWidget {
   const CreatePollScreen({super.key});
@@ -19,6 +21,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   bool _isLoading = false;
   bool _allowMultipleOptions = false;
   bool _enableAnonymousVoting = true;
+  bool _hasExpirationDate = false;
+  DateTime? _selectedExpirationDate;
+  bool _autoDeleteAfterExpiry = false;
 
   @override
   void initState() {
@@ -53,6 +58,62 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     }
   }
 
+  void _setExpirationTime(Duration duration) {
+    setState(() {
+      // Verwende lokale Zeit für User-Interface, wird später zu UTC konvertiert
+      _selectedExpirationDate = TimezoneHelper.nowLocal().add(duration);
+    });
+  }
+
+  Future<void> _selectCustomDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: TimezoneHelper.nowLocal().add(const Duration(days: 1)),
+      firstDate: TimezoneHelper.nowLocal(),
+      lastDate: TimezoneHelper.nowLocal().add(const Duration(days: 365)),
+    );
+
+    if (date != null && mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (time != null && mounted) {
+        setState(() {
+          _selectedExpirationDate = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
+    }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = dateTime.difference(now);
+
+    if (difference.inDays > 0) {
+      return I18nService.instance.translate('time.format.dateTime', params: {
+        'day': '${dateTime.day}',
+        'month': '${dateTime.month}',
+        'year': '${dateTime.year}',
+        'hour': dateTime.hour.toString().padLeft(2, '0'),
+        'minute': dateTime.minute.toString().padLeft(2, '0')
+      });
+    } else {
+      final timeStr = I18nService.instance.translate('time.format.timeOnly', params: {
+        'hour': dateTime.hour.toString().padLeft(2, '0'),
+        'minute': dateTime.minute.toString().padLeft(2, '0')
+      });
+      return '${I18nService.instance.translate('time.relative.today')} $timeStr';
+    }
+  }
+
   Future<void> _createPoll() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -66,7 +127,13 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
           _optionControllers.map((controller) => controller.text.trim()).where((text) => text.isNotEmpty).toList();
 
       if (options.length < 2) {
-        throw Exception('Mindestens 2 Optionen sind erforderlich');
+        throw Exception(I18nService.instance.translate('create.validation.optionsMinimum'));
+      }
+
+      // Konvertiere lokale Expiration-Zeit zu UTC für Database-Speicherung
+      DateTime? expiresAtUtc;
+      if (_hasExpirationDate && _selectedExpirationDate != null) {
+        expiresAtUtc = TimezoneHelper.localToUtc(_selectedExpirationDate!);
       }
 
       await SupabaseService.createPoll(
@@ -74,6 +141,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         optionTexts: options,
         isAnonymous: _enableAnonymousVoting,
         allowsMultipleVotes: _allowMultipleOptions,
+        expiresAt: expiresAtUtc,
+        autoDeleteAfterExpiry: _hasExpirationDate ? _autoDeleteAfterExpiry : false,
         creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
       );
 
@@ -81,12 +150,12 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         context.read<PollBloc>().add(const PollEvent.refreshPolls());
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Poll erfolgreich erstellt!'),
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(I18nService.instance.translate('create.success')),
               ],
             ),
             backgroundColor: Colors.green,
@@ -99,7 +168,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler: ${e.toString()}'),
+            content: Text('${I18nService.instance.translate('create.error')}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -134,9 +203,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       constraints: const BoxConstraints(),
                     ),
                     const Spacer(),
-                    const Text(
-                      'Create a Poll',
-                      style: TextStyle(
+                    Text(
+                      I18nService.instance.translate('create.title'),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.black,
@@ -155,9 +224,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Ask a Question
-                      const Text(
-                        'Ask a Question*',
-                        style: TextStyle(
+                      Text(
+                        I18nService.instance.translate('create.question.label') + '*',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -173,14 +242,14 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         ),
                         child: TextFormField(
                           controller: _questionController,
-                          decoration: const InputDecoration(
-                            hintText: 'Type Here...',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: I18nService.instance.translate('create.question.placeholder'),
+                            hintStyle: const TextStyle(
                               color: Color(0xFFADB5BD),
                               fontSize: 16,
                             ),
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(16),
+                            contentPadding: const EdgeInsets.all(16),
                           ),
                           style: const TextStyle(
                             fontSize: 16,
@@ -188,7 +257,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Bitte gib eine Frage ein';
+                              return I18nService.instance.translate('create.validation.questionRequired');
                             }
                             return null;
                           },
@@ -198,9 +267,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       const SizedBox(height: 32),
 
                       // Poll Options
-                      const Text(
-                        'Poll Options',
-                        style: TextStyle(
+                      Text(
+                        I18nService.instance.translate('create.options.title'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -237,7 +306,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   child: TextFormField(
                                     controller: _optionControllers[index],
                                     decoration: InputDecoration(
-                                      hintText: 'Option ${index + 1}',
+                                      hintText: I18nService.instance
+                                          .translate('create.options.placeholder', params: {'number': '${index + 1}'}),
                                       hintStyle: const TextStyle(
                                         color: Color(0xFFADB5BD),
                                         fontSize: 16,
@@ -251,7 +321,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                     ),
                                     validator: (value) {
                                       if (value == null || value.trim().isEmpty) {
-                                        return 'Option darf nicht leer sein';
+                                        return I18nService.instance.translate('create.validation.optionEmpty');
                                       }
                                       return null;
                                     },
@@ -291,7 +361,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Add Another Option',
+                                I18nService.instance.translate('create.options.add'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey[600],
@@ -306,9 +376,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       const SizedBox(height: 32),
 
                       // Poll Settings
-                      const Text(
-                        'Poll Settings',
-                        style: TextStyle(
+                      Text(
+                        I18nService.instance.translate('create.settings.title'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.black,
@@ -323,9 +393,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Allow people to choose Multiple Options',
-                                  style: TextStyle(
+                                Text(
+                                  I18nService.instance.translate('create.settings.multiple.title'),
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.black,
@@ -333,7 +403,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'People can select more than one option.',
+                                  I18nService.instance.translate('create.settings.multiple.description'),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[600],
@@ -370,9 +440,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Anonyme Umfrage',
-                                    style: TextStyle(
+                                  Text(
+                                    I18nService.instance.translate('create.settings.anonymous.title'),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.black,
@@ -380,9 +450,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    _enableAnonymousVoting
-                                        ? 'Umfrage wird anonym erstellt - kein Ersteller sichtbar'
-                                        : 'Dein Name wird als Ersteller angezeigt',
+                                    I18nService.instance.translate('create.settings.anonymous.description'),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey[600],
@@ -407,9 +475,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       // Creator Name Field (nur wenn nicht anonym)
                       if (!_enableAnonymousVoting) ...[
                         const SizedBox(height: 20),
-                        const Text(
-                          'Dein Name*',
-                          style: TextStyle(
+                        Text(
+                          I18nService.instance.translate('create.settings.creator.label') + '*',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.black,
@@ -424,15 +492,15 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                           ),
                           child: TextFormField(
                             controller: _creatorNameController,
-                            decoration: const InputDecoration(
-                              hintText: 'Gib deinen Namen ein...',
-                              hintStyle: TextStyle(
+                            decoration: InputDecoration(
+                              hintText: I18nService.instance.translate('create.settings.creator.placeholder'),
+                              hintStyle: const TextStyle(
                                 color: Color(0xFFADB5BD),
                                 fontSize: 16,
                               ),
                               border: InputBorder.none,
-                              contentPadding: EdgeInsets.all(16),
-                              prefixIcon: Icon(
+                              contentPadding: const EdgeInsets.all(16),
+                              prefixIcon: const Icon(
                                 Icons.person_outline,
                                 color: Color(0xFFADB5BD),
                               ),
@@ -443,7 +511,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                             ),
                             validator: (value) {
                               if (!_enableAnonymousVoting && (value == null || value.trim().isEmpty)) {
-                                return 'Bitte gib deinen Namen ein';
+                                return I18nService.instance.translate('validation.required');
                               }
                               return null;
                             },
@@ -460,9 +528,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Set an Expiration Date & Time',
-                                  style: TextStyle(
+                                Text(
+                                  I18nService.instance.translate('create.expiration.title'),
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.black,
@@ -470,7 +538,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'You can change this later via edit.',
+                                  I18nService.instance.translate('create.expiration.description'),
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.grey[600],
@@ -480,14 +548,160 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                             ),
                           ),
                           Switch(
-                            value: false,
+                            value: _hasExpirationDate,
                             onChanged: (value) {
-                              // Expiration functionality
+                              setState(() {
+                                _hasExpirationDate = value;
+                                if (!value) {
+                                  _selectedExpirationDate = null;
+                                  _autoDeleteAfterExpiry = false;
+                                }
+                              });
                             },
                             activeColor: const Color(0xFF007AFF),
                           ),
                         ],
                       ),
+
+                      // Expiration Date Settings (nur wenn aktiviert)
+                      if (_hasExpirationDate) ...[
+                        const SizedBox(height: 20),
+
+                        // Date & Time Picker
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE9ECEF)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                I18nService.instance.translate('create.expiration.customDate'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Quick Options
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _ExpirationChip(
+                                    label: I18nService.instance.translate('create.expiration.presets.1hour'),
+                                    onTap: () => _setExpirationTime(const Duration(hours: 1)),
+                                    isSelected: _selectedExpirationDate != null &&
+                                        _selectedExpirationDate!.difference(DateTime.now()).inHours == 1,
+                                  ),
+                                  _ExpirationChip(
+                                    label: I18nService.instance.translate('create.expiration.presets.1day'),
+                                    onTap: () => _setExpirationTime(const Duration(days: 1)),
+                                    isSelected: _selectedExpirationDate != null &&
+                                        _selectedExpirationDate!.difference(DateTime.now()).inDays == 1,
+                                  ),
+                                  _ExpirationChip(
+                                    label: I18nService.instance.translate('create.expiration.presets.1week'),
+                                    onTap: () => _setExpirationTime(const Duration(days: 7)),
+                                    isSelected: _selectedExpirationDate != null &&
+                                        _selectedExpirationDate!.difference(DateTime.now()).inDays == 7,
+                                  ),
+                                  _ExpirationChip(
+                                    label: I18nService.instance.translate('create.expiration.presets.custom'),
+                                    onTap: _selectCustomDateTime,
+                                    isSelected: false,
+                                  ),
+                                ],
+                              ),
+
+                              if (_selectedExpirationDate != null) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[50],
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue[200]!),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.schedule, color: Colors.blue[700], size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          '${I18nService.instance.translate('poll.expiration.expiresAt')}: ${_formatDateTime(_selectedExpirationDate!)}',
+                                          style: TextStyle(
+                                            color: Colors.blue[700],
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () => setState(() => _selectedExpirationDate = null),
+                                        icon: Icon(Icons.close, color: Colors.blue[700], size: 18),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Auto-Delete Option
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF8E1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFFC107)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      I18nService.instance.translate('create.expiration.autoDelete.title'),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      I18nService.instance.translate('create.expiration.autoDelete.description'),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.orange[800],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch(
+                                value: _autoDeleteAfterExpiry,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _autoDeleteAfterExpiry = value;
+                                  });
+                                },
+                                activeColor: const Color(0xFFFFC107),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 40),
                     ],
@@ -520,9 +734,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                               valueColor: AlwaysStoppedAnimation(Colors.white),
                             ),
                           )
-                        : const Text(
-                            'Next',
-                            style: TextStyle(
+                        : Text(
+                            I18nService.instance.translate('actions.next'),
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
@@ -531,6 +745,43 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpirationChip extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final bool isSelected;
+
+  const _ExpirationChip({
+    required this.label,
+    required this.onTap,
+    required this.isSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF007AFF) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF007AFF) : const Color(0xFFE9ECEF),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ),

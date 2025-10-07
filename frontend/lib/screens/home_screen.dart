@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
+import 'package:pollino/core/localization/i18n_service.dart';
+import 'package:pollino/core/localization/language_switcher.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -61,18 +64,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Umfrage löschen'),
+        title: Text('actions.delete'.tr()),
         content: Text(
-            'Möchtest du die Umfrage "${poll.title}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.'),
+          I18nService.instance.translate('poll.delete.confirmation', params: {'title': poll.title}),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text('actions.cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Löschen', style: TextStyle(color: Colors.white)),
+            child: Text('actions.delete'.tr(), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -90,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler beim Löschen: ${e.toString()}'),
+            content: Text('${I18nService.instance.translate('poll.delete.error')}: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -119,11 +123,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     tooltip: 'Neue Umfrage erstellen',
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Pollino',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
+                  Text(
+                    'app.title'.tr(),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
                   ),
                   const Spacer(),
+                  const LanguageSwitcher(),
+                  const SizedBox(width: 8),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.tune, size: 20)),
                 ],
               ),
@@ -136,16 +142,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _FilterTab(icon: Icons.push_pin, label: 'Pins', isSelected: false),
-                    _FilterTab(icon: Icons.poll, label: 'Umfragen', isSelected: true),
+                    _FilterTab(icon: Icons.push_pin, label: 'navigation.home'.tr(), isSelected: false),
+                    _FilterTab(icon: Icons.poll, label: 'home.title'.tr(), isSelected: true),
                     _FilterTab(icon: Icons.description, label: 'Dateien', isSelected: false),
                     _FilterTab(icon: Icons.photo, label: 'Fotos', isSelected: false),
                   ],
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
 
             // Poll List Content
             Expanded(
@@ -162,19 +166,19 @@ class _HomeScreenState extends State<HomeScreen> {
                             Icon(Icons.poll_outlined, size: 80, color: Colors.grey[400]),
                             const SizedBox(height: 16),
                             Text(
-                              'Keine Umfragen vorhanden',
+                              'home.empty.title'.tr(),
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[600]),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Erstelle deine erste Umfrage!',
+                              'home.empty.subtitle'.tr(),
                               style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
                               onPressed: () => Routemaster.of(context).push('/create'),
                               icon: const Icon(Icons.add),
-                              label: const Text('Umfrage erstellen'),
+                              label: Text('home.empty.button'.tr()),
                             ),
                           ],
                         ),
@@ -219,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(Icons.error_outline, size: 80, color: Colors.red[400]),
                           const SizedBox(height: 16),
                           Text(
-                            'Fehler beim Laden',
+                            'home.error'.tr(),
                             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.red[600]),
                           ),
                           const SizedBox(height: 8),
@@ -230,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               context.read<PollBloc>().add(const PollEvent.loadPolls(page: 1, limit: 10));
                             },
                             icon: const Icon(Icons.refresh),
-                            label: const Text('Erneut versuchen'),
+                            label: Text('actions.retry'.tr()),
                           ),
                         ],
                       ),
@@ -330,11 +334,11 @@ class _PollCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          poll.createdByName ?? 'Unbekannter Ersteller',
+                          poll.createdByName ?? I18nService.instance.translate('poll.creator.anonymous'),
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         Text(
-                          'vor kurzer Zeit',
+                          I18nService.instance.translate('time.relative.justNow'),
                           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                       ],
@@ -343,13 +347,14 @@ class _PollCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     onSelected: (value) => onPollAction?.call(value, poll),
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Löschen', style: TextStyle(color: Colors.red)),
+                            const Icon(Icons.delete, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(I18nService.instance.translate('actions.delete'),
+                                style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -367,13 +372,14 @@ class _PollCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     onSelected: (value) => onPollAction?.call(value, poll),
                     itemBuilder: (context) => [
-                      const PopupMenuItem(
+                      PopupMenuItem(
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Löschen', style: TextStyle(color: Colors.red)),
+                            const Icon(Icons.delete, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(I18nService.instance.translate('actions.delete'),
+                                style: const TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),
@@ -395,7 +401,7 @@ class _PollCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // Vote count
+            // Vote count and expiration info
             StreamBuilder<List<Map<String, dynamic>>>(
               stream: Supabase.instance.client.from('poll_options').stream(primaryKey: ['id']).eq('poll_id', poll.id),
               builder: (context, snapshot) {
@@ -410,9 +416,18 @@ class _PollCard extends StatelessWidget {
                   }
                 }
 
-                return Text(
-                  '$totalVotes votes • Vote to see results',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      I18nService.instance.translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    if (poll.expiresAt != null) ...[
+                      const SizedBox(height: 4),
+                      _ExpirationIndicator(poll: poll),
+                    ],
+                  ],
                 );
               },
             ),
@@ -580,6 +595,110 @@ class _PollCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ExpirationIndicator extends StatefulWidget {
+  final dynamic poll;
+
+  const _ExpirationIndicator({required this.poll});
+
+  @override
+  _ExpirationIndicatorState createState() => _ExpirationIndicatorState();
+}
+
+class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
+  late Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Update every minute to show countdown
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final poll = widget.poll;
+    if (poll.expiresAt == null) return const SizedBox.shrink();
+
+    final now = DateTime.now();
+    final expiresAt = poll.expiresAt!; // expiresAt ist bereits ein DateTime Objekt
+    final isExpired = now.isAfter(expiresAt);
+    final timeRemaining = expiresAt.difference(now);
+
+    if (isExpired) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.access_time, size: 12, color: Colors.red[600]),
+          const SizedBox(width: 4),
+          Text(
+            'Abgelaufen',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.red[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (poll.autoDeleteAfterExpiry) ...[
+            const SizedBox(width: 4),
+            Icon(Icons.delete_outline, size: 12, color: Colors.red[600]),
+            const SizedBox(width: 2),
+            Text(
+              '(wird automatisch gelöscht)',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.red[400],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    // Format time remaining
+    String timeText;
+    Color timeColor;
+
+    if (timeRemaining.inDays > 0) {
+      timeText = '${timeRemaining.inDays}d ${timeRemaining.inHours % 24}h verbleibend';
+      timeColor = Colors.green[600]!;
+    } else if (timeRemaining.inHours > 0) {
+      timeText = '${timeRemaining.inHours}h ${timeRemaining.inMinutes % 60}min verbleibend';
+      timeColor = timeRemaining.inHours < 24 ? Colors.orange[600]! : Colors.green[600]!;
+    } else if (timeRemaining.inMinutes > 0) {
+      timeText = '${timeRemaining.inMinutes}min verbleibend';
+      timeColor = Colors.red[600]!;
+    } else {
+      timeText = 'Läuft bald ab';
+      timeColor = Colors.red[700]!;
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.access_time, size: 12, color: timeColor),
+        const SizedBox(width: 4),
+        Text(
+          timeText,
+          style: TextStyle(
+            fontSize: 12,
+            color: timeColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/bloc/poll.dart';
+import 'package:pollino/core/utils/timezone_helper.dart';
 
 class SupabaseService {
   static final SupabaseClient _client = Supabase.instance.client;
@@ -14,12 +15,13 @@ class SupabaseService {
       final countResponse = await _client.from('polls').select('id').count(CountOption.exact);
       final total = countResponse.count;
 
-      // Hole die Umfragen
+      // Hole die Umfragen (inklusive nicht abgelaufener oder nicht auto-gelöschter)
       final pollsResponse = await _client
           .from('polls')
           .select(
-              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry')
           .eq('is_active', true)
+          .or('expires_at.is.null,expires_at.gt.now(),and(expires_at.lt.now(),auto_delete_after_expiry.is.false)')
           .range(offset, offset + limit - 1)
           .order('created_at', ascending: false);
 
@@ -54,6 +56,8 @@ class SupabaseService {
             createdByName: pollData['created_by_name'],
             createdBy: pollData['created_by'],
             allowsMultipleVotes: pollData['allows_multiple_votes'] ?? false,
+            expiresAt: pollData['expires_at'] != null ? TimezoneHelper.fromIso8601Utc(pollData['expires_at']) : null,
+            autoDeleteAfterExpiry: pollData['auto_delete_after_expiry'] ?? false,
           ),
         );
       }
@@ -72,7 +76,7 @@ class SupabaseService {
       final pollResponse = await _client
           .from('polls')
           .select(
-              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes')
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry')
           .eq('id', pollId)
           .single();
 
@@ -97,6 +101,9 @@ class SupabaseService {
         createdByName: pollResponse['created_by_name'],
         createdBy: pollResponse['created_by'],
         allowsMultipleVotes: pollResponse['allows_multiple_votes'] ?? false,
+        expiresAt:
+            pollResponse['expires_at'] != null ? TimezoneHelper.fromIso8601Utc(pollResponse['expires_at']) : null,
+        autoDeleteAfterExpiry: pollResponse['auto_delete_after_expiry'] ?? false,
       );
     } catch (e) {
       debugPrint('Error in fetchPoll: $e');
@@ -232,6 +239,8 @@ class SupabaseService {
     String? description,
     bool isAnonymous = true,
     bool allowsMultipleVotes = false,
+    DateTime? expiresAt,
+    bool autoDeleteAfterExpiry = false,
     String? creatorName,
   }) async {
     try {
@@ -253,6 +262,8 @@ class SupabaseService {
             'description': description ?? '',
             'is_anonymous': isAnonymous,
             'allows_multiple_votes': allowsMultipleVotes,
+            'expires_at': expiresAt != null ? TimezoneHelper.toIso8601Utc(expiresAt) : null,
+            'auto_delete_after_expiry': autoDeleteAfterExpiry,
             'created_by': createdBy,
             'created_by_name': creatorName,
           })
@@ -282,6 +293,8 @@ class SupabaseService {
         options: options,
         isAnonymous: isAnonymous,
         allowsMultipleVotes: allowsMultipleVotes,
+        expiresAt: expiresAt,
+        autoDeleteAfterExpiry: autoDeleteAfterExpiry,
         createdByName: creatorName,
         createdBy: createdBy,
       );
@@ -328,6 +341,100 @@ class SupabaseService {
     } catch (e) {
       debugPrint('Error in deletePoll: $e');
       rethrow;
+    }
+  }
+
+  /// Prüft ob eine Umfrage abgelaufen ist
+  static bool isPollExpired(Poll poll) {
+    if (poll.expiresAt == null) return false;
+    return TimezoneHelper.isExpired(poll.expiresAt!);
+  }
+
+  /// Berechnet die verbleibende Zeit bis zum Ablauf
+  static Duration? getTimeUntilExpiry(Poll poll) {
+    if (poll.expiresAt == null) return null;
+    final now = DateTime.now();
+    if (now.isAfter(poll.expiresAt!)) return Duration.zero;
+    return poll.expiresAt!.difference(now);
+  }
+
+  /// Formatiert die verbleibende Zeit als String
+  static String formatTimeUntilExpiry(Poll poll) {
+    final duration = getTimeUntilExpiry(poll);
+    if (duration == null) return '';
+
+    if (duration.isNegative || duration == Duration.zero) {
+      return 'Abgelaufen';
+    }
+
+    final days = duration.inDays;
+    final hours = duration.inHours % 24;
+    final minutes = duration.inMinutes % 60;
+
+    if (days > 0) {
+      return '$days Tag(e) $hours Std.';
+    } else if (hours > 0) {
+      return '$hours Std. $minutes Min.';
+    } else {
+      return '$minutes Min.';
+    }
+  }
+
+  /// Führt automatische Cleanup-Funktion aus (optional - DB macht das jetzt automatisch)
+  /// Diese Methode kann manuell aufgerufen werden, ist aber nicht mehr notwendig
+  /// da die Database das Cleanup automatisch über Trigger durchführt
+  static Future<int> runExpiredPollsCleanup({String source = 'manual'}) async {
+    try {
+      final result = await _client.rpc('run_automatic_poll_cleanup');
+      if (result > 0) {
+        debugPrint('Manual cleanup completed: $result polls deleted');
+      } else {
+        debugPrint('No cleanup needed - automatic database cleanup is working');
+      }
+      return result as int;
+    } catch (e) {
+      debugPrint('Error in run_automatic_poll_cleanup: $e');
+      // Fallback to old function if new one doesn't exist
+      try {
+        final fallbackResult = await _client.rpc('cleanup_expired_polls');
+        debugPrint('Fallback cleanup completed: $fallbackResult polls deleted');
+        return fallbackResult as int;
+      } catch (fallbackError) {
+        debugPrint('Fallback cleanup also failed: $fallbackError');
+        return 0;
+      }
+    }
+  }
+
+  /// Überprüft den Status der automatischen Poll-Bereinigung
+  static Future<Map<String, dynamic>> getCleanupStatus() async {
+    try {
+      final result = await _client
+          .from('poll_cleanup_log')
+          .select('cleanup_time, deleted_count, triggered_by')
+          .order('cleanup_time', ascending: false)
+          .limit(10);
+
+      final expiredCount = await _client
+          .from('polls')
+          .select('id')
+          .lt('expires_at', TimezoneHelper.toIso8601Utc(TimezoneHelper.nowUtc()))
+          .eq('auto_delete_after_expiry', true)
+          .count(CountOption.exact);
+
+      return {
+        'recent_cleanups': result,
+        'pending_expired_polls': expiredCount.count,
+        'last_cleanup': result.isNotEmpty ? result.first['cleanup_time'] : null,
+      };
+    } catch (e) {
+      debugPrint('Error getting cleanup status: $e');
+      return {
+        'recent_cleanups': [],
+        'pending_expired_polls': 0,
+        'last_cleanup': null,
+        'error': e.toString(),
+      };
     }
   }
 }

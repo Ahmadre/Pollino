@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Pollino",
+    "subtitle": "Tu aplicación integral de encuestas"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "create": "Crear",
+    "poll": "Encuesta",
+    "settings": "Configuración",
+    "recent_activity": "Actividad reciente",
+    "pins": "Anclados",
+    "polls": "Encuestas", 
+    "files": "Archivos",
+    "photos": "Fotos"
+  },
+  "home": {
+    "title": "Encuestas",
+    "empty": {
+      "title": "No hay encuestas disponibles",
+      "subtitle": "¡Crea tu primera encuesta!",
+      "button": "Crear encuesta"
+    },
+    "loading": "Cargando encuestas...",
+    "error": "Error al cargar las encuestas",
+    "refresh": "Actualizar"
+  },
+  "poll": {
+    "title": "Encuesta",
+    "description": "Descripción",
+    "options": "Opciones",
+    "votes": "Votos",
+    "voteButton": "Votar",
+    "voted": "Votado",
+    "anonymous": "Anónimo",
+    "multipleChoice": "Opción múltiple permitida",
+    "creator": {
+      "label": "Creado por",
+      "anonymous": "Creador anónimo",
+      "named": "Encuesta no anónima"
+    },
+    "createdAt": "Creado el",
+    "status": {
+      "active": "Activo",
+      "expired": "Expirado",
+      "expiring": "Expirando"
+    },
+    "expiration": {
+      "never": "Nunca expira",
+      "expired": "Expirado",
+      "expiresIn": "Expira en {{time}}",
+      "expiresAt": "Expira el",
+      "autoDelete": "Se eliminará automáticamente"
+    },
+    "voting": {
+      "select": "Seleccionar opción",
+      "selectMultiple": "Puedes elegir múltiples opciones",
+      "submit": "Votar",
+      "submitMultiple": "Votar ({{count}} seleccionadas)",
+      "success": "¡Voto enviado exitosamente!",
+      "error": "Error al votar",
+      "already": "Ya has votado",
+      "expired": "Ya no puedes votar",
+      "anonymous": "Votar anónimamente",
+      "named": "Votar con nombre",
+      "nameLabel": "Tu nombre",
+      "votesSummary": "{{votes}} votos • Vota para ver resultados",
+      "expiresIn": "Vence en: {{time}}"
+    },
+    "delete": {
+      "confirmation": "¿Realmente quieres eliminar la encuesta \"{{title}}\"? Esta acción no se puede deshacer.",
+      "error": "Error al eliminar"
+    }
+  },
+  "create": {
+    "title": "Crear encuesta",
+    "question": {
+      "label": "Pregunta",
+      "placeholder": "¿Cuál es tu pregunta?",
+      "required": "Se requiere una pregunta"
+    },
+    "description": {
+      "label": "Descripción (opcional)",
+      "placeholder": "Detalles adicionales sobre la encuesta..."
+    },
+    "options": {
+      "title": "Opciones de respuesta",
+      "placeholder": "Opción de respuesta {{number}}",
+      "add": "Añadir opción",
+      "remove": "Eliminar",
+      "minimum": "Se requieren al menos 2 opciones"
+    },
+    "settings": {
+      "title": "Configuración",
+      "anonymous": {
+        "title": "Votación anónima",
+        "description": "Los nombres no se mostrarán"
+      },
+      "multiple": {
+        "title": "Opción múltiple",
+        "description": "Los participantes pueden seleccionar múltiples opciones"
+      },
+      "creator": {
+        "label": "Tu nombre (opcional)",
+        "placeholder": "¿Cómo deberían llamarte los demás?"
+      }
+    },
+    "expiration": {
+      "title": "Establecer tiempo de expiración",
+      "description": "Opcionalmente establece una fecha de expiración para esta encuesta",
+      "never": "Nunca expira",
+      "presets": {
+        "1hour": "1 hora",
+        "1day": "1 día",
+        "1week": "1 semana",
+        "custom": "Personalizado"
+      },
+      "customDate": "Elegir fecha y hora",
+      "autoDelete": {
+        "title": "Eliminación automática",
+        "description": "Eliminar automáticamente la encuesta después de expirar"
+      },
+      "format": "{{date}} {{time}}"
+    },
+    "validation": {
+      "questionRequired": "Se requiere una pregunta",
+      "optionsMinimum": "Se requieren al menos 2 opciones",
+      "optionEmpty": "Todas las opciones deben estar completadas"
+    },
+    "actions": {
+      "create": "Crear encuesta",
+      "creating": "Creando...",
+      "cancel": "Cancelar"
+    },
+    "success": "¡Encuesta creada exitosamente!",
+    "error": "Error al crear la encuesta"
+  },
+  "time": {
+    "units": {
+      "second": "segundo",
+      "second_plural": "segundos",
+      "minute": "minuto",
+      "minute_plural": "minutos",
+      "hour": "hora",
+      "hour_plural": "horas",
+      "day": "día",
+      "day_plural": "días",
+      "week": "semana",
+      "week_plural": "semanas",
+      "month": "mes",
+      "month_plural": "meses",
+      "year": "año",
+      "year_plural": "años"
+    },
+    "relative": {
+      "now": "Ahora",
+      "justNow": "Justo ahora",
+      "fewSeconds": "En unos segundos",
+      "in": "en {{time}}",
+      "ago": "hace {{time}}",
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "tomorrow": "Mañana"
+    },
+    "format": {
+      "date": "{{day}}/{{month}}/{{year}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{day}}/{{month}}/{{year}} {{hour}}:{{minute}}",
+      "timeOnly": "{{hour}}:{{minute}}"
+    }
+  },
+  "errors": {
+    "network": "Error de red - Por favor verifica tu conexión a Internet",
+    "server": "Error del servidor - Por favor inténtalo más tarde",
+    "unknown": "Ocurrió un error desconocido",
+    "validation": "Error de validación",
+    "notFound": "No encontrado",
+    "unauthorized": "No autorizado",
+    "forbidden": "Acceso denegado"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Cancelar",
+    "retry": "Reintentar",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "continue": "Continuar"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "email": "Por favor ingresa una dirección de correo válida",
+    "minLength": "Se requieren al menos {{min}} caracteres",
+    "maxLength": "Máximo {{max}} caracteres permitidos"
+  }
+}

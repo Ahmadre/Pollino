@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Pollino",
+    "subtitle": "Votre application de sondage complète"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "create": "Créer",
+    "poll": "Sondage",
+    "settings": "Paramètres",
+    "recent_activity": "Activité récente",
+    "pins": "Épinglés",
+    "polls": "Sondages",
+    "files": "Fichiers",
+    "photos": "Photos"
+  },
+  "home": {
+    "title": "Sondages",
+    "empty": {
+      "title": "Aucun sondage disponible",
+      "subtitle": "Créez votre premier sondage !",
+      "button": "Créer un sondage"
+    },
+    "loading": "Chargement des sondages...",
+    "error": "Erreur lors du chargement des sondages",
+    "refresh": "Actualiser"
+  },
+  "poll": {
+    "title": "Sondage",
+    "description": "Description",
+    "options": "Options",
+    "votes": "Votes",
+    "voteButton": "Voter",
+    "voted": "Voté",
+    "anonymous": "Anonyme",
+    "multipleChoice": "Choix multiple autorisé",
+    "creator": {
+      "label": "Créé par",
+      "anonymous": "Créateur anonyme",
+      "named": "Sondage non anonyme"
+    },
+    "createdAt": "Créé le",
+    "status": {
+      "active": "Actif",
+      "expired": "Expiré",
+      "expiring": "Expire bientôt"
+    },
+    "expiration": {
+      "never": "N'expire jamais",
+      "expired": "Expiré",
+      "expiresIn": "Expire dans {{time}}",
+      "expiresAt": "Expire le",
+      "autoDelete": "Sera automatiquement supprimé"
+    },
+    "voting": {
+      "select": "Sélectionner une option",
+      "selectMultiple": "Vous pouvez choisir plusieurs options",
+      "submit": "Voter",
+      "submitMultiple": "Voter ({{count}} sélectionnées)",
+      "success": "Vote soumis avec succès !",
+      "error": "Erreur lors du vote",
+      "already": "Vous avez déjà voté",
+      "expired": "Vous ne pouvez plus voter",
+      "anonymous": "Voter anonymement",
+      "named": "Voter avec nom",
+      "nameLabel": "Votre nom",
+      "votesSummary": "{{votes}} votes • Votez pour voir les résultats",
+      "expiresIn": "Expire dans : {{time}}"
+    },
+    "delete": {
+      "confirmation": "Voulez-vous vraiment supprimer le sondage \"{{title}}\" ? Cette action ne peut pas être annulée.",
+      "error": "Erreur lors de la suppression"
+    }
+  },
+  "create": {
+    "title": "Créer un sondage",
+    "question": {
+      "label": "Question",
+      "placeholder": "Quelle est votre question ?",
+      "required": "Une question est requise"
+    },
+    "description": {
+      "label": "Description (optionnel)",
+      "placeholder": "Détails supplémentaires sur le sondage..."
+    },
+    "options": {
+      "title": "Options de réponse",
+      "placeholder": "Option de réponse {{number}}",
+      "add": "Ajouter une option",
+      "remove": "Supprimer",
+      "minimum": "Au moins 2 options sont requises"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "anonymous": {
+        "title": "Vote anonyme",
+        "description": "Les noms ne seront pas affichés"
+      },
+      "multiple": {
+        "title": "Choix multiple",
+        "description": "Les participants peuvent sélectionner plusieurs options"
+      },
+      "creator": {
+        "label": "Votre nom (optionnel)",
+        "placeholder": "Comment les autres devraient-ils vous appeler ?"
+      }
+    },
+    "expiration": {
+      "title": "Définir l'heure d'expiration",
+      "description": "Définissez optionnellement une date d'expiration pour ce sondage",
+      "never": "N'expire jamais",
+      "presets": {
+        "1hour": "1 heure",
+        "1day": "1 jour",
+        "1week": "1 semaine",
+        "custom": "Personnalisé"
+      },
+      "customDate": "Choisir la date et l'heure",
+      "autoDelete": {
+        "title": "Suppression automatique",
+        "description": "Supprimer automatiquement le sondage après expiration"
+      },
+      "format": "{{date}} {{time}}"
+    },
+    "validation": {
+      "questionRequired": "Une question est requise",
+      "optionsMinimum": "Au moins 2 options sont requises",
+      "optionEmpty": "Toutes les options doivent être remplies"
+    },
+    "actions": {
+      "create": "Créer le sondage",
+      "creating": "Création...",
+      "cancel": "Annuler"
+    },
+    "success": "Sondage créé avec succès !",
+    "error": "Erreur lors de la création du sondage"
+  },
+  "time": {
+    "units": {
+      "second": "seconde",
+      "second_plural": "secondes",
+      "minute": "minute",
+      "minute_plural": "minutes",
+      "hour": "heure",
+      "hour_plural": "heures",
+      "day": "jour",
+      "day_plural": "jours",
+      "week": "semaine",
+      "week_plural": "semaines",
+      "month": "mois",
+      "month_plural": "mois",
+      "year": "année",
+      "year_plural": "années"
+    },
+    "relative": {
+      "now": "Maintenant",
+      "justNow": "À l'instant",
+      "fewSeconds": "Dans quelques secondes",
+      "in": "dans {{time}}",
+      "ago": "il y a {{time}}",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "tomorrow": "Demain"
+    },
+    "format": {
+      "date": "{{day}}/{{month}}/{{year}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{day}}/{{month}}/{{year}} {{hour}}:{{minute}}",
+      "timeOnly": "{{hour}}:{{minute}}"
+    }
+  },
+  "errors": {
+    "network": "Erreur de réseau - Veuillez vérifier votre connexion Internet",
+    "server": "Erreur serveur - Veuillez réessayer plus tard",
+    "unknown": "Une erreur inconnue s'est produite",
+    "validation": "Erreur de validation",
+    "notFound": "Non trouvé",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès refusé"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Annuler",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "save": "Sauvegarder",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "share": "Partager",
+    "copy": "Copier",
+    "back": "Retour",
+    "next": "Suivant",
+    "finish": "Terminer",
+    "continue": "Continuer"
+  },
+  "validation": {
+    "required": "Ce champ est obligatoire",
+    "email": "Veuillez entrer une adresse e-mail valide",
+    "minLength": "Au moins {{min}} caractères requis",
+    "maxLength": "Maximum {{max}} caractères autorisés"
+  }
+}

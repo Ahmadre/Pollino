@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Pollino",
+    "subtitle": "あなたの包括的な投票アプリ"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "create": "作成",
+    "poll": "投票",
+    "settings": "設定",
+    "recent_activity": "最近のアクティビティ",
+    "pins": "ピン留め",
+    "polls": "投票",
+    "files": "ファイル",
+    "photos": "写真"
+  },
+  "home": {
+    "title": "投票",
+    "empty": {
+      "title": "利用可能な投票がありません",
+      "subtitle": "最初の投票を作成しましょう！",
+      "button": "投票を作成"
+    },
+    "loading": "投票を読み込み中...",
+    "error": "投票の読み込みエラー",
+    "refresh": "更新"
+  },
+  "poll": {
+    "title": "投票",
+    "description": "説明",
+    "options": "選択肢",
+    "votes": "票",
+    "voteButton": "投票する",
+    "voted": "投票済み",
+    "anonymous": "匿名",
+    "multipleChoice": "複数選択可",
+    "creator": {
+      "label": "作成者",
+      "anonymous": "匿名の作成者",
+      "named": "非匿名投票"
+    },
+    "createdAt": "作成日",
+    "status": {
+      "active": "アクティブ",
+      "expired": "期限切れ",
+      "expiring": "期限間近"
+    },
+    "expiration": {
+      "never": "期限なし",
+      "expired": "期限切れ",
+      "expiresIn": "{{time}}で期限切れ",
+      "expiresAt": "期限",
+      "autoDelete": "自動的に削除されます"
+    },
+    "voting": {
+      "select": "選択肢を選ぶ",
+      "selectMultiple": "複数の選択肢を選べます",
+      "submit": "投票する",
+      "submitMultiple": "投票する（{{count}}個選択済み）",
+      "success": "投票が正常に送信されました！",
+      "error": "投票エラー",
+      "already": "すでに投票済みです",
+      "expired": "もう投票できません",
+      "anonymous": "匿名で投票",
+      "named": "名前付きで投票",
+      "nameLabel": "お名前",
+      "votesSummary": "{{votes}}票 • 結果を見るには投票してください",
+      "expiresIn": "{{time}}で期限切れ"
+    },
+    "delete": {
+      "confirmation": "投票「{{title}}」を本当に削除しますか？この操作は元に戻すことができません。",
+      "error": "削除エラー"
+    }
+  },
+  "create": {
+    "title": "投票を作成",
+    "question": {
+      "label": "質問",
+      "placeholder": "あなたの質問は何ですか？",
+      "required": "質問が必要です"
+    },
+    "description": {
+      "label": "説明（オプション）",
+      "placeholder": "投票についての追加詳細..."
+    },
+    "options": {
+      "title": "回答選択肢",
+      "placeholder": "回答選択肢 {{number}}",
+      "add": "選択肢を追加",
+      "remove": "削除",
+      "minimum": "最低2つの選択肢が必要です"
+    },
+    "settings": {
+      "title": "設定",
+      "anonymous": {
+        "title": "匿名投票",
+        "description": "名前は表示されません"
+      },
+      "multiple": {
+        "title": "複数選択",
+        "description": "参加者は複数の選択肢を選べます"
+      },
+      "creator": {
+        "label": "あなたの名前（オプション）",
+        "placeholder": "他の人にどう呼んでもらいたいですか？"
+      }
+    },
+    "expiration": {
+      "title": "有効期限を設定",
+      "description": "オプションでこの投票の有効期限を設定します",
+      "never": "期限なし",
+      "presets": {
+        "1hour": "1時間",
+        "1day": "1日",
+        "1week": "1週間",
+        "custom": "カスタム"
+      },
+      "customDate": "日時を選択",
+      "autoDelete": {
+        "title": "自動削除",
+        "description": "期限後に投票を自動的に削除"
+      },
+      "format": "{{year}}/{{month}}/{{day}} {{time}}"
+    },
+    "validation": {
+      "questionRequired": "質問が必要です",
+      "optionsMinimum": "最低2つの選択肢が必要です",
+      "optionEmpty": "すべての選択肢を入力してください"
+    },
+    "actions": {
+      "create": "投票を作成",
+      "creating": "作成中...",
+      "cancel": "キャンセル"
+    },
+    "success": "投票が正常に作成されました！",
+    "error": "投票作成エラー"
+  },
+  "time": {
+    "units": {
+      "second": "秒",
+      "second_plural": "秒",
+      "minute": "分",
+      "minute_plural": "分",
+      "hour": "時間",
+      "hour_plural": "時間",
+      "day": "日",
+      "day_plural": "日",
+      "week": "週",
+      "week_plural": "週",
+      "month": "月",
+      "month_plural": "月",
+      "year": "年",
+      "year_plural": "年"
+    },
+    "relative": {
+      "now": "今",
+      "justNow": "たった今",
+      "fewSeconds": "数秒後",
+      "in": "{{time}}後",
+      "ago": "{{time}}前",
+      "today": "今日",
+      "yesterday": "昨日",
+      "tomorrow": "明日"
+    },
+    "format": {
+      "date": "{{year}}/{{month}}/{{day}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{year}}/{{month}}/{{day}} {{hour}}:{{minute}}",
+      "timeOnly": "{{hour}}:{{minute}}"
+    }
+  },
+  "errors": {
+    "network": "ネットワークエラー - インターネット接続を確認してください",
+    "server": "サーバーエラー - 後でもう一度お試しください",
+    "unknown": "不明なエラーが発生しました",
+    "validation": "検証エラー",
+    "notFound": "見つかりません",
+    "unauthorized": "認証されていません",
+    "forbidden": "アクセス拒否"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "retry": "再試行",
+    "close": "閉じる",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "share": "共有",
+    "copy": "コピー",
+    "back": "戻る",
+    "next": "次へ",
+    "finish": "完了",
+    "continue": "続行"
+  },
+  "validation": {
+    "required": "このフィールドは必須です",
+    "email": "有効なメールアドレスを入力してください",
+    "minLength": "最低{{min}}文字が必要です",
+    "maxLength": "最大{{max}}文字まで許可されています"
+  }
+}

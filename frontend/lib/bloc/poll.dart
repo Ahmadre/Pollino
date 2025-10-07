@@ -17,6 +17,8 @@ class Poll with _$Poll {
     @HiveField(5) String? createdByName,
     @HiveField(6) String? createdBy,
     @HiveField(7) @Default(false) bool allowsMultipleVotes,
+    @HiveField(8) DateTime? expiresAt,
+    @HiveField(9) @Default(false) bool autoDeleteAfterExpiry,
   }) = _Poll;
 
   factory Poll.fromJson(Map<String, dynamic> json) => _$PollFromJson(json);

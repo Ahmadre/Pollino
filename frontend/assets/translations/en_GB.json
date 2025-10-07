@@ -1,0 +1,202 @@
+{
+  "app": {
+    "title": "Pollino",
+    "subtitle": "Your comprehensive Poll App"
+  },
+  "navigation": {
+    "home": "Home",
+    "create": "Create",
+    "poll": "Poll",
+    "settings": "Settings",
+    "recent_activity": "Recent Activity",
+    "pins": "Pins",
+    "polls": "Polls",
+    "files": "Files", 
+    "photos": "Photos"
+  },
+  "home": {
+    "title": "Polls",
+    "empty": {
+      "title": "No polls available",
+      "subtitle": "Create your first poll!",
+      "button": "Create Poll"
+    },
+    "loading": "Loading polls...",
+    "error": "Error loading polls",
+    "refresh": "Refresh"
+  },
+  "poll": {
+    "title": "Poll",
+    "description": "Description",
+    "options": "Options",
+    "votes": "Votes",
+    "voteButton": "Vote",
+    "voted": "Voted",
+    "anonymous": "Anonymous",
+    "multipleChoice": "Multiple choice allowed",
+    "creator": {
+      "label": "Created by",
+      "anonymous": "Anonymous Creator", 
+      "named": "Non-anonymous poll"
+    },
+    "createdAt": "Created on",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "expiring": "Expiring"
+    },
+    "expiration": {
+      "never": "Never expires",
+      "expired": "Expired",
+      "expiresIn": "Expires in",
+      "expiresAt": "Expires on",
+      "autoDelete": "Will be automatically deleted"
+    },
+    "voting": {
+      "select": "Select option",
+      "selectMultiple": "You can choose multiple options",
+      "submit": "Vote",
+      "submitMultiple": "Vote ({{count}} selected)",
+      "success": "Successfully voted!",
+      "error": "Error voting",
+      "already": "You have already voted",
+      "expired": "You can no longer vote",
+      "anonymous": "Vote anonymously",
+      "named": "Vote with name",
+      "nameLabel": "Your Name",
+      "votesSummary": "{{votes}} votes • Vote to see results",
+      "expiresIn": "Expires in: {{time}}"
+    },
+    "delete": {
+      "confirmation": "Do you really want to delete the poll \"{{title}}\"? This action cannot be undone.",
+      "error": "Error deleting"
+    }
+  },
+  "create": {
+    "title": "Create Poll",
+    "question": {
+      "label": "Question",
+      "placeholder": "What is your question?",
+      "required": "A question is required"
+    },
+    "description": {
+      "label": "Description (optional)",
+      "placeholder": "Additional details about the poll..."
+    },
+    "options": {
+      "title": "Answer Options",
+      "placeholder": "Answer option {{number}}",
+      "add": "Add option",
+      "remove": "Remove",
+      "minimum": "At least 2 options are required"
+    },
+    "settings": {
+      "title": "Settings",
+      "anonymous": {
+        "title": "Anonymous voting",
+        "description": "Names will not be displayed"
+      },
+      "multiple": {
+        "title": "Multiple choice",
+        "description": "Participants can select multiple options"
+      },
+      "creator": {
+        "label": "Your name (optional)",
+        "placeholder": "How should others call you?"
+      }
+    },
+    "expiration": {
+      "title": "Set expiration time",
+      "description": "Optionally set an expiration date for this poll",
+      "never": "Never expires",
+      "presets": {
+        "1hour": "1 hour",
+        "1day": "1 day",
+        "1week": "1 week", 
+        "custom": "Custom"
+      },
+      "customDate": "Choose date and time",
+      "autoDelete": {
+        "title": "Automatic deletion",
+        "description": "Automatically delete poll after expiration"
+      },
+      "format": "{{date}} {{time}}"
+    },
+    "validation": {
+      "questionRequired": "A question is required",
+      "optionsMinimum": "At least 2 options are required",
+      "optionEmpty": "All options must be filled"
+    },
+    "actions": {
+      "create": "Create Poll",
+      "creating": "Creating...",
+      "cancel": "Cancel"
+    },
+    "success": "Poll created successfully!",
+    "error": "Error creating poll"
+  },
+  "time": {
+    "units": {
+      "second": "second",
+      "second_plural": "seconds",
+      "minute": "minute", 
+      "minute_plural": "minutes",
+      "hour": "hour",
+      "hour_plural": "hours",
+      "day": "day",
+      "day_plural": "days",
+      "week": "week",
+      "week_plural": "weeks",
+      "month": "month",
+      "month_plural": "months",
+      "year": "year",
+      "year_plural": "years"
+    },
+    "relative": {
+      "now": "Now",
+      "justNow": "Just now",
+      "fewSeconds": "In a few seconds",
+      "in": "in {{time}}",
+      "ago": "{{time}} ago",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "tomorrow": "Tomorrow"
+    },
+    "format": {
+      "date": "{{month}}/{{day}}/{{year}}",
+      "time": "{{hour}}:{{minute}}",
+      "dateTime": "{{month}}/{{day}}/{{year}} {{hour}}:{{minute}}",
+      "timeOnly": "{{hour}}:{{minute}}"
+    }
+  },
+  "errors": {
+    "network": "Network error - Please check your internet connection",
+    "server": "Server error - Please try again later",
+    "unknown": "An unknown error occurred", 
+    "validation": "Validation error",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access denied"
+  },
+  "actions": {
+    "ok": "OK",
+    "cancel": "Cancel", 
+    "retry": "Retry",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "share": "Share",
+    "copy": "Copy",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "continue": "Continue"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "At least {{min}} characters required",
+    "maxLength": "Maximum {{max}} characters allowed"
+  }
+}
