@@ -1,11 +1,11 @@
 {
-    "name": "pollino",
-    "short_name": "pollino",
+    "name": "Pollino - Poll & Survey App",
+    "short_name": "Pollino",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Your comprehensive Poll App by your side. Create, manage and participate in polls with real-time results and interactive features.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/language_switcher.dart';
+import 'package:pollino/core/widgets/pollino_logo.dart';
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -122,6 +123,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     tooltip: 'Neue Umfrage erstellen',
+                  ),
+                  const SizedBox(width: 12),
+                  const PollinoLogo(
+                    size: 32,
+                    showText: false,
                   ),
                   const SizedBox(width: 12),
                   Text(

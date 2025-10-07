@@ -1,6 +1,10 @@
-# Pollino 🗳️
-
-> **Your comprehensive Poll App by your side**
+<div align="center">
+  <img src="frontend/web/logo.svg" width="120" height="120" alt="Pollino Logo"/>
+  
+  # Pollino
+  
+  > **Your comprehensive Poll App by your side**
+</div>
 
 [![Version](https://img.shields.io/badge/Version-0.1.0--alpha-blue.svg)](https://github.com/Ahmadre/Pollino/releases)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27.1-blue.svg)](https://flutter.dev)
