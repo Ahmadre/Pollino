@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
+import 'package:pollino/services/like_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 
@@ -496,16 +497,36 @@ class _PollScreenState extends State<PollScreen> {
                                   ),
 
                                   // Bottom Actions
-                                  Padding(
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 16),
                                     padding: const EdgeInsets.only(bottom: 16),
                                     child: Row(
                                       children: [
-                                        Row(
-                                          children: [
-                                            Icon(Icons.favorite, color: Colors.red[400], size: 20),
-                                            const SizedBox(width: 4),
-                                            const Text('12', style: TextStyle(fontSize: 14)),
-                                          ],
+                                        // Like Button mit FutureBuilder für Like-Status
+                                        FutureBuilder<bool>(
+                                          future: LikeService.hasUserMadeLike(poll.id),
+                                          builder: (context, snapshot) {
+                                            final isLiked = snapshot.data ?? false;
+                                            return GestureDetector(
+                                              onTap: () {
+                                                context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    isLiked ? Icons.favorite : Icons.favorite_border,
+                                                    color: isLiked ? Colors.red[400] : Colors.grey[600],
+                                                    size: 20,
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '${poll.likesCount}',
+                                                    style: const TextStyle(fontSize: 14),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
                                         const SizedBox(width: 16),
                                         Row(

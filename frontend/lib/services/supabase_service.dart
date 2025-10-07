@@ -24,7 +24,7 @@ class SupabaseService {
       final pollsResponse = await _client
           .from('polls')
           .select(
-              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry')
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry, likes_count')
           .eq('is_active', true)
           .or('expires_at.is.null,expires_at.gt.now(),and(expires_at.lt.now(),auto_delete_after_expiry.is.false)')
           .range(offset, offset + limit - 1)
@@ -63,6 +63,7 @@ class SupabaseService {
             allowsMultipleVotes: pollData['allows_multiple_votes'] ?? false,
             expiresAt: pollData['expires_at'] != null ? TimezoneHelper.fromIso8601Utc(pollData['expires_at']) : null,
             autoDeleteAfterExpiry: pollData['auto_delete_after_expiry'] ?? false,
+            likesCount: pollData['likes_count'] ?? 0,
           ),
         );
       }
@@ -81,7 +82,7 @@ class SupabaseService {
       final pollResponse = await _client
           .from('polls')
           .select(
-              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry')
+              'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry, likes_count')
           .eq('id', pollId)
           .single();
 
@@ -109,6 +110,7 @@ class SupabaseService {
         expiresAt:
             pollResponse['expires_at'] != null ? TimezoneHelper.fromIso8601Utc(pollResponse['expires_at']) : null,
         autoDeleteAfterExpiry: pollResponse['auto_delete_after_expiry'] ?? false,
+        likesCount: pollResponse['likes_count'] ?? 0,
       );
     } catch (e) {
       debugPrint('Error in fetchPoll: $e');
@@ -302,6 +304,7 @@ class SupabaseService {
         autoDeleteAfterExpiry: autoDeleteAfterExpiry,
         createdByName: creatorName,
         createdBy: createdBy,
+        likesCount: 0, // Neue Umfragen beginnen mit 0 Likes
       );
     } catch (e) {
       debugPrint('Error in createPoll: $e');
@@ -382,6 +385,26 @@ class SupabaseService {
       return '$hours Std. $minutes Min.';
     } else {
       return '$minutes Min.';
+    }
+  }
+
+  /// Gibt einer Umfrage ein Like oder entfernt es
+  static Future<void> toggleLike(String pollId, bool isLiked) async {
+    try {
+      if (isLiked) {
+        // User hat bereits geliked -> Unlike (decrement)
+        await _client.rpc('decrement_poll_likes', params: {
+          'p_poll_id': int.parse(pollId),
+        });
+      } else {
+        // User hat noch nicht geliked -> Like (increment)
+        await _client.rpc('increment_poll_likes', params: {
+          'p_poll_id': int.parse(pollId),
+        });
+      }
+    } catch (e) {
+      debugPrint('Error in toggleLike: $e');
+      rethrow;
     }
   }
 

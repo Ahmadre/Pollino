@@ -8,6 +8,7 @@ import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/rtl_support.dart';
 import 'package:pollino/env.dart';
+import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,6 +26,9 @@ Future<void> main() async {
   Hive.registerAdapter<Poll>(PollAdapter());
   Hive.registerAdapter<Option>(OptionAdapter());
   final hiveBox = await Hive.openBox<Poll>('polls');
+
+  // Initialize LikeService for local like storage
+  await LikeService.init();
 
   // Initialize Supabase connection
   await Supabase.initialize(url: Environment.supabaseUrl, anonKey: Environment.supabaseAnonKey);

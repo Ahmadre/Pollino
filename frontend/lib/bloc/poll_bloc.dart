@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/services/supabase_service.dart';
+import 'package:pollino/services/like_service.dart';
 
 part 'poll_bloc.freezed.dart';
 
@@ -19,6 +20,7 @@ class PollEvent with _$PollEvent {
   const factory PollEvent.voteMultiple(String pollId, List<String> optionIds,
       {@Default(true) bool isAnonymous, String? voterName}) = VoteMultiple;
   const factory PollEvent.deletePoll(String pollId) = DeletePoll;
+  const factory PollEvent.toggleLike(String pollId) = ToggleLike;
 }
 
 @freezed
@@ -239,6 +241,42 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         }
       } catch (e) {
         emit(PollState.error('Failed to delete poll: ${e.toString()}'));
+      }
+    });
+
+    on<ToggleLike>((event, emit) async {
+      try {
+        // Hole den aktuellen Like-Status
+        final wasLiked = await LikeService.hasUserMadeLike(event.pollId);
+
+        // Toggle den lokalen Like-Status
+        final isNowLiked = await LikeService.toggleLike(event.pollId);
+
+        // Sende Like-Toggle zur Datenbank
+        await SupabaseService.toggleLike(event.pollId, wasLiked);
+
+        // Aktualisiere den lokalen State optimistically
+        if (state is Loaded) {
+          final currentState = state as Loaded;
+          final updatedPolls = currentState.polls.map((poll) {
+            if (poll.id == event.pollId) {
+              return poll.copyWith(
+                likesCount: isNowLiked ? poll.likesCount + 1 : poll.likesCount - 1,
+              );
+            }
+            return poll;
+          }).toList();
+
+          // Aktualisiere auch den Cache
+          final updatedPoll = updatedPolls.firstWhere((poll) => poll.id == event.pollId);
+          await hiveBox.put(event.pollId, updatedPoll);
+
+          emit(PollState.loaded(updatedPolls, currentState.hasMore));
+        }
+      } catch (e) {
+        // Bei Fehler: Reverseiere den lokalen Like-Status
+        await LikeService.toggleLike(event.pollId);
+        emit(PollState.error('Failed to toggle like: ${e.toString()}'));
       }
     });
   }
