@@ -22,6 +22,9 @@ ARG SUPABASE_SERVICE_ROLE_KEY
 # Enable web platform (if not already enabled)
 RUN flutter config --enable-web
 
+# Generate code (freezed, json_serializable, etc.)
+RUN dart run build_runner build --delete-conflicting-outputs
+
 # Build Flutter web app for production
 # Note: Supabase configuration will be injected at runtime via environment variables
 RUN flutter build web --release --web-renderer canvaskit --base-href /
