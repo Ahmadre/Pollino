@@ -14,6 +14,7 @@ RUN flutter pub get
 COPY . .
 
 # Build arguments for Supabase configuration (will be passed at runtime)
+# Note: These are not secrets in the traditional sense for a web app
 ARG SUPABASE_URL
 ARG SUPABASE_ANON_KEY  
 ARG SUPABASE_SERVICE_ROLE_KEY
