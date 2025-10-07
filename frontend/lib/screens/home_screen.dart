@@ -135,22 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Filter Tabs (Pins, Polls, Files, Photos)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _FilterTab(icon: Icons.push_pin, label: 'navigation.home'.tr(), isSelected: false),
-                    _FilterTab(icon: Icons.poll, label: 'home.title'.tr(), isSelected: true),
-                    _FilterTab(icon: Icons.description, label: 'Dateien', isSelected: false),
-                    _FilterTab(icon: Icons.photo, label: 'Fotos', isSelected: false),
-                  ],
-                ),
-              ),
-            ),
-
             // Poll List Content
             Expanded(
               child: BlocBuilder<PollBloc, PollState>(
@@ -254,41 +238,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
-  }
-}
-
-class _FilterTab extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-
-  const _FilterTab({required this.icon, required this.label, required this.isSelected});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? Colors.black : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.grey[600]),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.grey[600],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
