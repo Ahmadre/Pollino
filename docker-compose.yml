@@ -410,9 +410,9 @@ services:
     environment:
       # Additional environment variables for the web app
       NODE_ENV: production
+      WEB_APP_URL: ${WEB_APP_URL}
       FLUTTER_WEB_USE_SKIA: true
       # Supabase configuration via environment variables
-      WEB_APP_URL: ${WEB_APP_URL}
       SUPABASE_URL: ${SUPABASE_PUBLIC_URL}
       SUPABASE_ANON_KEY: ${ANON_KEY}
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
