@@ -30,8 +30,8 @@ class CommentModel {
         isAnonymous: map['is_anonymous'] ?? true,
         content: map['content'] ?? '',
         createdAt: DateTime.parse(map['created_at']).toLocal(),
-    clientId: map['client_id'] as String?,
-    updatedAt: map['updated_at'] != null ? DateTime.tryParse(map['updated_at'].toString())?.toLocal() : null,
+        clientId: map['client_id'] as String?,
+        updatedAt: map['updated_at'] != null ? DateTime.tryParse(map['updated_at'].toString())?.toLocal() : null,
       );
 }
 
@@ -65,7 +65,6 @@ class CommentsService {
         .from('comments')
         .stream(primaryKey: ['id'])
         .eq('poll_id', int.tryParse(pollId) ?? pollId)
-        .order('created_at') // stream doesn't support desc reliably; reverse manually
         .map((rows) {
           final list = rows.map(CommentModel.fromMap).toList();
           list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -128,12 +127,14 @@ class CommentsService {
     }
     final cid = await _getOrCreateClientId();
     // Call secure RPC to edit
-    await _client.rpc('edit_comment', params: {
-      'p_comment_id': int.tryParse(commentId) ?? commentId,
-      'p_client_id': cid,
-      'p_content': text,
-    },
-    // Ensure header reaches RLS/SECURITY DEFINER if needed by logging/edge; params suffice here
+    await _client.rpc(
+      'edit_comment',
+      params: {
+        'p_comment_id': int.tryParse(commentId) ?? commentId,
+        'p_client_id': cid,
+        'p_content': text,
+      },
+      // Ensure header reaches RLS/SECURITY DEFINER if needed by logging/edge; params suffice here
     );
   }
 

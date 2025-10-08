@@ -198,5 +198,26 @@
     "email": "有効なメールアドレスを入力してください",
     "minLength": "最低{{min}}文字が必要です",
     "maxLength": "最大{{max}}文字まで許可されています"
+  },
+  "comments": {
+    "title": "コメント",
+    "empty": "最初のコメントを書きましょう。",
+    "placeholder": "コメントを書く…",
+    "send": "送信",
+    "withName": "名前を表示してコメント",
+    "nameOptional": "名前（任意）",
+    "edited": "編集済み",
+    "guest": "ゲスト",
+    "badge": { "new": "新着" },
+    "dialog": {
+      "editTitle": "コメントを編集",
+      "deleteTitle": "コメントを削除しますか？",
+      "deleteMessage": "この操作は元に戻せません。"
+    },
+    "snackbar": {
+      "add": { "error": "コメントを送信できませんでした" },
+      "edit": { "error": "編集に失敗しました" },
+      "delete": { "error": "削除に失敗しました" }
+    }
   }
 }

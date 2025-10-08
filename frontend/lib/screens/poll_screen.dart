@@ -915,7 +915,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kommentieren fehlgeschlagen: $e')),
+        SnackBar(content: Text(I18nService.instance.translate('comments.snackbar.add.error'))),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -942,7 +942,10 @@ class _CommentsSectionState extends State<_CommentsSection> {
                 stream: CommentsService.streamCommentsCount(widget.pollId),
                 builder: (context, snapshot) {
                   final count = snapshot.data ?? 0;
-                  return Text('Kommentare ($count)', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600));
+                  return Text(
+                    '${I18nService.instance.translate('comments.title')} ($count)',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  );
                 },
               ),
             ],
@@ -962,7 +965,10 @@ class _CommentsSectionState extends State<_CommentsSection> {
                 }
                 final List<CommentModel> comments = snapshot.data!;
                 if (comments.isEmpty) {
-                  return Text('Sei der/die Erste, der/die kommentiert.', style: TextStyle(color: Colors.grey[600]));
+                  return Text(
+                    I18nService.instance.translate('comments.empty'),
+                    style: TextStyle(color: Colors.grey[600]),
+                  );
                 }
                 return ListView.separated(
                   reverse: false,
@@ -971,8 +977,11 @@ class _CommentsSectionState extends State<_CommentsSection> {
                   separatorBuilder: (_, __) => const Divider(height: 12),
                   itemBuilder: (context, index) {
                     final c = comments[index];
-                    final displayName =
-                        c.isAnonymous ? 'Anonym' : (c.userName?.isNotEmpty == true ? c.userName : 'Gast');
+                    final displayName = c.isAnonymous
+                        ? I18nService.instance.translate('poll.anonymous')
+                        : (c.userName?.isNotEmpty == true
+                            ? c.userName!
+                            : I18nService.instance.translate('comments.guest'));
                     final isFresh = DateTime.now().difference(c.createdAt).inMinutes < 5;
                     // Determine ownership by clientId
                     return FutureBuilder<String>(
@@ -982,7 +991,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(radius: 14, child: Text(displayName![0].toUpperCase())),
+                            CircleAvatar(radius: 14, child: Text(displayName[0].toUpperCase())),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
@@ -996,7 +1005,8 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                             Text(displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
                                             if (c.updatedAt != null) ...[
                                               const SizedBox(width: 6),
-                                              Text('(bearbeitet)', style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+                                              Text('(${I18nService.instance.translate('comments.edited')})',
+                                                  style: TextStyle(fontSize: 10, color: Colors.grey[600])),
                                             ],
                                           ],
                                         ),
@@ -1014,9 +1024,9 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                             borderRadius: BorderRadius.circular(10),
                                             border: Border.all(color: Colors.green[200]!),
                                           ),
-                                          child: const Text(
-                                            'neu',
-                                            style: TextStyle(fontSize: 10, color: Colors.green),
+                                          child: Text(
+                                            I18nService.instance.translate('comments.badge.new'),
+                                            style: const TextStyle(fontSize: 10, color: Colors.green),
                                           ),
                                         ),
                                       ],
@@ -1030,7 +1040,8 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final newText = await showDialog<String>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title: const Text('Kommentar bearbeiten'),
+                                                  title:
+                                                      Text(I18nService.instance.translate('comments.dialog.editTitle')),
                                                   content: TextField(
                                                     controller: controller,
                                                     minLines: 1,
@@ -1038,21 +1049,28 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                                     autofocus: true,
                                                   ),
                                                   actions: [
-                                                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Abbrechen')),
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(ctx),
+                                                      child: Text(I18nService.instance.translate('actions.cancel')),
+                                                    ),
                                                     ElevatedButton(
                                                       onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-                                                      child: const Text('Speichern'),
+                                                      child: Text(I18nService.instance.translate('actions.save')),
                                                     ),
                                                   ],
                                                 ),
                                               );
                                               if (newText != null && newText != c.content) {
                                                 try {
-                                                  await CommentsService.updateComment(commentId: c.id, newContent: newText);
+                                                  await CommentsService.updateComment(
+                                                      commentId: c.id, newContent: newText);
+                                                  if (mounted) setState(() {});
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Bearbeiten fehlgeschlagen: $e')),
+                                                    SnackBar(
+                                                        content: Text(I18nService.instance
+                                                            .translate('comments.snackbar.edit.error'))),
                                                   );
                                                 }
                                               }
@@ -1060,29 +1078,46 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title: const Text('Kommentar löschen?'),
-                                                  content: const Text('Dieser Vorgang kann nicht rückgängig gemacht werden.'),
+                                                  title: Text(
+                                                      I18nService.instance.translate('comments.dialog.deleteTitle')),
+                                                  content: Text(
+                                                      I18nService.instance.translate('comments.dialog.deleteMessage')),
                                                   actions: [
-                                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Abbrechen')),
-                                                    ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Löschen')),
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(ctx, false),
+                                                      child: Text(I18nService.instance.translate('actions.cancel')),
+                                                    ),
+                                                    ElevatedButton(
+                                                      onPressed: () => Navigator.pop(ctx, true),
+                                                      child: Text(I18nService.instance.translate('actions.delete')),
+                                                    ),
                                                   ],
                                                 ),
                                               );
                                               if (confirm == true) {
                                                 try {
                                                   await CommentsService.deleteComment(commentId: c.id);
+                                                  if (mounted) setState(() {});
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text('Löschen fehlgeschlagen: $e')),
+                                                    SnackBar(
+                                                        content: Text(I18nService.instance
+                                                            .translate('comments.snackbar.delete.error'))),
                                                   );
                                                 }
                                               }
                                             }
                                           },
-                                          itemBuilder: (ctx) => const [
-                                            PopupMenuItem(value: 'edit', child: Text('Bearbeiten')),
-                                            PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                                          itemBuilder: (ctx) => [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Text(I18nService.instance.translate('actions.edit')),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Text(I18nService.instance.translate('actions.delete')),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -1116,9 +1151,9 @@ class _CommentsSectionState extends State<_CommentsSection> {
                       controller: _controller,
                       minLines: 1,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        hintText: 'Kommentar schreiben...',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        hintText: I18nService.instance.translate('comments.placeholder'),
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                     ),
@@ -1135,7 +1170,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.send, size: 16),
-                      label: const Text('Senden'),
+                      label: Text(I18nService.instance.translate('comments.send')),
                     ),
                   ),
                 ],
@@ -1148,14 +1183,14 @@ class _CommentsSectionState extends State<_CommentsSection> {
                     onChanged: (v) => setState(() => _isAnonymous = !v),
                   ),
                   const SizedBox(width: 6),
-                  const Text('Mit Namen kommentieren'),
+                  Text(I18nService.instance.translate('comments.withName')),
                   const SizedBox(width: 8),
                   if (!_isAnonymous)
                     Expanded(
                       child: TextField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
-                          hintText: 'Dein Name (optional)',
+                        decoration: InputDecoration(
+                          hintText: I18nService.instance.translate('comments.nameOptional'),
                           isDense: true,
                         ),
                       ),

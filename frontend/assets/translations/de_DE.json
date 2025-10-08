@@ -198,5 +198,26 @@
     "email": "Bitte gib eine gültige E-Mail-Adresse ein",
     "minLength": "Mindestens {{min}} Zeichen erforderlich",
     "maxLength": "Maximal {{max}} Zeichen erlaubt"
+  },
+  "comments": {
+    "title": "Kommentare",
+    "empty": "Sei die Erste/der Erste, der einen Kommentar schreibt.",
+    "placeholder": "Kommentar schreiben…",
+    "send": "Senden",
+    "withName": "Mit Namen kommentieren",
+    "nameOptional": "Name (optional)",
+    "edited": "bearbeitet",
+    "guest": "Gast",
+    "badge": { "new": "neu" },
+    "dialog": {
+      "editTitle": "Kommentar bearbeiten",
+      "deleteTitle": "Kommentar löschen?",
+      "deleteMessage": "Dieser Vorgang kann nicht rückgängig gemacht werden."
+    },
+    "snackbar": {
+      "add": { "error": "Kommentar konnte nicht gesendet werden" },
+      "edit": { "error": "Bearbeiten fehlgeschlagen" },
+      "delete": { "error": "Löschen fehlgeschlagen" }
+    }
   }
 }

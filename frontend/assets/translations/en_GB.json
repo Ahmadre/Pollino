@@ -198,5 +198,26 @@
     "email": "Please enter a valid email address",
     "minLength": "At least {{min}} characters required",
     "maxLength": "Maximum {{max}} characters allowed"
+  },
+  "comments": {
+    "title": "Comments",
+    "empty": "Be the first to write a comment.",
+    "placeholder": "Write a comment…",
+    "send": "Send",
+    "withName": "Comment with name",
+    "nameOptional": "Name (optional)",
+    "edited": "edited",
+    "guest": "Guest",
+    "badge": { "new": "new" },
+    "dialog": {
+      "editTitle": "Edit comment",
+      "deleteTitle": "Delete comment?",
+      "deleteMessage": "This action cannot be undone."
+    },
+    "snackbar": {
+      "add": { "error": "Could not send comment" },
+      "edit": { "error": "Edit failed" },
+      "delete": { "error": "Delete failed" }
+    }
   }
 }

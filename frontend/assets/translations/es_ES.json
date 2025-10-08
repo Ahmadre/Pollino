@@ -198,5 +198,26 @@
     "email": "Por favor ingresa una dirección de correo válida",
     "minLength": "Se requieren al menos {{min}} caracteres",
     "maxLength": "Máximo {{max}} caracteres permitidos"
+  },
+  "comments": {
+    "title": "Comentarios",
+    "empty": "Sé la primera persona en escribir un comentario.",
+    "placeholder": "Escribe un comentario…",
+    "send": "Enviar",
+    "withName": "Comentar con nombre",
+    "nameOptional": "Nombre (opcional)",
+    "edited": "editado",
+    "guest": "Invitado",
+    "badge": { "new": "nuevo" },
+    "dialog": {
+      "editTitle": "Editar comentario",
+      "deleteTitle": "¿Eliminar comentario?",
+      "deleteMessage": "Esta acción no se puede deshacer."
+    },
+    "snackbar": {
+      "add": { "error": "No se pudo enviar el comentario" },
+      "edit": { "error": "Error al editar" },
+      "delete": { "error": "Error al eliminar" }
+    }
   }
 }
