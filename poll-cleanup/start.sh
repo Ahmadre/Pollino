@@ -8,11 +8,11 @@ echo "$(date): Poll Cleanup Service started" >> /var/log/poll-cleanup.log
 echo "Running initial cleanup Test..."
 /app/cleanup-script.sh
 
-# Starte eine endlos Schleife die alle 15 Minuten läuft (900 Sekunden)
-echo "Starting cleanup loop (every 15 minutes)..."
+# Starte eine Endlosschleife, die einmal pro Tag läuft (86400 Sekunden)
+echo "Starting cleanup loop (every 24 hours)..."
 while true; do
-    echo "$(date): Waiting 15 minutes until next cleanup..."
-    sleep 900  # 15 Minuten
-    echo "$(date): Running scheduled cleanup..."
+    echo "$(date): Waiting 24 hours until next cleanup..."
+    sleep 86400  # 24 Stunden
+    echo "$(date): Running scheduled daily cleanup..."
     /app/cleanup-script.sh
 done

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Cleanup Script für abgelaufene Umfragen
-# Läuft alle 15 Minuten via CRON
+# Läuft einmal täglich (wird durch den Start-Loop angestoßen)
 
 # Database connection parameters from environment
 DB_HOST=${POSTGRES_HOST:-db}
