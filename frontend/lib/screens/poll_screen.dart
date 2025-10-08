@@ -973,6 +973,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                     final c = comments[index];
                     final displayName =
                         c.isAnonymous ? 'Anonym' : (c.userName?.isNotEmpty == true ? c.userName : 'Gast');
+                    final isFresh = DateTime.now().difference(c.createdAt).inMinutes < 5;
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -991,6 +992,21 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                     TimeOfDay.fromDateTime(c.createdAt).format(context),
                                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                                   ),
+                                  if (isFresh) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green[50],
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: Colors.green[200]!),
+                                      ),
+                                      child: const Text(
+                                        'neu',
+                                        style: TextStyle(fontSize: 10, color: Colors.green),
+                                      ),
+                                    ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 2),

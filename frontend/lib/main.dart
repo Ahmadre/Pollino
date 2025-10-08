@@ -17,12 +17,13 @@ import 'routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize i18n Service with automatic system locale detection
-  await I18nService.instance.initWithSystemLocale();
-
-  // Initialize Hive for local caching
+  // Initialize Hive for local caching and preferences
   await Hive.initFlutter();
+  // Ensure a generic app preferences box is available for services (i18n, comments)
+  await Hive.openBox('app_prefs');
+
+  // Initialize i18n Service with automatic system locale detection (uses Hive)
+  await I18nService.instance.initWithSystemLocale();
   Hive.registerAdapter<Poll>(PollAdapter());
   Hive.registerAdapter<Option>(OptionAdapter());
   final hiveBox = await Hive.openBox<Poll>('polls');

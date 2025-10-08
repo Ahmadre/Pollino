@@ -1,4 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class CommentModel {
   final String id;
@@ -29,13 +31,31 @@ class CommentModel {
 
 class CommentsService {
   static final SupabaseClient _client = Supabase.instance.client;
+  static const _clientIdKey = 'comments_client_id';
+  static String? _clientId;
+
+  /// Returns a stable UUID for this device/client used for rate limiting and UI
+  static Future<String> _getOrCreateClientId() async {
+    if (_clientId != null) return _clientId!;
+    // Use a Hive box for lightweight persistent storage
+    final box = await Hive.openBox('app_prefs');
+    final existing = box.get(_clientIdKey) as String?;
+    if (existing != null && existing.isNotEmpty) {
+      _clientId = existing;
+      return existing;
+    }
+    final id = const Uuid().v4();
+    await box.put(_clientIdKey, id);
+    _clientId = id;
+    return id;
+  }
 
   // Stream newest comments first
   static Stream<List<CommentModel>> streamComments(String pollId) {
     return _client
         .from('comments')
         .stream(primaryKey: ['id'])
-        .eq('poll_id', pollId)
+        .eq('poll_id', int.tryParse(pollId) ?? pollId)
         .order('created_at') // stream doesn't support desc reliably; reverse manually
         .map((rows) {
           final list = rows.map(CommentModel.fromMap).toList();
@@ -48,7 +68,7 @@ class CommentsService {
     final res = await _client
         .from('comments_count_per_poll')
         .select('comments_count')
-        .eq('poll_id', int.parse(pollId))
+        .eq('poll_id', int.tryParse(pollId) ?? pollId)
         .maybeSingle();
     if (res == null) return 0;
     return (res['comments_count'] as int?) ?? 0;
@@ -58,7 +78,7 @@ class CommentsService {
     return _client
         .from('comments')
         .stream(primaryKey: ['id'])
-        .eq('poll_id', int.parse(pollId))
+        .eq('poll_id', int.tryParse(pollId) ?? pollId)
         .map((rows) => rows.length);
   }
 
@@ -75,12 +95,13 @@ class CommentsService {
     if (text.length > 1000) {
       throw Exception('Kommentar ist zu lang (max. 1000 Zeichen)');
     }
-
+    final clientId = await _getOrCreateClientId();
     await _client.from('comments').insert({
-      'poll_id': int.parse(pollId),
+      'poll_id': int.tryParse(pollId) ?? pollId,
       'user_name': isAnonymous ? null : (userName?.trim().isEmpty == true ? null : userName?.trim()),
       'is_anonymous': isAnonymous,
       'content': text,
+      'client_id': clientId,
     });
   }
 }

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class I18nService {
   static I18nService? _instance;
@@ -110,8 +110,10 @@ class I18nService {
   /// Lade gespeicherte Sprache aus SharedPreferences
   Future<String?> _getSavedLocale() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_localePreferenceKey);
+      final box = await Hive.openBox('app_prefs');
+      final value = box.get(_localePreferenceKey);
+      if (value is String) return value;
+      return null;
     } catch (e) {
       print('Fehler beim Laden der gespeicherten Sprache: $e');
       return null;
@@ -121,8 +123,8 @@ class I18nService {
   /// Speichere Sprache in SharedPreferences
   Future<void> _saveLocale(String locale) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_localePreferenceKey, locale);
+      final box = await Hive.openBox('app_prefs');
+      await box.put(_localePreferenceKey, locale);
       print('Sprache gespeichert: $locale');
     } catch (e) {
       print('Fehler beim Speichern der Sprache: $e');
