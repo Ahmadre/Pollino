@@ -64,7 +64,7 @@
       "anonymous": "Anonym abstimmen",
       "named": "Mit Name abstimmen",
       "nameLabel": "Dein Name",
-      "votesSummary": "{{votes}} Stimmen • Abstimmen um Ergebnisse zu sehen",
+      "votesSummary": "{{votes}} Stimmen",
       "expiresIn": "Läuft ab in: {{time}}"
     },
     "delete": {

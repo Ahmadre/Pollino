@@ -64,7 +64,7 @@
       "anonymous": "Votar anónimamente",
       "named": "Votar con nombre",
       "nameLabel": "Tu nombre",
-      "votesSummary": "{{votes}} votos • Vota para ver resultados",
+      "votesSummary": "{{votes}} Votos",
       "expiresIn": "Vence en: {{time}}"
     },
     "delete": {
