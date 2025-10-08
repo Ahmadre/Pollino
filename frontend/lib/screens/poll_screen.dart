@@ -988,16 +988,16 @@ class _CommentsSectionState extends State<_CommentsSection> {
                       future: CommentsService.clientId,
                       builder: (context, snapshotId) {
                         final own = snapshotId.hasData && c.clientId != null && c.clientId == snapshotId.data;
-                        return Row(
+                        return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(radius: 14, child: Text(displayName[0].toUpperCase())),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                CircleAvatar(radius: 14, child: Text(displayName[0].toUpperCase())),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Row(
                                     children: [
                                       Expanded(
                                         child: Row(
@@ -1040,8 +1040,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final newText = await showDialog<String>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title:
-                                                      Text(I18nService.instance.translate('comments.dialog.editTitle')),
+                                                  title: Text(I18nService.instance.translate('comments.dialog.editTitle')),
                                                   content: TextField(
                                                     controller: controller,
                                                     minLines: 1,
@@ -1062,15 +1061,12 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               );
                                               if (newText != null && newText != c.content) {
                                                 try {
-                                                  await CommentsService.updateComment(
-                                                      commentId: c.id, newContent: newText);
+                                                  await CommentsService.updateComment(commentId: c.id, newContent: newText);
                                                   if (mounted) setState(() {});
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                        content: Text(I18nService.instance
-                                                            .translate('comments.snackbar.edit.error'))),
+                                                    SnackBar(content: Text(I18nService.instance.translate('comments.snackbar.edit.error'))),
                                                   );
                                                 }
                                               }
@@ -1078,10 +1074,8 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title: Text(
-                                                      I18nService.instance.translate('comments.dialog.deleteTitle')),
-                                                  content: Text(
-                                                      I18nService.instance.translate('comments.dialog.deleteMessage')),
+                                                  title: Text(I18nService.instance.translate('comments.dialog.deleteTitle')),
+                                                  content: Text(I18nService.instance.translate('comments.dialog.deleteMessage')),
                                                   actions: [
                                                     TextButton(
                                                       onPressed: () => Navigator.pop(ctx, false),
@@ -1101,9 +1095,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                        content: Text(I18nService.instance
-                                                            .translate('comments.snackbar.delete.error'))),
+                                                    SnackBar(content: Text(I18nService.instance.translate('comments.snackbar.delete.error'))),
                                                   );
                                                 }
                                               }
@@ -1123,10 +1115,13 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                       ],
                                     ],
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(c.content),
-                                ],
-                              ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 36),
+                              child: Text(c.content),
                             ),
                           ],
                         );
