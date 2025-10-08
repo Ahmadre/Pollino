@@ -9,6 +9,7 @@ import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:pollino/services/comments_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pollino/widgets/poll_results_chart.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -249,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _PollCard extends StatelessWidget {
+class _PollCard extends StatefulWidget {
   final dynamic poll;
   final int colorIndex;
   final List<Color> optionColors;
@@ -265,23 +266,32 @@ class _PollCard extends StatelessWidget {
   });
 
   @override
+  State<_PollCard> createState() => _PollCardState();
+}
+
+class _PollCardState extends State<_PollCard> {
+  bool _showChart = true;
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Routemaster.of(context).push('/poll/${poll.id}'),
+      onTap: () => Routemaster.of(context).push('/poll/${widget.poll.id}'),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // User Info (nur bei nicht-anonymen Umfragen anzeigen)
-            if (!poll.isAnonymous) ...[
+            if (!widget.poll.isAnonymous) ...[
               Row(
                 children: [
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: const Color(0xFFE3F2FD),
                     child: Text(
-                      poll.createdByName != null ? poll.createdByName!.substring(0, 2).toUpperCase() : '??',
+                      widget.poll.createdByName != null
+                          ? widget.poll.createdByName!.substring(0, 2).toUpperCase()
+                          : '??',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -291,7 +301,7 @@ class _PollCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          poll.createdByName ?? I18nService.instance.translate('poll.creator.anonymous'),
+                          widget.poll.createdByName ?? I18nService.instance.translate('poll.creator.anonymous'),
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                         Text(
@@ -302,7 +312,7 @@ class _PollCard extends StatelessWidget {
                     ),
                   ),
                   PopupMenuButton<String>(
-                    onSelected: (value) => onPollAction?.call(value, poll),
+                    onSelected: (value) => widget.onPollAction?.call(value, widget.poll),
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         value: 'delete',
@@ -327,7 +337,7 @@ class _PollCard extends StatelessWidget {
                 children: [
                   const Spacer(),
                   PopupMenuButton<String>(
-                    onSelected: (value) => onPollAction?.call(value, poll),
+                    onSelected: (value) => widget.onPollAction?.call(value, widget.poll),
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         value: 'delete',
@@ -352,7 +362,7 @@ class _PollCard extends StatelessWidget {
 
             // Poll Title
             Text(
-              poll.title,
+              widget.poll.title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
             ),
 
@@ -360,7 +370,9 @@ class _PollCard extends StatelessWidget {
 
             // Vote count and expiration info
             StreamBuilder<List<Map<String, dynamic>>>(
-              stream: Supabase.instance.client.from('poll_options').stream(primaryKey: ['id']).eq('poll_id', poll.id),
+              stream: Supabase.instance.client
+                  .from('poll_options')
+                  .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
               builder: (context, snapshot) {
                 int totalVotes = 0;
                 if (snapshot.hasData && snapshot.data != null) {
@@ -368,7 +380,7 @@ class _PollCard extends StatelessWidget {
                     totalVotes += (option['votes'] as int? ?? 0);
                   }
                 } else {
-                  for (var option in poll.options) {
+                  for (var option in widget.poll.options) {
                     totalVotes += (option.votes as int);
                   }
                 }
@@ -380,9 +392,9 @@ class _PollCard extends StatelessWidget {
                       I18nService.instance.translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
-                    if (poll.expiresAt != null) ...[
+                    if (widget.poll.expiresAt != null) ...[
                       const SizedBox(height: 4),
-                      _ExpirationIndicator(poll: poll),
+                      _ExpirationIndicator(poll: widget.poll),
                     ],
                   ],
                 );
@@ -391,115 +403,36 @@ class _PollCard extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Poll Options Preview (wie im Screenshot)
+            // Poll Results Chart (wie in der Detailseite)
             StreamBuilder<List<Map<String, dynamic>>>(
-              stream: Supabase.instance.client.from('poll_options').stream(primaryKey: ['id']).eq('poll_id', poll.id),
+              stream: Supabase.instance.client
+                  .from('poll_options')
+                  .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
               builder: (context, snapshot) {
-                List<dynamic> liveOptions = poll.options;
-                int totalVotes = 0;
-                for (var option in poll.options) {
-                  totalVotes += (option.votes as int);
-                }
-
+                List<dynamic> liveOptions = widget.poll.options;
                 if (snapshot.hasData && snapshot.data != null) {
                   liveOptions = snapshot.data!;
-                  totalVotes = 0;
-                  for (var option in liveOptions) {
-                    totalVotes += (option['votes'] as int? ?? 0);
-                  }
                 }
 
-                return Column(
-                  children: List.generate(liveOptions.length > 4 ? 4 : liveOptions.length, (index) {
-                    final option = liveOptions[index];
-                    final optionText = snapshot.hasData ? option['text'] : option.text;
-                    final optionVotes = snapshot.hasData ? (option['votes'] as int? ?? 0) : (option.votes as int);
-                    final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
-                    final color = optionColors[index % optionColors.length];
-                    final voters = demoVoters[index % demoVoters.length];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Container(
-                        height: 44,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(22), color: Colors.white),
-                        child: Stack(
-                          children: [
-                            // Background progress bar
-                            Container(
-                              height: 44,
-                              width: MediaQuery.of(context).size.width * 0.85 * percentage,
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(22), color: color),
-                            ),
-
-                            // Content
-                            Container(
-                              height: 44,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  // Check mark for highest voted option
-                                  if (percentage > 0.3)
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      margin: const EdgeInsets.only(right: 8),
-                                      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                                      child: const Icon(Icons.check, size: 12, color: Colors.green),
-                                    ),
-
-                                  // Option text
-                                  Expanded(
-                                    child: Text(
-                                      optionText,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: percentage > 0.3 ? Colors.white : Colors.black,
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Voters avatars (nur für höhere Prozentwerte)
-                                  if (percentage > 0.2 && voters.isNotEmpty) ...[
-                                    Row(
-                                      children: voters
-                                          .take(3)
-                                          .map(
-                                            (voter) => Container(
-                                              width: 20,
-                                              height: 20,
-                                              margin: const EdgeInsets.only(left: 1),
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: Colors.white,
-                                              ),
-                                              child: Center(child: Text(voter, style: const TextStyle(fontSize: 10))),
-                                            ),
-                                          )
-                                          .toList(),
-                                    ),
-                                    const SizedBox(width: 8),
-                                  ],
-
-                                  // Percentage
-                                  Text(
-                                    '${(percentage * 100).round()}%',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: percentage > 0.3 ? Colors.white : Colors.black,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: PollResultsChart(
+                    options: liveOptions.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final option = entry.value;
+                      final votes = snapshot.hasData ? (option['votes'] as int? ?? 0) : (option.votes as int);
+                      final text = snapshot.hasData ? option['text'] : option.text;
+                      return PollOptionData(
+                        text: text,
+                        votes: votes,
+                        color: widget.optionColors[index % widget.optionColors.length],
+                      );
+                    }).toList(),
+                    isVisible: _showChart,
+                    onToggleVisibility: () {
+                      setState(() => _showChart = !_showChart);
+                    },
+                  ),
                 );
               },
             ),
@@ -523,12 +456,12 @@ class _PollCard extends StatelessWidget {
               children: [
                 // Like Button mit FutureBuilder für Like-Status
                 FutureBuilder<bool>(
-                  future: LikeService.hasUserMadeLike(poll.id),
+                  future: LikeService.hasUserMadeLike(widget.poll.id),
                   builder: (context, snapshot) {
                     final isLiked = snapshot.data ?? false;
                     return GestureDetector(
                       onTap: () {
-                        context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
+                        context.read<PollBloc>().add(PollEvent.toggleLike(widget.poll.id));
                       },
                       child: Row(
                         children: [
@@ -539,7 +472,7 @@ class _PollCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '${poll.likesCount}',
+                            '${widget.poll.likesCount}',
                             style: const TextStyle(fontSize: 14),
                           ),
                         ],
@@ -553,7 +486,7 @@ class _PollCard extends StatelessWidget {
                     Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 20),
                     const SizedBox(width: 4),
                     StreamBuilder<int>(
-                      stream: CommentsService.streamCommentsCount(poll.id.toString()),
+                      stream: CommentsService.streamCommentsCount(widget.poll.id.toString()),
                       builder: (context, snapshot) {
                         final count = snapshot.data ?? 0;
                         return Text('$count', style: const TextStyle(fontSize: 14));

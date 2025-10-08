@@ -1040,7 +1040,8 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final newText = await showDialog<String>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title: Text(I18nService.instance.translate('comments.dialog.editTitle')),
+                                                  title:
+                                                      Text(I18nService.instance.translate('comments.dialog.editTitle')),
                                                   content: TextField(
                                                     controller: controller,
                                                     minLines: 1,
@@ -1061,12 +1062,15 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               );
                                               if (newText != null && newText != c.content) {
                                                 try {
-                                                  await CommentsService.updateComment(commentId: c.id, newContent: newText);
+                                                  await CommentsService.updateComment(
+                                                      commentId: c.id, newContent: newText);
                                                   if (mounted) setState(() {});
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text(I18nService.instance.translate('comments.snackbar.edit.error'))),
+                                                    SnackBar(
+                                                        content: Text(I18nService.instance
+                                                            .translate('comments.snackbar.edit.error'))),
                                                   );
                                                 }
                                               }
@@ -1074,8 +1078,10 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                               final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (ctx) => AlertDialog(
-                                                  title: Text(I18nService.instance.translate('comments.dialog.deleteTitle')),
-                                                  content: Text(I18nService.instance.translate('comments.dialog.deleteMessage')),
+                                                  title: Text(
+                                                      I18nService.instance.translate('comments.dialog.deleteTitle')),
+                                                  content: Text(
+                                                      I18nService.instance.translate('comments.dialog.deleteMessage')),
                                                   actions: [
                                                     TextButton(
                                                       onPressed: () => Navigator.pop(ctx, false),
@@ -1095,7 +1101,9 @@ class _CommentsSectionState extends State<_CommentsSection> {
                                                 } catch (e) {
                                                   if (!mounted) return;
                                                   ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(content: Text(I18nService.instance.translate('comments.snackbar.delete.error'))),
+                                                    SnackBar(
+                                                        content: Text(I18nService.instance
+                                                            .translate('comments.snackbar.delete.error'))),
                                                   );
                                                 }
                                               }
