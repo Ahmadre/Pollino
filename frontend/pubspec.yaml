@@ -27,6 +27,7 @@ dependencies:
   routemaster: ^1.0.1
   shared_preferences: ^2.2.2
   supabase_flutter: ^2.10.2
+  fl_chart: ^0.68.0
   # Clean Architecture Dependencies
   dartz: ^0.10.1
   equatable: ^2.0.5
