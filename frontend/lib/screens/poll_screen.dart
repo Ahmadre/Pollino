@@ -974,47 +974,128 @@ class _CommentsSectionState extends State<_CommentsSection> {
                     final displayName =
                         c.isAnonymous ? 'Anonym' : (c.userName?.isNotEmpty == true ? c.userName : 'Gast');
                     final isFresh = DateTime.now().difference(c.createdAt).inMinutes < 5;
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(radius: 14, child: Text(displayName![0].toUpperCase())),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                    // Determine ownership by clientId
+                    return FutureBuilder<String>(
+                      future: CommentsService.clientId,
+                      builder: (context, snapshotId) {
+                        final own = snapshotId.hasData && c.clientId != null && c.clientId == snapshotId.data;
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(radius: 14, child: Text(displayName![0].toUpperCase())),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Text(displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
-                                  ),
-                                  Text(
-                                    TimeOfDay.fromDateTime(c.createdAt).format(context),
-                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                                  ),
-                                  if (isFresh) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green[50],
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: Colors.green[200]!),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Text(displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                            if (c.updatedAt != null) ...[
+                                              const SizedBox(width: 6),
+                                              Text('(bearbeitet)', style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+                                            ],
+                                          ],
+                                        ),
                                       ),
-                                      child: const Text(
-                                        'neu',
-                                        style: TextStyle(fontSize: 10, color: Colors.green),
+                                      Text(
+                                        TimeOfDay.fromDateTime(c.createdAt).format(context),
+                                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                                       ),
-                                    ),
-                                  ],
+                                      if (isFresh) ...[
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green[50],
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: Colors.green[200]!),
+                                          ),
+                                          child: const Text(
+                                            'neu',
+                                            style: TextStyle(fontSize: 10, color: Colors.green),
+                                          ),
+                                        ),
+                                      ],
+                                      if (own) ...[
+                                        const SizedBox(width: 4),
+                                        PopupMenuButton<String>(
+                                          icon: const Icon(Icons.more_vert, size: 18),
+                                          onSelected: (value) async {
+                                            if (value == 'edit') {
+                                              final controller = TextEditingController(text: c.content);
+                                              final newText = await showDialog<String>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text('Kommentar bearbeiten'),
+                                                  content: TextField(
+                                                    controller: controller,
+                                                    minLines: 1,
+                                                    maxLines: 5,
+                                                    autofocus: true,
+                                                  ),
+                                                  actions: [
+                                                    TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Abbrechen')),
+                                                    ElevatedButton(
+                                                      onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+                                                      child: const Text('Speichern'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                              if (newText != null && newText != c.content) {
+                                                try {
+                                                  await CommentsService.updateComment(commentId: c.id, newContent: newText);
+                                                } catch (e) {
+                                                  if (!mounted) return;
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('Bearbeiten fehlgeschlagen: $e')),
+                                                  );
+                                                }
+                                              }
+                                            } else if (value == 'delete') {
+                                              final confirm = await showDialog<bool>(
+                                                context: context,
+                                                builder: (ctx) => AlertDialog(
+                                                  title: const Text('Kommentar löschen?'),
+                                                  content: const Text('Dieser Vorgang kann nicht rückgängig gemacht werden.'),
+                                                  actions: [
+                                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Abbrechen')),
+                                                    ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Löschen')),
+                                                  ],
+                                                ),
+                                              );
+                                              if (confirm == true) {
+                                                try {
+                                                  await CommentsService.deleteComment(commentId: c.id);
+                                                } catch (e) {
+                                                  if (!mounted) return;
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text('Löschen fehlgeschlagen: $e')),
+                                                  );
+                                                }
+                                              }
+                                            }
+                                          },
+                                          itemBuilder: (ctx) => const [
+                                            PopupMenuItem(value: 'edit', child: Text('Bearbeiten')),
+                                            PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(c.content),
                                 ],
                               ),
-                              const SizedBox(height: 2),
-                              Text(c.content),
-                            ],
-                          ),
-                        ),
-                      ],
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 );

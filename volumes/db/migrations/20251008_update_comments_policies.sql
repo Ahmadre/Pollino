@@ -1,3 +1,89 @@
+-- Migration: Update comments policies to allow edit/delete by creator via client_id
+-- Date: 2025-10-08
+
+-- 1) Add updated_at column
+alter table if exists public.comments
+  add column if not exists updated_at timestamptz;
+
+-- 2) Trigger to maintain updated_at
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+do $$ begin
+  if not exists (
+    select 1 from pg_trigger where tgname = 'trg_comments_set_updated_at'
+  ) then
+    create trigger trg_comments_set_updated_at
+    before update on public.comments
+    for each row execute function public.set_updated_at();
+  end if;
+end $$;
+
+-- 3) Keep RLS restrictive for update/delete (already disallowed in previous migration)
+-- Create SECURITY DEFINER functions to handle edit/delete with client_id verification
+
+create or replace function public.edit_comment(
+  p_comment_id bigint,
+  p_client_id text,
+  p_content text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  _ok int;
+begin
+  if length(trim(coalesce(p_content, ''))) = 0 or length(p_content) > 1000 then
+    raise exception 'Invalid content length';
+  end if;
+
+  update public.comments
+     set content = p_content
+   where id = p_comment_id
+     and client_id = p_client_id;
+
+  get diagnostics _ok = row_count;
+  if _ok = 0 then
+    raise exception 'Not allowed to edit this comment';
+  end if;
+end;
+$$;
+
+create or replace function public.delete_comment(
+  p_comment_id bigint,
+  p_client_id text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  _ok int;
+begin
+  delete from public.comments
+   where id = p_comment_id
+     and client_id = p_client_id;
+
+  get diagnostics _ok = row_count;
+  if _ok = 0 then
+    raise exception 'Not allowed to delete this comment';
+  end if;
+end;
+$$;
+
+-- 4) Grant execute on functions to anon/authenticated
+grant execute on function public.edit_comment(bigint, text, text) to anon, authenticated;
+grant execute on function public.delete_comment(bigint, text) to anon, authenticated;
 -- Migration: Update comments with client_id, name validation, and rate limiting
 -- Date: 2025-10-08
 

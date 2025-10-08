@@ -9,6 +9,8 @@ class CommentModel {
   final bool isAnonymous;
   final String content;
   final DateTime createdAt;
+  final String? clientId;
+  final DateTime? updatedAt;
 
   CommentModel({
     required this.id,
@@ -17,6 +19,8 @@ class CommentModel {
     required this.isAnonymous,
     required this.content,
     required this.createdAt,
+    this.clientId,
+    this.updatedAt,
   });
 
   factory CommentModel.fromMap(Map<String, dynamic> map) => CommentModel(
@@ -26,6 +30,8 @@ class CommentModel {
         isAnonymous: map['is_anonymous'] ?? true,
         content: map['content'] ?? '',
         createdAt: DateTime.parse(map['created_at']).toLocal(),
+    clientId: map['client_id'] as String?,
+    updatedAt: map['updated_at'] != null ? DateTime.tryParse(map['updated_at'].toString())?.toLocal() : null,
       );
 }
 
@@ -49,6 +55,9 @@ class CommentsService {
     _clientId = id;
     return id;
   }
+
+  /// Expose clientId for UI checks
+  static Future<String> get clientId async => _getOrCreateClientId();
 
   // Stream newest comments first
   static Stream<List<CommentModel>> streamComments(String pollId) {
@@ -102,6 +111,40 @@ class CommentsService {
       'is_anonymous': isAnonymous,
       'content': text,
       'client_id': clientId,
+    });
+  }
+
+  /// Update a comment content if client_id matches
+  static Future<void> updateComment({
+    required String commentId,
+    required String newContent,
+  }) async {
+    final text = newContent.trim();
+    if (text.isEmpty) {
+      throw Exception('Kommentar darf nicht leer sein');
+    }
+    if (text.length > 1000) {
+      throw Exception('Kommentar ist zu lang (max. 1000 Zeichen)');
+    }
+    final cid = await _getOrCreateClientId();
+    // Call secure RPC to edit
+    await _client.rpc('edit_comment', params: {
+      'p_comment_id': int.tryParse(commentId) ?? commentId,
+      'p_client_id': cid,
+      'p_content': text,
+    },
+    // Ensure header reaches RLS/SECURITY DEFINER if needed by logging/edge; params suffice here
+    );
+  }
+
+  /// Delete a comment if client_id matches
+  static Future<void> deleteComment({
+    required String commentId,
+  }) async {
+    final cid = await _getOrCreateClientId();
+    await _client.rpc('delete_comment', params: {
+      'p_comment_id': int.tryParse(commentId) ?? commentId,
+      'p_client_id': cid,
     });
   }
 }
