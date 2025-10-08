@@ -198,5 +198,15 @@
     "email": "Veuillez entrer une adresse e-mail valide",
     "minLength": "Au moins {{min}} caractères requis",
     "maxLength": "Maximum {{max}} caractères autorisés"
+  },
+  "share": {
+    "tooltip": {
+      "share": "Partager",
+      "copyLink": "Copier le lien"
+    },
+    "snackbar": {
+      "copied": "Lien copié",
+      "failed": "Échec du partage"
+    }
   }
 }

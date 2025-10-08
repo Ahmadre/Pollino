@@ -1,9 +1,23 @@
 // Supabase configuration with fallbacks for different environments
 class Environment {
   // Default values for development/local testing
+  static const String _defaultWebAppUrl = 'http://localhost:8080';
   static const String _defaultSupabaseUrl = 'http://localhost:8000';
   static const String _defaultAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
+
+  // Web App URL for generating shareable links
+
+  static String get webAppUrl {
+    // Try compile-time environment first
+    const compileTimeUrl = String.fromEnvironment('WEB_APP_URL');
+    if (compileTimeUrl.isNotEmpty) {
+      return compileTimeUrl;
+    }
+
+    // For Docker builds, use Kong service URL
+    return _defaultWebAppUrl;
+  }
 
   // Get configuration from compile-time or runtime environment
   static String get supabaseUrl {

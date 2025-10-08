@@ -219,5 +219,15 @@
       "edit": { "error": "Error al editar" },
       "delete": { "error": "Error al eliminar" }
     }
+  },
+  "share": {
+    "tooltip": {
+      "share": "Compartir",
+      "copyLink": "Copiar enlace"
+    },
+    "snackbar": {
+      "copied": "Enlace copiado",
+      "failed": "Error al compartir"
+    }
   }
 }

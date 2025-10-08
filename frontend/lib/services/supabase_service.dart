@@ -183,62 +183,6 @@ class SupabaseService {
     }
   }
 
-  /// Synchronisiert lokale Daten mit Supabase (falls erforderlich)
-  static Future<void> synchronizePolls(List<Poll> localPolls) async {
-    // Für jedes lokale Poll prüfen, ob es in Supabase existiert, andernfalls hinzufügen oder aktualisieren
-    for (final poll in localPolls) {
-      // Prüfe, ob die Umfrage existiert
-      final existingPoll = await _client.from('polls').select('id').eq('id', poll.id).maybeSingle();
-
-      if (existingPoll == null) {
-        // Umfrage existiert nicht, also anlegen
-        await _client.from('polls').insert({
-          'id': poll.id,
-          'title': poll.title,
-          'description': poll.description ?? '',
-          'is_active': true,
-        });
-        // Optionen anlegen
-        for (final option in poll.options) {
-          await _client.from('poll_options').insert({
-            'id': option.id,
-            'poll_id': poll.id,
-            'text': option.text,
-            'votes': option.votes,
-          });
-        }
-      } else {
-        // Umfrage existiert, ggf. aktualisieren
-        await _client
-            .from('polls')
-            .update({'title': poll.title, 'description': poll.description ?? '', 'is_active': true}).eq('id', poll.id);
-
-        // Optionen synchronisieren
-        for (final option in poll.options) {
-          final existingOption =
-              await _client.from('poll_options').select('id').eq('id', option.id).eq('poll_id', poll.id).maybeSingle();
-
-          if (existingOption == null) {
-            // Option existiert nicht, anlegen
-            await _client.from('poll_options').insert({
-              'id': option.id,
-              'poll_id': poll.id,
-              'text': option.text,
-              'votes': option.votes,
-            });
-          } else {
-            // Option existiert, aktualisieren
-            await _client
-                .from('poll_options')
-                .update({'text': option.text, 'votes': option.votes})
-                .eq('id', option.id)
-                .eq('poll_id', poll.id);
-          }
-        }
-      }
-    }
-  }
-
   /// Erstellt eine neue Umfrage
   static Future<Poll> createPoll({
     required String title,

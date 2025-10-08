@@ -220,4 +220,15 @@
       "delete": { "error": "Delete failed" }
     }
   }
+  ,
+  "share": {
+    "tooltip": {
+      "share": "Share",
+      "copyLink": "Copy link"
+    },
+    "snackbar": {
+      "copied": "Link copied",
+      "failed": "Share failed"
+    }
+  }
 }

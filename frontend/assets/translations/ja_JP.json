@@ -199,6 +199,16 @@
     "minLength": "最低{{min}}文字が必要です",
     "maxLength": "最大{{max}}文字まで許可されています"
   },
+  "share": {
+    "tooltip": {
+      "share": "共有",
+      "copyLink": "リンクをコピー"
+    },
+    "snackbar": {
+      "copied": "リンクをコピーしました",
+      "failed": "共有に失敗しました"
+    }
+  },
   "comments": {
     "title": "コメント",
     "empty": "最初のコメントを書きましょう。",

@@ -17,6 +17,9 @@ import 'routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Routemaster.setPathUrlStrategy();
+
   // Initialize Hive for local caching and preferences
   await Hive.initFlutter();
   // Ensure a generic app preferences box is available for services (i18n, comments)
@@ -36,10 +39,6 @@ Future<void> main() async {
 
   // Initialize BLoC with local storage
   final pollBloc = PollBloc(hiveBox);
-  pollBloc.synchronizeWithBackend();
-
-  // Note: Poll cleanup is now handled by a dedicated Docker container with CRON
-  // See docker-compose.yml "poll-cleanup" service for automatic cleanup
 
   runApp(MyApp(pollBloc: pollBloc));
 }

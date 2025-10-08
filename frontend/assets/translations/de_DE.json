@@ -220,4 +220,15 @@
       "delete": { "error": "Löschen fehlgeschlagen" }
     }
   }
+  ,
+  "share": {
+    "tooltip": {
+      "share": "Teilen",
+      "copyLink": "Link kopieren"
+    },
+    "snackbar": {
+      "copied": "Link kopiert",
+      "failed": "Teilen fehlgeschlagen"
+    }
+  }
 }

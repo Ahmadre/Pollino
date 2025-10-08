@@ -1,13 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
+import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
 import 'package:pollino/services/comments_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PollScreen extends StatefulWidget {
   final String pollId;
@@ -25,6 +29,34 @@ class _PollScreenState extends State<PollScreen> {
   bool _isNavigatingAway = false; // Flag um doppelte Navigation zu verhindern
   bool _showChart = true; // Chart Sichtbarkeit
   final _voterNameController = TextEditingController();
+
+  void _sharePoll(dynamic poll) {
+    try {
+      final String path = '/poll/${poll.id}';
+      final String url = Uri.base.origin.isNotEmpty ? '${Uri.base.origin}$path' : '${Environment.webAppUrl}$path';
+
+      if (kIsWeb) {
+        // Im Web: Link in die Zwischenablage kopieren und Snackbar anzeigen
+        Clipboard.setData(ClipboardData(text: url));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(I18nService.instance.translate('share.snackbar.copied'))),
+          );
+        }
+      } else {
+        // Native/sonstige Plattformen: Systemteilen verwenden
+        final String message = 'Schau dir diese Umfrage an: ${poll.title}\n$url';
+        Share.share(message, subject: poll.title);
+      }
+    } catch (e) {
+      // Fehler beim Teilen leise ignorieren oder optional snackBar zeigen
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Teilen fehlgeschlagen: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -203,33 +235,45 @@ class _PollScreenState extends State<PollScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
             ),
             actions: [
-              // Like Button in AppBar
+              // Like + Share Buttons in AppBar
               BlocBuilder<PollBloc, PollState>(
                 builder: (context, state) {
                   if (state is Loaded && state.polls.isNotEmpty) {
                     final poll = state.polls.first;
-                    return FutureBuilder<bool>(
-                      future: LikeService.hasUserMadeLike(poll.id),
-                      builder: (context, snapshot) {
-                        final isLiked = snapshot.data ?? false;
-                        return IconButton(
-                          onPressed: () {
-                            context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        FutureBuilder<bool>(
+                          future: LikeService.hasUserMadeLike(poll.id),
+                          builder: (context, snapshot) {
+                            final isLiked = snapshot.data ?? false;
+                            return IconButton(
+                              onPressed: () {
+                                context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
+                              },
+                              icon: Badge(
+                                label: Text(
+                                  '${poll.likesCount}',
+                                  style: const TextStyle(fontSize: 10, color: Colors.white),
+                                ),
+                                isLabelVisible: poll.likesCount > 0,
+                                child: Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  color: isLiked ? Colors.red[400] : Colors.grey[600],
+                                  size: 22,
+                                ),
+                              ),
+                            );
                           },
-                          icon: Badge(
-                            label: Text(
-                              '${poll.likesCount}',
-                              style: const TextStyle(fontSize: 10, color: Colors.white),
-                            ),
-                            isLabelVisible: poll.likesCount > 0,
-                            child: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.red[400] : Colors.grey[600],
-                              size: 22,
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                        IconButton(
+                          tooltip: kIsWeb
+                              ? I18nService.instance.translate('share.tooltip.copyLink')
+                              : I18nService.instance.translate('share.tooltip.share'),
+                          onPressed: () => _sharePoll(poll),
+                          icon: const Icon(Icons.share, size: 22),
+                        ),
+                      ],
                     );
                   }
                   return const SizedBox.shrink();

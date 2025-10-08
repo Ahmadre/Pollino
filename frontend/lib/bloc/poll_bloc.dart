@@ -281,17 +281,6 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     });
   }
 
-  Future<void> synchronizeWithBackend() async {
-    try {
-      final cachedPolls = hiveBox.values.toList();
-      // Synchronize with Supabase database
-      await SupabaseService.synchronizePolls(cachedPolls);
-      add(const LoadPolls(page: 1, limit: 10)); // Reload polls after sync
-    } catch (e) {
-      debugPrint('Failed to synchronize with Supabase: ${e.toString()}');
-    }
-  }
-
   Future<void> voteWithName(
     String pollId,
     String optionId, {
