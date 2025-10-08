@@ -7,6 +7,7 @@ import 'package:pollino/core/localization/language_switcher.dart';
 import 'package:pollino/core/widgets/pollino_logo.dart';
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
+import 'package:pollino/services/comments_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -551,7 +552,13 @@ class _PollCard extends StatelessWidget {
                   children: [
                     Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 20),
                     const SizedBox(width: 4),
-                    const Text('12', style: TextStyle(fontSize: 14)),
+                    StreamBuilder<int>(
+                      stream: CommentsService.streamCommentsCount(poll.id.toString()),
+                      builder: (context, snapshot) {
+                        final count = snapshot.data ?? 0;
+                        return Text('$count', style: const TextStyle(fontSize: 14));
+                      },
+                    ),
                   ],
                 ),
                 const Spacer(),

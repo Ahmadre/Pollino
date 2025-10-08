@@ -7,6 +7,7 @@ import 'package:pollino/services/like_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
+import 'package:pollino/services/comments_service.dart';
 
 class PollScreen extends StatefulWidget {
   final String pollId;
@@ -552,6 +553,11 @@ class _PollScreenState extends State<PollScreen> {
                                   ],
                                 ),
 
+                                const SizedBox(height: 20),
+
+                                // Kommentare Sektion
+                                _CommentsSection(pollId: poll.id),
+
                                 // Bottom Actions
                                 Container(
                                   margin: const EdgeInsets.only(top: 16),
@@ -562,7 +568,13 @@ class _PollScreenState extends State<PollScreen> {
                                         children: [
                                           Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 20),
                                           const SizedBox(width: 4),
-                                          const Text('12', style: TextStyle(fontSize: 14)),
+                                          StreamBuilder<int>(
+                                            stream: CommentsService.streamCommentsCount(poll.id.toString()),
+                                            builder: (context, snapshot) {
+                                              final count = snapshot.data ?? 0;
+                                              return Text('$count', style: const TextStyle(fontSize: 14));
+                                            },
+                                          ),
                                         ],
                                       ),
                                       const Spacer(),
@@ -860,6 +872,201 @@ class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
               fontWeight: FontWeight.w600,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// -------------------- Comments UI --------------------
+class _CommentsSection extends StatefulWidget {
+  final String pollId;
+  const _CommentsSection({required this.pollId});
+
+  @override
+  State<_CommentsSection> createState() => _CommentsSectionState();
+}
+
+class _CommentsSectionState extends State<_CommentsSection> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isAnonymous = true;
+  final TextEditingController _nameController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    setState(() => _submitting = true);
+    try {
+      await CommentsService.addComment(
+        pollId: widget.pollId,
+        content: text,
+        userName: _isAnonymous ? null : _nameController.text.trim(),
+        isAnonymous: _isAnonymous,
+      );
+      _controller.clear();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Kommentieren fehlgeschlagen: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.chat_bubble_outline, size: 18, color: Colors.black54),
+              const SizedBox(width: 8),
+              StreamBuilder<int>(
+                stream: CommentsService.streamCommentsCount(widget.pollId),
+                builder: (context, snapshot) {
+                  final count = snapshot.data ?? 0;
+                  return Text('Kommentare ($count)', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600));
+                },
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // List of comments (newest first)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 220),
+            child: StreamBuilder<List<CommentModel>>(
+              stream: CommentsService.streamComments(widget.pollId),
+              builder: (context, AsyncSnapshot<List<CommentModel>> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                      child: SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)));
+                }
+                final List<CommentModel> comments = snapshot.data!;
+                if (comments.isEmpty) {
+                  return Text('Sei der/die Erste, der/die kommentiert.', style: TextStyle(color: Colors.grey[600]));
+                }
+                return ListView.separated(
+                  reverse: false,
+                  shrinkWrap: true,
+                  itemCount: comments.length,
+                  separatorBuilder: (_, __) => const Divider(height: 12),
+                  itemBuilder: (context, index) {
+                    final c = comments[index];
+                    final displayName =
+                        c.isAnonymous ? 'Anonym' : (c.userName?.isNotEmpty == true ? c.userName : 'Gast');
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(radius: 14, child: Text(displayName![0].toUpperCase())),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(displayName, style: const TextStyle(fontWeight: FontWeight.w600)),
+                                  ),
+                                  Text(
+                                    TimeOfDay.fromDateTime(c.createdAt).format(context),
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(c.content),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Input
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        hintText: 'Kommentar schreiben...',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton.icon(
+                      onPressed: _submitting ? null : _submit,
+                      icon: _submitting
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.send, size: 16),
+                      label: const Text('Senden'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Switch(
+                    value: !_isAnonymous,
+                    onChanged: (v) => setState(() => _isAnonymous = !v),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text('Mit Namen kommentieren'),
+                  const SizedBox(width: 8),
+                  if (!_isAnonymous)
+                    Expanded(
+                      child: TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          hintText: 'Dein Name (optional)',
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                ],
+              )
+            ],
+          )
         ],
       ),
     );
