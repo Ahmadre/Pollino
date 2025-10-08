@@ -442,11 +442,17 @@ class _PollCardState extends State<_PollCard> {
                       .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
                   builder: (context, votesSnapshot) {
                     final Map<String, int> counts = {};
+                    final Map<String, Set<String>> namesByOption = {};
                     if (votesSnapshot.hasData && votesSnapshot.data != null) {
                       for (final row in votesSnapshot.data!) {
                         final optId = row['option_id']?.toString();
                         if (optId == null) continue;
                         counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                        final isAnon = row['is_anonymous'] == true;
+                        final voterName = row['voter_name'];
+                        if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+                          namesByOption.putIfAbsent(optId, () => <String>{}).add(voterName.trim());
+                        }
                       }
                     }
 
@@ -461,6 +467,7 @@ class _PollCardState extends State<_PollCard> {
                         text: text,
                         votes: votes,
                         color: widget.optionColors[index % widget.optionColors.length],
+                        namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
                       );
                     }).toList();
 
@@ -482,18 +489,6 @@ class _PollCardState extends State<_PollCard> {
                   },
                 );
               },
-            ),
-
-            const SizedBox(height: 16),
-
-            // Bottom Actions
-            Row(
-              children: [
-                Icon(Icons.access_time, color: Colors.grey[600], size: 16),
-                const SizedBox(width: 4),
-                Text('3 days remaining', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                const Spacer(),
-              ],
             ),
 
             const SizedBox(height: 16),

@@ -377,11 +377,17 @@ class _PollScreenState extends State<PollScreen> {
                                     builder: (context, votesSnapshot) {
                                       // Aggregiere Stimmenanzahl pro Option aus user_votes
                                       final Map<String, int> counts = {};
+                                      final Map<String, Set<String>> namesByOption = {};
                                       if (votesSnapshot.hasData && votesSnapshot.data != null) {
                                         for (final row in votesSnapshot.data!) {
                                           final optId = row['option_id']?.toString();
                                           if (optId == null) continue;
                                           counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                                          final isAnon = row['is_anonymous'] == true;
+                                          final voterName = row['voter_name'];
+                                          if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+                                            namesByOption.putIfAbsent(optId, () => <String>{}).add(voterName.trim());
+                                          }
                                         }
                                       }
 
@@ -397,6 +403,7 @@ class _PollScreenState extends State<PollScreen> {
                                           text: snapshot.hasData ? option['text'] : option.text,
                                           votes: optionVotes,
                                           color: _optionColors[index % _optionColors.length],
+                                          namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
                                         );
                                       }).toList();
 

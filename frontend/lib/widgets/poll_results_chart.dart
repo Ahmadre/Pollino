@@ -175,8 +175,17 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
               final option = widget.options[group.x.toInt()];
               final totalVotes = widget.options.fold<int>(0, (sum, opt) => sum + opt.votes);
               final percentage = totalVotes > 0 ? (option.votes / totalVotes * 100).round() : 0;
+              // Build optional named voters suffix (non-anonymous names provided by caller)
+              String namesSuffix = '';
+              if (option.namedVoters.isNotEmpty) {
+                final maxNames = 10; // show up to 10 names to keep tooltip compact
+                final display = option.namedVoters.take(maxNames).join(', ');
+                final remaining = option.namedVoters.length - maxNames;
+                final overflow = remaining > 0 ? ' +$remaining' : '';
+                namesSuffix = '\n$display$overflow';
+              }
               return BarTooltipItem(
-                '${option.text}\n${option.votes} Stimmen ($percentage%)',
+                '${option.text}\n${option.votes} Stimmen ($percentage%)$namesSuffix',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
@@ -526,10 +535,12 @@ class PollOptionData {
   final String text;
   final int votes;
   final Color color;
+  final List<String> namedVoters; // non-anonymous voter names for this option
 
   const PollOptionData({
     required this.text,
     required this.votes,
     required this.color,
+    this.namedVoters = const [],
   });
 }
