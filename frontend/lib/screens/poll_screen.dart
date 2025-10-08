@@ -202,7 +202,38 @@ class _PollScreenState extends State<PollScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
             ),
             actions: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.tune, size: 20)),
+              // Like Button in AppBar
+              BlocBuilder<PollBloc, PollState>(
+                builder: (context, state) {
+                  if (state is Loaded && state.polls.isNotEmpty) {
+                    final poll = state.polls.first;
+                    return FutureBuilder<bool>(
+                      future: LikeService.hasUserMadeLike(poll.id),
+                      builder: (context, snapshot) {
+                        final isLiked = snapshot.data ?? false;
+                        return IconButton(
+                          onPressed: () {
+                            context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
+                          },
+                          icon: Badge(
+                            label: Text(
+                              '${poll.likesCount}',
+                              style: const TextStyle(fontSize: 10, color: Colors.white),
+                            ),
+                            isLabelVisible: poll.likesCount > 0,
+                            child: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: isLiked ? Colors.red[400] : Colors.grey[600],
+                              size: 22,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           ),
           backgroundColor: const Color(0xFFF8F9FA),
@@ -527,33 +558,6 @@ class _PollScreenState extends State<PollScreen> {
                                   padding: const EdgeInsets.only(bottom: 16),
                                   child: Row(
                                     children: [
-                                      // Like Button mit FutureBuilder für Like-Status
-                                      FutureBuilder<bool>(
-                                        future: LikeService.hasUserMadeLike(poll.id),
-                                        builder: (context, snapshot) {
-                                          final isLiked = snapshot.data ?? false;
-                                          return GestureDetector(
-                                            onTap: () {
-                                              context.read<PollBloc>().add(PollEvent.toggleLike(poll.id));
-                                            },
-                                            child: Row(
-                                              children: [
-                                                Icon(
-                                                  isLiked ? Icons.favorite : Icons.favorite_border,
-                                                  color: isLiked ? Colors.red[400] : Colors.grey[600],
-                                                  size: 20,
-                                                ),
-                                                const SizedBox(width: 4),
-                                                Text(
-                                                  '${poll.likesCount}',
-                                                  style: const TextStyle(fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(width: 16),
                                       Row(
                                         children: [
                                           Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 20),
