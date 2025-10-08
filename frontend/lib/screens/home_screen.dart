@@ -368,28 +368,17 @@ class _PollCardState extends State<_PollCard> {
 
             const SizedBox(height: 8),
 
-            // Vote count and expiration info
+            // Vote count and expiration info (count rows from user_votes for accuracy)
             StreamBuilder<List<Map<String, dynamic>>>(
-              stream: Supabase.instance.client
-                  .from('poll_options')
-                  .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
+              stream:
+                  Supabase.instance.client.from('user_votes').stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
               builder: (context, snapshot) {
-                int totalVotes = 0;
-                if (snapshot.hasData && snapshot.data != null) {
-                  for (var option in snapshot.data!) {
-                    totalVotes += (option['votes'] as int? ?? 0);
-                  }
-                } else {
-                  for (var option in widget.poll.options) {
-                    totalVotes += (option.votes as int);
-                  }
-                }
-
+                final votes = snapshot.hasData && snapshot.data != null ? snapshot.data!.length : 0;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      I18nService.instance.translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
+                      I18nService.instance.translate('poll.voting.votesSummary', params: {'votes': '$votes'}),
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     if (widget.poll.expiresAt != null) ...[
@@ -403,39 +392,7 @@ class _PollCardState extends State<_PollCard> {
 
             const SizedBox(height: 16),
 
-            // Poll Results Chart (wie in der Detailseite)
-            StreamBuilder<List<Map<String, dynamic>>>(
-              stream: Supabase.instance.client
-                  .from('poll_options')
-                  .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
-              builder: (context, snapshot) {
-                List<dynamic> liveOptions = widget.poll.options;
-                if (snapshot.hasData && snapshot.data != null) {
-                  liveOptions = snapshot.data!;
-                }
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: PollResultsChart(
-                    options: liveOptions.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final option = entry.value;
-                      final votes = snapshot.hasData ? (option['votes'] as int? ?? 0) : (option.votes as int);
-                      final text = snapshot.hasData ? option['text'] : option.text;
-                      return PollOptionData(
-                        text: text,
-                        votes: votes,
-                        color: widget.optionColors[index % widget.optionColors.length],
-                      );
-                    }).toList(),
-                    isVisible: _showChart,
-                    onToggleVisibility: () {
-                      setState(() => _showChart = !_showChart);
-                    },
-                  ),
-                );
-              },
-            ),
+            // Poll Results Chart (Stimmen aus user_votes aggregiert, analog Detailseite)
             // Poll Results Chart (Stimmen aus user_votes aggregiert, analog Detailseite)
             StreamBuilder<List<Map<String, dynamic>>>(
               stream: Supabase.instance.client

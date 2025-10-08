@@ -379,20 +379,30 @@ class _PollScreenState extends State<PollScreen> {
 
                                 const SizedBox(height: 8),
 
-                                // Vote count and expiration info
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      I18nService.instance
-                                          .translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
-                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                                    ),
-                                    if (poll.expiresAt != null) ...[
-                                      const SizedBox(height: 4),
-                                      _ExpirationIndicator(poll: poll),
-                                    ],
-                                  ],
+                                // Vote count and expiration info (Votes via user_votes gezählt)
+                                StreamBuilder<List<Map<String, dynamic>>>(
+                                  stream: Supabase.instance.client
+                                      .from('user_votes')
+                                      .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
+                                  builder: (context, votesSnapshot) {
+                                    final voteCount = votesSnapshot.hasData && votesSnapshot.data != null
+                                        ? votesSnapshot.data!.length
+                                        : totalVotes; // Fallback auf zuvor berechnete Summe
+                                    return Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          I18nService.instance
+                                              .translate('poll.voting.votesSummary', params: {'votes': '$voteCount'}),
+                                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                        ),
+                                        if (poll.expiresAt != null) ...[
+                                          const SizedBox(height: 4),
+                                          _ExpirationIndicator(poll: poll),
+                                        ],
+                                      ],
+                                    );
+                                  },
                                 ),
 
                                 const SizedBox(height: 20),
