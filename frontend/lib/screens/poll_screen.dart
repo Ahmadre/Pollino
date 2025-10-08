@@ -179,6 +179,7 @@ class _PollScreenState extends State<PollScreen> {
         },
         child: Scaffold(
           backgroundColor: const Color(0xFFF8F9FA),
+          resizeToAvoidBottomInset: true, // Mobile Keyboard Support
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +349,7 @@ class _PollScreenState extends State<PollScreen> {
                                       ),
                                     ),
 
-                                    // Name Input (wenn nicht anonym)
+                                    // Name Input (wenn nicht anonym) - Mobile-friendly mit ScrollIntoView
                                     if (!_isAnonymousVote)
                                       Container(
                                         margin: const EdgeInsets.only(bottom: 16),
@@ -361,7 +362,18 @@ class _PollScreenState extends State<PollScreen> {
                                             ),
                                             filled: true,
                                             fillColor: Colors.white,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                           ),
+                                          // Automatisches Scrollen wenn Tastatur aufgeht (Mobile-Fix)
+                                          onTap: () {
+                                            Future.delayed(const Duration(milliseconds: 300), () {
+                                              Scrollable.ensureVisible(
+                                                context,
+                                                duration: const Duration(milliseconds: 300),
+                                                curve: Curves.easeInOut,
+                                              );
+                                            });
+                                          },
                                         ),
                                       ),
 
