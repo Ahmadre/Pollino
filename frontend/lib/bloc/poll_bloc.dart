@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/services/like_service.dart';
 
 part 'poll_bloc.freezed.dart';
@@ -119,7 +120,16 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
-        emit(PollState.error('Failed to submit vote: ${e.toString()}'));
+        // Handle duplicate vote gracefully (unique constraint violation)
+    final isDuplicate = e is PostgrestException && e.code == '23505' &&
+      e.message.contains('user_votes_poll_id_user_id_key');
+        if (isDuplicate) {
+          // Ignore as "already voted"; keep current state
+          debugPrint('Duplicate vote detected, ignoring: ${e.toString()}');
+          if (state is Loaded) emit(state);
+        } else {
+          emit(PollState.error('Failed to submit vote: ${e.toString()}'));
+        }
       }
     });
 
@@ -170,7 +180,15 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         }
       } catch (e) {
         debugPrint('Error submitting vote: $e');
-        emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
+    final isDuplicate = e is PostgrestException && e.code == '23505' &&
+      e.message.contains('user_votes_poll_id_user_id_key');
+        if (isDuplicate) {
+          // Bereits abgestimmt -> keinen Error-State zeigen
+          debugPrint('Duplicate vote (single) ignored to avoid error state');
+          if (state is Loaded) emit(state);
+        } else {
+          emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
+        }
       }
     });
 
@@ -221,7 +239,15 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         }
       } catch (e) {
         debugPrint('Error submitting multiple votes: $e');
-        emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
+    final isDuplicate = e is PostgrestException && e.code == '23505' &&
+      e.message.contains('user_votes_poll_id_user_id_key');
+        if (isDuplicate) {
+          // Doppeltes Voten bei MC: Ignorieren oder ggf. einzelne bereits vorhandene Optionen überspringen
+          debugPrint('Duplicate vote (multiple) ignored to avoid error state');
+          if (state is Loaded) emit(state);
+        } else {
+          emit(PollState.error('Fehler beim Abstimmen: ${e.toString()}'));
+        }
       }
     });
 
