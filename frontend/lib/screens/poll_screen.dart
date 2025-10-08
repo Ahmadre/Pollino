@@ -324,29 +324,57 @@ class _PollScreenState extends State<PollScreen> {
 
                                 const SizedBox(height: 16),
 
-                                // Poll Results Chart
-                                if (totalVotes > 0 && liveOptions.isNotEmpty)
-                                  Container(
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    child: PollResultsChart(
-                                      options: liveOptions.asMap().entries.map((entry) {
+                                // Poll Results Chart (Stimmen aus user_votes aggregiert)
+                                if (liveOptions.isNotEmpty)
+                                  StreamBuilder<List<Map<String, dynamic>>>(
+                                    stream: Supabase.instance.client
+                                        .from('user_votes')
+                                        .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
+                                    builder: (context, votesSnapshot) {
+                                      // Aggregiere Stimmenanzahl pro Option aus user_votes
+                                      final Map<String, int> counts = {};
+                                      if (votesSnapshot.hasData && votesSnapshot.data != null) {
+                                        for (final row in votesSnapshot.data!) {
+                                          final optId = row['option_id']?.toString();
+                                          if (optId == null) continue;
+                                          counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                                        }
+                                      }
+
+                                      // Baue Chart-Daten: Text aus poll_options, Votes aus counts (Fallback: vorhandene votes)
+                                      final chartOptions = liveOptions.asMap().entries.map((entry) {
                                         final index = entry.key;
                                         final option = entry.value;
-                                        final optionVotes =
-                                            snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes;
+                                        final optionIdStr =
+                                            (snapshot.hasData ? option['id'].toString() : option.id.toString());
+                                        final optionVotes = counts[optionIdStr] ??
+                                            (snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes);
                                         return PollOptionData(
                                           text: snapshot.hasData ? option['text'] : option.text,
                                           votes: optionVotes,
                                           color: _optionColors[index % _optionColors.length],
                                         );
-                                      }).toList(),
-                                      isVisible: _showChart,
-                                      onToggleVisibility: () {
-                                        setState(() {
-                                          _showChart = !_showChart;
-                                        });
-                                      },
-                                    ),
+                                      }).toList();
+
+                                      final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
+                                      if (totalFromCounts == 0) {
+                                        // Wenn immer noch 0, Chart ausblenden (keine Stimmen)
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Container(
+                                        margin: const EdgeInsets.only(bottom: 16),
+                                        child: PollResultsChart(
+                                          options: chartOptions,
+                                          isVisible: _showChart,
+                                          onToggleVisibility: () {
+                                            setState(() {
+                                              _showChart = !_showChart;
+                                            });
+                                          },
+                                        ),
+                                      );
+                                    },
                                   ),
 
                                 const SizedBox(height: 8),

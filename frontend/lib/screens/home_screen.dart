@@ -436,6 +436,64 @@ class _PollCardState extends State<_PollCard> {
                 );
               },
             ),
+            // Poll Results Chart (Stimmen aus user_votes aggregiert, analog Detailseite)
+            StreamBuilder<List<Map<String, dynamic>>>(
+              stream: Supabase.instance.client
+                  .from('poll_options')
+                  .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
+              builder: (context, optionsSnapshot) {
+                List<dynamic> liveOptions = widget.poll.options;
+                if (optionsSnapshot.hasData && optionsSnapshot.data != null) {
+                  liveOptions = optionsSnapshot.data!;
+                }
+
+                return StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: Supabase.instance.client
+                      .from('user_votes')
+                      .stream(primaryKey: ['id']).eq('poll_id', widget.poll.id),
+                  builder: (context, votesSnapshot) {
+                    final Map<String, int> counts = {};
+                    if (votesSnapshot.hasData && votesSnapshot.data != null) {
+                      for (final row in votesSnapshot.data!) {
+                        final optId = row['option_id']?.toString();
+                        if (optId == null) continue;
+                        counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                      }
+                    }
+
+                    final chartOptions = liveOptions.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final option = entry.value;
+                      final optionIdStr = (optionsSnapshot.hasData ? option['id'].toString() : option.id.toString());
+                      final votes = counts[optionIdStr] ??
+                          (optionsSnapshot.hasData ? (option['votes'] as int? ?? 0) : (option.votes as int));
+                      final text = optionsSnapshot.hasData ? option['text'] : option.text;
+                      return PollOptionData(
+                        text: text,
+                        votes: votes,
+                        color: widget.optionColors[index % widget.optionColors.length],
+                      );
+                    }).toList();
+
+                    final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
+                    if (totalFromCounts == 0) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: PollResultsChart(
+                        options: chartOptions,
+                        isVisible: _showChart,
+                        onToggleVisibility: () {
+                          setState(() => _showChart = !_showChart);
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
 
             const SizedBox(height: 16),
 
