@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/language_switcher.dart';
 import 'package:pollino/core/widgets/pollino_logo.dart';
+import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:pollino/services/comments_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
+import 'package:share_plus/share_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -272,6 +276,34 @@ class _PollCard extends StatefulWidget {
 class _PollCardState extends State<_PollCard> {
   bool _showChart = true;
 
+  void _sharePoll() {
+    try {
+      final String path = '/poll/${widget.poll.id}';
+      final String url = Uri.base.origin.isNotEmpty ? '${Uri.base.origin}$path' : '${Environment.webAppUrl}$path';
+
+      if (kIsWeb) {
+        // Im Web: Link in die Zwischenablage kopieren und Snackbar anzeigen
+        Clipboard.setData(ClipboardData(text: url));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(I18nService.instance.translate('share.snackbar.copied'))),
+          );
+        }
+      } else {
+        // Native/sonstige Plattformen: Systemteilen verwenden
+        final String message = 'Schau dir diese Umfrage an: ${widget.poll.title}\n$url';
+        Share.share(message, subject: widget.poll.title);
+      }
+    } catch (e) {
+      // Fehler beim Teilen leise ignorieren oder optional snackBar zeigen
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Teilen fehlgeschlagen: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -510,12 +542,15 @@ class _PollCardState extends State<_PollCard> {
                   ],
                 ),
                 const Spacer(),
-                Row(
-                  children: [
-                    const Text('Share', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 4),
-                    Icon(Icons.share, color: Colors.grey[600], size: 20),
-                  ],
+                Tooltip(
+                  message: kIsWeb
+                      ? I18nService.instance.translate('share.tooltip.copyLink')
+                      : I18nService.instance.translate('share.tooltip.share'),
+                  child: TextButton.icon(
+                    onPressed: _sharePoll,
+                    icon: Icon(Icons.share, color: Colors.grey[600], size: 20),
+                    label: Text('actions.share'.tr()),
+                  ),
                 ),
               ],
             ),

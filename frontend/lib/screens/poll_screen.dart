@@ -644,31 +644,6 @@ class _PollScreenState extends State<PollScreen> {
                                 Container(
                                   margin: const EdgeInsets.only(top: 16),
                                   padding: const EdgeInsets.only(bottom: 16),
-                                  child: Row(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(Icons.chat_bubble_outline, color: Colors.grey[600], size: 20),
-                                          const SizedBox(width: 4),
-                                          StreamBuilder<int>(
-                                            stream: CommentsService.streamCommentsCount(poll.id.toString()),
-                                            builder: (context, snapshot) {
-                                              final count = snapshot.data ?? 0;
-                                              return Text('$count', style: const TextStyle(fontSize: 14));
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      const Spacer(),
-                                      Row(
-                                        children: [
-                                          const Text('Share', style: TextStyle(fontSize: 14)),
-                                          const SizedBox(width: 4),
-                                          Icon(Icons.share, color: Colors.grey[600], size: 20),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
