@@ -1,52 +1,42 @@
-# Multi-Stage Build für Flutter Web mit Nginx
-FROM ghcr.io/cirruslabs/flutter:3.27.1 AS builder
+# Flutter Environment-Aware Docker Image (Based on rebar-ahmad.medium.com article)
+FROM nginx:stable
+
+# Install Flutter dependencies and tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    unzip \
+    xz-utils \
+    zip \
+    libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Flutter SDK (specific version 3.27.1)
+RUN git clone https://github.com/flutter/flutter.git -b 3.27.1 /flutter
+ENV PATH="/flutter/bin:${PATH}"
+
+# Pre-download Flutter web tools and enable web
+RUN flutter doctor
+RUN flutter config --enable-web
 
 # Set working directory
 WORKDIR /app
 
-# Copy pubspec files first for better Docker layer caching
-COPY pubspec.yaml pubspec.lock ./
+# Copy Flutter application
+COPY . .
 
 # Install dependencies
 RUN flutter pub get
 
-# Copy source code
-COPY . .
-
-# Build arguments for Supabase configuration (must be set at BUILD time)
-# These will be passed from docker-compose build args
-ARG SUPABASE_URL
-ARG SUPABASE_ANON_KEY
-ARG SUPABASE_SERVICE_ROLE_KEY
-
-# Enable web platform (if not already enabled)
-RUN flutter config --enable-web
-
 # Generate code (freezed, json_serializable, etc.)
 RUN dart run build_runner build --delete-conflicting-outputs
 
-# Build Flutter web app for production with compile-time configuration
-RUN flutter build web --release \
-    --web-renderer canvaskit \
-    --base-href / \
-    --dart-define SUPABASE_URL=${SUPABASE_URL} \
-    --dart-define SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY} \
-    --dart-define SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-
-# Production stage with Nginx
-FROM nginx:1.25-alpine
-
-# Install curl for health checks
-RUN apk --no-cache add curl
-
-# Remove default nginx website
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy built Flutter web app
-COPY --from=builder /app/build/web /usr/share/nginx/html
-
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy and make entrypoint executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
@@ -55,5 +45,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8080
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Set custom entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
