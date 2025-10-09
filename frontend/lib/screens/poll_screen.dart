@@ -774,13 +774,16 @@ class _PollOption extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Background progress bar
-            if (hasVoted)
-              Container(
-                height: 54,
-                width: MediaQuery.of(context).size.width * 0.85 * percentage,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(27), color: color),
-              ),
+            // Background progress bar - immer sichtbar, mit Transparenz vor dem Voting
+            Container(
+              height: 54,
+              width: MediaQuery.of(context).size.width * 0.85 * percentage,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(27),
+                  color:
+                      color.withValues(alpha: hasVoted ? 1.0 : 0.3) // Transparent vor Voting, voll sichtbar nach Voting
+                  ),
+            ),
 
             // Content
             Container(
