@@ -301,10 +301,16 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF8F9FA),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: const Color(0xFFE9ECEF)),
+                                    border: Border.all(
+                                      color: _optionControllers[index].text.isNotEmpty
+                                          ? const Color(0xFF4F46E5) // Blaue Umrandung wenn aktiv
+                                          : const Color(0xFFE9ECEF), // Graue Umrandung wenn leer
+                                      width: _optionControllers[index].text.isNotEmpty ? 2 : 1,
+                                    ),
                                   ),
                                   child: TextFormField(
                                     controller: _optionControllers[index],
+                                    onChanged: (value) => setState(() {}), // Aktualisiere UI bei Eingabe
                                     decoration: InputDecoration(
                                       hintText: I18nService.instance
                                           .translate('create.options.placeholder', params: {'number': '${index + 1}'}),

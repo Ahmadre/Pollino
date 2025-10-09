@@ -163,14 +163,6 @@ class _PollScreenState extends State<PollScreen> {
           backgroundColor: Colors.green,
         ),
       );
-
-      // Kurz warten dann zurück zur Hauptübersicht navigieren
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted && !_isNavigatingAway) {
-          _isNavigatingAway = true;
-          Navigator.of(context).pop();
-        }
-      });
     } catch (e) {
       // Verstecke Loading Indicator
       if (mounted) Navigator.of(context).pop();
@@ -190,14 +182,6 @@ class _PollScreenState extends State<PollScreen> {
     const Color(0xFF64B5F6), // Hellblau für "At Office"
     const Color(0xFF9575CD), // Lila für "Regular Place"
     const Color(0xFFFFB74D), // Orange/Gelb für "Any will do"
-  ];
-
-  // Demo-Avatare wie im Screenshot (Emojis)
-  final List<List<String>> _demoVoters = [
-    ['👩‍💻', '👨‍💼', '👩‍🎨'], // A New Place
-    ['👨‍💻', '👩‍💼'], // At Office
-    ['👩‍🏫', '👨‍🎓', '👩‍⚕️'], // Regular Place
-    ['👨‍🍳'], // Any will do
   ];
 
   @override
@@ -574,15 +558,17 @@ class _PollScreenState extends State<PollScreen> {
 
                                       return Padding(
                                         padding: const EdgeInsets.only(bottom: 12),
-                                        child: _PollOption(
+                                        child: _PollOptionWithVoters(
+                                          pollId: widget.pollId,
+                                          optionId: optionId,
                                           text: optionText,
                                           votes: optionVotes,
                                           percentage: percentage,
                                           color: _optionColors[index % _optionColors.length],
-                                          voters: _demoVoters[index % _demoVoters.length],
                                           hasVoted: _hasVoted,
                                           isSelected: isSelected,
                                           allowsMultiple: poll.allowsMultipleVotes,
+                                          isAnonymousPoll: poll.isAnonymous,
                                           onTap: (_hasVoted || _isPollExpired(poll))
                                               ? null
                                               : () => _toggleOptionSelection(optionId, poll.allowsMultipleVotes),
@@ -688,6 +674,70 @@ class _PollScreenState extends State<PollScreen> {
   }
 }
 
+class _PollOptionWithVoters extends StatelessWidget {
+  final String pollId;
+  final String optionId;
+  final String text;
+  final int votes;
+  final double percentage;
+  final Color color;
+  final bool hasVoted;
+  final bool isSelected;
+  final bool allowsMultiple;
+  final bool isAnonymousPoll;
+  final VoidCallback? onTap;
+
+  const _PollOptionWithVoters({
+    required this.pollId,
+    required this.optionId,
+    required this.text,
+    required this.votes,
+    required this.percentage,
+    required this.color,
+    required this.hasVoted,
+    required this.isSelected,
+    required this.allowsMultiple,
+    required this.isAnonymousPoll,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: Supabase.instance.client.from('user_votes').stream(primaryKey: ['id']).eq('poll_id', pollId),
+      builder: (context, snapshot) {
+        final List<String> voterNames = [];
+
+        // Nur für nicht-anonyme Umfragen Namen sammeln
+        if (!isAnonymousPoll && snapshot.hasData && snapshot.data != null) {
+          for (final vote in snapshot.data!) {
+            // Nur Votes für diese Option berücksichtigen
+            if (vote['option_id']?.toString() == optionId) {
+              final isAnon = vote['is_anonymous'] == true;
+              final voterName = vote['voter_name'];
+              if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+                voterNames.add(voterName.trim());
+              }
+            }
+          }
+        }
+
+        return _PollOption(
+          text: text,
+          votes: votes,
+          percentage: percentage,
+          color: color,
+          voters: voterNames,
+          hasVoted: hasVoted,
+          isSelected: isSelected,
+          allowsMultiple: allowsMultiple,
+          onTap: onTap,
+        );
+      },
+    );
+  }
+}
+
 class _PollOption extends StatelessWidget {
   final String text;
   final int votes;
@@ -779,26 +829,33 @@ class _PollOption extends StatelessWidget {
                   Expanded(
                     child: Text(
                       text,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: hasVoted && percentage > 0 ? Colors.white : Colors.black,
+                        color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
                       ),
                     ),
                   ),
 
-                  // Voters avatars
+                  // Voters avatars mit Initialen
                   if (hasVoted && voters.isNotEmpty) ...[
                     Row(
                       children: voters
                           .take(3)
                           .map(
-                            (voter) => Container(
+                            (voterName) => Container(
                               width: 24,
                               height: 24,
                               margin: const EdgeInsets.only(left: 2),
-                              decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
-                              child: Center(child: Text(voter, style: const TextStyle(fontSize: 12))),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF4F46E5),
+                                border: Border.all(color: Colors.white, width: 1),
+                              ),
+                              child: Center(
+                                  child: Text(voterName.isNotEmpty ? voterName[0].toUpperCase() : '?',
+                                      style: const TextStyle(
+                                          fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white))),
                             ),
                           )
                           .toList(),
@@ -806,16 +863,15 @@ class _PollOption extends StatelessWidget {
                     const SizedBox(width: 12),
                   ],
 
-                  // Percentage
-                  if (hasVoted)
-                    Text(
-                      '${(percentage * 100).round()}%',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: percentage > 0 ? Colors.white : Colors.black,
-                      ),
+                  // Percentage - immer sichtbar
+                  Text(
+                    '${(percentage * 100).round()}%',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
                     ),
+                  ),
                 ],
               ),
             ),
