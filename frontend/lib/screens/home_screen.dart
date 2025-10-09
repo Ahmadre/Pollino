@@ -456,6 +456,8 @@ class _PollCardState extends State<_PollCard> {
                       }
                     }
 
+                    // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
+                    final showNames = !widget.poll.isAnonymous;
                     final chartOptions = liveOptions.asMap().entries.map((entry) {
                       final index = entry.key;
                       final option = entry.value;
@@ -467,7 +469,7 @@ class _PollCardState extends State<_PollCard> {
                         text: text,
                         votes: votes,
                         color: widget.optionColors[index % widget.optionColors.length],
-                        namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
+                        namedVoters: showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
                       );
                     }).toList();
 

@@ -391,7 +391,8 @@ class _PollScreenState extends State<PollScreen> {
                                         }
                                       }
 
-                                      // Baue Chart-Daten: Text aus poll_options, Votes aus counts (Fallback: vorhandene votes)
+                                      // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
+                                      final showNames = !poll.isAnonymous;
                                       final chartOptions = liveOptions.asMap().entries.map((entry) {
                                         final index = entry.key;
                                         final option = entry.value;
@@ -403,7 +404,8 @@ class _PollScreenState extends State<PollScreen> {
                                           text: snapshot.hasData ? option['text'] : option.text,
                                           votes: optionVotes,
                                           color: _optionColors[index % _optionColors.length],
-                                          namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
+                                          namedVoters:
+                                              showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
                                         );
                                       }).toList();
 
