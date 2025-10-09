@@ -352,25 +352,30 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
 
                       // Add Another Option
                       const SizedBox(height: 8),
-                      InkWell(
+                      GestureDetector(
                         onTap: _addOption,
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE9ECEF)),
+                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.add,
-                                color: Colors.grey[600],
+                                color: Color(0xFF4F46E5),
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 I18nService.instance.translate('create.options.add'),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey[600],
+                                  color: Color(0xFF4F46E5),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -393,41 +398,49 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       const SizedBox(height: 16),
 
                       // Allow people to choose Multiple Options
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  I18nService.instance.translate('create.settings.multiple.title'),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE9ECEF)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    I18nService.instance.translate('create.settings.multiple.title'),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  I18nService.instance.translate('create.settings.multiple.description'),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    I18nService.instance.translate('create.settings.multiple.description'),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          Switch(
-                            value: _allowMultipleOptions,
-                            onChanged: (value) {
-                              setState(() {
-                                _allowMultipleOptions = value;
-                              });
-                            },
-                            activeColor: const Color(0xFF007AFF),
-                          ),
-                        ],
+                            Switch(
+                              value: _allowMultipleOptions,
+                              onChanged: (value) {
+                                setState(() {
+                                  _allowMultipleOptions = value;
+                                });
+                              },
+                              activeColor: const Color(0xFF4F46E5),
+                            ),
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 20),
@@ -472,7 +485,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                                   _enableAnonymousVoting = value;
                                 });
                               },
-                              activeColor: const Color(0xFF007AFF),
+                              activeColor: const Color(0xFF4F46E5),
                             ),
                           ],
                         ),
@@ -528,45 +541,53 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                       const SizedBox(height: 20),
 
                       // Set an Expiration Date & Time
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  I18nService.instance.translate('create.expiration.title'),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE9ECEF)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    I18nService.instance.translate('create.expiration.title'),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  I18nService.instance.translate('create.expiration.description'),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    I18nService.instance.translate('create.expiration.description'),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          Switch(
-                            value: _hasExpirationDate,
-                            onChanged: (value) {
-                              setState(() {
-                                _hasExpirationDate = value;
-                                if (!value) {
-                                  _selectedExpirationDate = null;
-                                  _autoDeleteAfterExpiry = false;
-                                }
-                              });
-                            },
-                            activeColor: const Color(0xFF007AFF),
-                          ),
-                        ],
+                            Switch(
+                              value: _hasExpirationDate,
+                              onChanged: (value) {
+                                setState(() {
+                                  _hasExpirationDate = value;
+                                  if (!value) {
+                                    _selectedExpirationDate = null;
+                                    _autoDeleteAfterExpiry = false;
+                                  }
+                                });
+                              },
+                              activeColor: const Color(0xFF4F46E5),
+                            ),
+                          ],
+                        ),
                       ),
 
                       // Expiration Date Settings (nur wenn aktiviert)
@@ -724,7 +745,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _createPoll,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF007AFF),
+                      backgroundColor: const Color(0xFF4F46E5),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
@@ -776,10 +797,10 @@ class _ExpirationChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF007AFF) : Colors.white,
+          color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF007AFF) : const Color(0xFFE9ECEF),
+            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
           ),
         ),
         child: Text(
