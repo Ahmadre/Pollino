@@ -883,12 +883,16 @@ class _PollOption extends StatelessWidget {
                   ],
 
                   // Percentage - immer sichtbar
-                  Text(
-                    '${(percentage * 100).round()}%',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
+                  AnimatedOpacity(
+                    opacity: hasVoted ? 1.0 : 0.3,
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      '${(percentage * 100).round()}%',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
+                      ),
                     ),
                   ),
                 ],
