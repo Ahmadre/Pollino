@@ -64,6 +64,7 @@
       "anonymous": "صوت بشكل مجهول",
       "named": "صوت بالاسم",
       "nameLabel": "اسمك",
+      "nameHint": "أدخل اسمك",
       "votesSummary": "{{votes}} أصوات",
       "expiresIn": "ينتهي في: {{time}}"
     },

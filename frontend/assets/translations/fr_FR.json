@@ -64,6 +64,7 @@
       "anonymous": "Voter anonymement",
       "named": "Voter avec nom",
       "nameLabel": "Votre nom",
+      "nameHint": "Entrez votre nom",
       "votesSummary": "{{votes}} Votes",
       "expiresIn": "Expire dans : {{time}}"
     },

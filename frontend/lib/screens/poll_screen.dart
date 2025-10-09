@@ -493,30 +493,44 @@ class _PollScreenState extends State<PollScreen> {
                                     ),
                                   ),
 
-                                  // Name Input (wenn nicht anonym) - Mobile-friendly mit ScrollIntoView
+                                  // Name Input (wenn nicht anonym) - Mobile-responsive
                                   if (!_isAnonymousVote)
                                     Container(
                                       margin: const EdgeInsets.only(bottom: 16),
-                                      child: TextField(
-                                        controller: _voterNameController,
-                                        decoration: InputDecoration(
-                                          labelText: I18nService.instance.translate('poll.voting.nameLabel'),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.white,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                        ),
-                                        // Automatisches Scrollen wenn Tastatur aufgeht (Mobile-Fix)
-                                        onTap: () {
-                                          Future.delayed(const Duration(milliseconds: 300), () {
-                                            Scrollable.ensureVisible(
-                                              context,
-                                              duration: const Duration(milliseconds: 300),
-                                              curve: Curves.easeInOut,
-                                            );
-                                          });
+                                      width: double.infinity,
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          return TextField(
+                                            controller: _voterNameController,
+                                            textInputAction: TextInputAction.done,
+                                            decoration: InputDecoration(
+                                              labelText: I18nService.instance.translate('poll.voting.nameLabel'),
+                                              hintText: I18nService.instance.translate('poll.voting.nameHint'),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              filled: true,
+                                              fillColor: Colors.white,
+                                              contentPadding: EdgeInsets.symmetric(
+                                                horizontal: constraints.maxWidth < 400 ? 12 : 16,
+                                                vertical: constraints.maxWidth < 400 ? 12 : 16,
+                                              ),
+                                              prefixIcon: const Icon(Icons.person_outline),
+                                            ),
+                                            style: TextStyle(
+                                              fontSize: constraints.maxWidth < 400 ? 14 : 16,
+                                            ),
+                                            // Automatisches Scrollen wenn Tastatur aufgeht (Mobile-Fix)
+                                            onTap: () {
+                                              Future.delayed(const Duration(milliseconds: 300), () {
+                                                Scrollable.ensureVisible(
+                                                  context,
+                                                  duration: const Duration(milliseconds: 300),
+                                                  curve: Curves.easeInOut,
+                                                );
+                                              });
+                                            },
+                                          );
                                         },
                                       ),
                                     ),
@@ -1245,26 +1259,51 @@ class _CommentsSectionState extends State<_CommentsSection> {
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Switch(
-                    value: !_isAnonymous,
-                    onChanged: (v) => setState(() => _isAnonymous = !v),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(I18nService.instance.translate('comments.withName')),
-                  const SizedBox(width: 8),
-                  if (!_isAnonymous)
-                    Expanded(
-                      child: TextField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          hintText: I18nService.instance.translate('comments.nameOptional'),
-                          isDense: true,
-                        ),
+              // Mobile-responsive Layout für Kommentar-Name
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 600;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Switch(
+                            value: !_isAnonymous,
+                            onChanged: (v) => setState(() => _isAnonymous = !v),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              I18nService.instance.translate('comments.withName'),
+                              style: TextStyle(fontSize: isMobile ? 14 : 16),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                ],
+                      if (!_isAnonymous) ...[
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _nameController,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText: I18nService.instance.translate('comments.nameOptional'),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: isMobile ? 12 : 16,
+                              vertical: isMobile ? 10 : 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            prefixIcon: const Icon(Icons.person_outline, size: 18),
+                          ),
+                          style: TextStyle(fontSize: isMobile ? 14 : 16),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               )
             ],
           )
