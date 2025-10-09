@@ -13,6 +13,8 @@ on:
       - develop
     paths:
       - 'frontend/**'
+  # Fallback: Trigger manually if needed
+  workflow_dispatch:
 
 env:
   REGISTRY: docker.io
