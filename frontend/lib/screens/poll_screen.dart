@@ -295,6 +295,21 @@ class _PollScreenState extends State<PollScreen> {
                             );
                           }
 
+                          // Sortiere Optionen absteigend nach Anzahl der Votes
+                          liveOptions.sort((a, b) {
+                            final aVotes = snapshot.hasData ? (a['votes'] as int? ?? 0) : a.votes;
+                            final bVotes = snapshot.hasData ? (b['votes'] as int? ?? 0) : b.votes;
+
+                            // Primäre Sortierung: Nach Votes absteigend
+                            final voteComparison = bVotes.compareTo(aVotes);
+                            if (voteComparison != 0) return voteComparison;
+
+                            // Sekundäre Sortierung: Nach Text alphabetisch falls Votes gleich sind
+                            final aText = snapshot.hasData ? a['text'] : a.text;
+                            final bText = snapshot.hasData ? b['text'] : b.text;
+                            return aText.toString().compareTo(bText.toString());
+                          });
+
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Column(
