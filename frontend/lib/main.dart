@@ -7,6 +7,7 @@ import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/rtl_support.dart';
+import 'package:pollino/core/theme/app_theme.dart';
 import 'package:pollino/env.dart';
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
@@ -90,6 +91,9 @@ class _MyAppState extends State<MyApp> {
       create: (_) => PollBloc(widget.pollBloc.hiveBox)..add(const PollEvent.loadPolls(page: 1, limit: 20)),
       child: RTLDirectionalityWrapper(
         child: MaterialApp.router(
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.system,
           debugShowCheckedModeBanner: false,
           routerDelegate: RoutemasterDelegate(routesBuilder: (context) => routes),
           routeInformationParser: const RoutemasterParser(),
