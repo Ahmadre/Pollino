@@ -284,11 +284,12 @@ class _PollScreenState extends State<PollScreen> {
                             .from('poll_options')
                             .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
                         builder: (context, snapshot) {
-                          List<dynamic> liveOptions = poll.options;
+                          // Erstelle eine veränderbare Kopie der Optionen
+                          List<dynamic> liveOptions = List.from(poll.options);
                           int totalVotes = poll.options.fold<int>(0, (sum, option) => sum + option.votes);
 
                           if (snapshot.hasData && snapshot.data != null) {
-                            liveOptions = snapshot.data!;
+                            liveOptions = List.from(snapshot.data!); // Erstelle veränderbare Kopie
                             totalVotes = liveOptions.fold<int>(
                               0,
                               (sum, option) => sum + (option['votes'] as int? ?? 0),
