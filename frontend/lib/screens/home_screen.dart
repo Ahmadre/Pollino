@@ -142,8 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const Spacer(),
                   const LanguageSwitcher(),
-                  const SizedBox(width: 8),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.tune, size: 20)),
                 ],
               ),
             ),

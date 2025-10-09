@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -417,13 +418,14 @@ class _PollScreenState extends State<PollScreen> {
                                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                                           ),
                                         ),
-                                        Switch(
+                                        CupertinoSwitch(
                                           value: !_isAnonymousVote,
                                           onChanged: (value) {
                                             setState(() {
                                               _isAnonymousVote = !value;
                                             });
                                           },
+                                          activeColor: const Color(0xFF4F46E5),
                                         ),
                                       ],
                                     ),
@@ -1341,9 +1343,10 @@ class _CommentsSectionState extends State<_CommentsSection> {
                     children: [
                       Row(
                         children: [
-                          Switch(
+                          CupertinoSwitch(
                             value: !_isAnonymous,
                             onChanged: (v) => setState(() => _isAnonymous = !v),
+                            activeColor: const Color(0xFF4F46E5),
                           ),
                           const SizedBox(width: 6),
                           Expanded(

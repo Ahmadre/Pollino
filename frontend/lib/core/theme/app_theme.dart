@@ -5,35 +5,35 @@ class AppColors {
   static const Color primary = Color(0xFF4F46E5); // Indigo-600
   static const Color primaryLight = Color(0xFF6366F1); // Indigo-500
   static const Color primaryDark = Color(0xFF3730A3); // Indigo-700
-  
+
   // Secondary Colors
   static const Color secondary = Color(0xFF7C3AED); // Violet-600
   static const Color secondaryLight = Color(0xFF8B5CF6); // Violet-500
-  
+
   // Accent Colors
   static const Color accent1 = Color(0xFF0EA5E9); // Sky-500
   static const Color accent2 = Color(0xFF10B981); // Emerald-500
-  
+
   // Neutral Colors
   static const Color background = Color(0xFFF8F9FA);
   static const Color surface = Colors.white;
   static const Color surfaceVariant = Color(0xFFF8F9FA);
-  
+
   // Text Colors
   static const Color textPrimary = Color(0xFF1F2937); // Gray-800
   static const Color textSecondary = Color(0xFF6B7280); // Gray-500
   static const Color textTertiary = Color(0xFF9CA3AF); // Gray-400
-  
+
   // Border Colors
   static const Color border = Color(0xFFE9ECEF);
   static const Color borderActive = primary;
-  
+
   // Status Colors
   static const Color success = Color(0xFF10B981); // Emerald-500
   static const Color warning = Color(0xFFF59E0B); // Amber-500
   static const Color error = Color(0xFFEF4444); // Red-500
   static const Color info = accent1;
-  
+
   // Special Colors
   static const Color shadowLight = Color(0x1A000000); // 10% black
   static const Color overlay = Color(0x80000000); // 50% black
@@ -43,7 +43,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      
+
       // Color Scheme
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.primary,
@@ -59,7 +59,7 @@ class AppTheme {
         error: AppColors.error,
         onError: Colors.white,
       ),
-      
+
       // App Bar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
@@ -76,7 +76,7 @@ class AppTheme {
           size: 24,
         ),
       ),
-      
+
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -97,7 +97,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -108,7 +108,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -135,7 +135,7 @@ class AppTheme {
           fontSize: 16,
         ),
       ),
-      
+
       // Switch Theme (using Cupertino style)
       switchTheme: SwitchThemeData(
         thumbColor: MaterialStateProperty.resolveWith((states) {
@@ -152,7 +152,7 @@ class AppTheme {
         }),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      
+
       // Card Theme
       cardTheme: CardThemeData(
         color: AppColors.surface,
@@ -163,7 +163,7 @@ class AppTheme {
         ),
         margin: EdgeInsets.zero,
       ),
-      
+
       // Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
@@ -172,22 +172,22 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
-      
+
       // Scaffold Background
       scaffoldBackgroundColor: AppColors.background,
-      
+
       // Divider Theme
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 1,
       ),
-      
+
       // Icon Theme
       iconTheme: const IconThemeData(
         color: AppColors.textSecondary,
         size: 24,
       ),
-      
+
       // Text Theme
       textTheme: const TextTheme(
         // Headings
@@ -206,7 +206,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        
+
         // Titles
         titleLarge: TextStyle(
           fontSize: 18,
@@ -223,7 +223,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
         ),
-        
+
         // Body Text
         bodyLarge: TextStyle(
           fontSize: 16,
@@ -240,7 +240,7 @@ class AppTheme {
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
         ),
-        
+
         // Labels
         labelLarge: TextStyle(
           fontSize: 14,
@@ -260,7 +260,7 @@ class AppTheme {
       ),
     );
   }
-  
+
   // Für künftige Dark Theme Unterstützung
   static ThemeData get darkTheme {
     return lightTheme.copyWith(
@@ -274,34 +274,34 @@ class AppTheme {
 extension AppThemeExtension on ThemeData {
   // Custom Container Decorations
   BoxDecoration get primaryContainer => BoxDecoration(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: AppColors.border),
-    boxShadow: [
-      BoxShadow(
-        color: AppColors.shadowLight,
-        blurRadius: 4,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-  
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+
   BoxDecoration get activeContainer => BoxDecoration(
-    color: AppColors.surface,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: AppColors.primary, width: 2),
-    boxShadow: [
-      BoxShadow(
-        color: AppColors.shadowLight,
-        blurRadius: 4,
-        offset: const Offset(0, 2),
-      ),
-    ],
-  );
-  
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      );
+
   BoxDecoration get optionContainer => BoxDecoration(
-    color: AppColors.surfaceVariant,
-    borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: AppColors.border),
-  );
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      );
 }
