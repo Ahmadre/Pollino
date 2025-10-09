@@ -403,7 +403,10 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE9ECEF)),
+                          border: Border.all(
+                            color: _allowMultipleOptions ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                            width: _allowMultipleOptions ? 2 : 1,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -451,7 +454,10 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8F9FA),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE9ECEF)),
+                          border: Border.all(
+                            color: _enableAnonymousVoting ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                            width: _enableAnonymousVoting ? 2 : 1,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -546,7 +552,10 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE9ECEF)),
+                          border: Border.all(
+                            color: _hasExpirationDate ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                            width: _hasExpirationDate ? 2 : 1,
+                          ),
                         ),
                         child: Row(
                           children: [
