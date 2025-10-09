@@ -1311,25 +1311,21 @@ class _CommentsSectionState extends State<_CommentsSection> {
                       maxLines: 4,
                       decoration: InputDecoration(
                         hintText: I18nService.instance.translate('comments.placeholder'),
-                        border: const OutlineInputBorder(),
+                        border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
                         isDense: true,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  SizedBox(
-                    height: 40,
-                    child: ElevatedButton.icon(
-                      onPressed: _submitting ? null : _submit,
-                      icon: _submitting
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.send, size: 16),
-                      label: Text(I18nService.instance.translate('comments.send')),
-                    ),
+                  IconButton(
+                    onPressed: _submitting ? null : _submit,
+                    icon: _submitting
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.send, size: 16),
                   ),
                 ],
               ),
