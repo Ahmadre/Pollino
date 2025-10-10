@@ -72,17 +72,16 @@ class ResponsiveHelper {
   }
 
   /// Berechnet responsive Chart-Höhe basierend auf Goldenen Schnitt
-  static double getChartHeight(BuildContext context, {bool isInCard = false}) {
-    final width = MediaQuery.of(context).size.width;
+  static double getChartHeight(BuildContext context) {
     final deviceType = getDeviceType(context);
 
     switch (deviceType) {
       case DeviceType.mobile:
-        return (width * 0.6).clamp(200.0, 300.0);
+        return 300.0;
       case DeviceType.tablet:
-        return isInCard ? 220.0 : (width * 0.4).clamp(250.0, 350.0);
+        return 300.0;
       case DeviceType.desktop:
-        return isInCard ? 250.0 : 300.0; // Kleinere Höhe für Cards
+        return 300.0; // Kleinere Höhe für Cards
     }
   }
 

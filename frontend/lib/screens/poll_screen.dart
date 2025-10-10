@@ -671,7 +671,6 @@ class _PollScreenState extends State<PollScreen> {
                                             }
 
                                             return ResponsiveChartContainer(
-                                              padding: const EdgeInsets.only(bottom: 16),
                                               child: PollResultsChart(
                                                 options: chartOptions,
                                                 isVisible: _showChart,

@@ -421,8 +421,6 @@ class _PollCardState extends State<_PollCard> {
                     }
 
                     return ResponsiveChartContainer(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      isInCard: true,
                       child: PollResultsChart(
                         options: chartOptions,
                         isVisible: _showChart,

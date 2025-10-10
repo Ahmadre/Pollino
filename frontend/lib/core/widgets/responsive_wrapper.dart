@@ -209,36 +209,22 @@ class ResponsiveTwoColumn extends StatelessWidget {
 class ResponsiveChartContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
-  final bool isInCard;
+  final double? chartHeight;
 
   const ResponsiveChartContainer({
     super.key,
     required this.child,
     this.padding,
-    this.isInCard = false,
+    this.chartHeight = 300.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isInCard) {
-      // For cards, use flexible sizing
-      return Container(
-        constraints: BoxConstraints(
-          maxHeight: ResponsiveHelper.isMobile(context) ? 200.0 : 240.0,
-          minHeight: ResponsiveHelper.isMobile(context) ? 150.0 : 180.0,
-        ),
-        padding: padding,
-        child: child,
-      );
-    } else {
-      // For full-screen, use fixed height
-      final chartHeight = ResponsiveHelper.getChartHeight(context, isInCard: isInCard);
-      return Container(
-        height: chartHeight,
-        padding: padding,
-        child: child,
-      );
-    }
+    return Container(
+      height: chartHeight,
+      padding: padding,
+      child: child,
+    );
   }
 }
 

@@ -143,7 +143,7 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
                       right: 4,
                       top: isMobile ? 8 : 4, // Add top margin for mobile
                     ),
-                    padding: EdgeInsets.all(isMobile ? 8 : 12),
+                    padding: EdgeInsets.all(isMobile ? 8 : 12).copyWith(bottom: 0, top: 20),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
