@@ -282,33 +282,40 @@ class _PollScreenState extends State<PollScreen> {
                       final poll = state.polls.first;
                       return StreamBuilder<List<Map<String, dynamic>>>(
                         stream: Supabase.instance.client
-                            .from('poll_options')
+                            .from('user_votes')
                             .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
-                        builder: (context, snapshot) {
+                        builder: (context, votesSnapshot) {
                           // Erstelle eine veränderbare Kopie der Optionen
                           List<dynamic> liveOptions = List.from(poll.options);
-                          int totalVotes = poll.options.fold<int>(0, (sum, option) => sum + option.votes);
-
-                          if (snapshot.hasData && snapshot.data != null) {
-                            liveOptions = List.from(snapshot.data!); // Erstelle veränderbare Kopie
-                            totalVotes = liveOptions.fold<int>(
-                              0,
-                              (sum, option) => sum + (option['votes'] as int? ?? 0),
-                            );
+                          
+                          // Zähle echte Stimmen aus user_votes
+                          final Map<String, int> voteCountsByOption = {};
+                          int totalVotes = 0;
+                          
+                          if (votesSnapshot.hasData && votesSnapshot.data != null) {
+                            for (final vote in votesSnapshot.data!) {
+                              final optionId = vote['option_id']?.toString();
+                              if (optionId != null) {
+                                voteCountsByOption.update(optionId, (count) => count + 1, ifAbsent: () => 1);
+                                totalVotes++;
+                              }
+                            }
                           }
 
-                          // Sortiere Optionen absteigend nach Anzahl der Votes
+                          // Sortiere Optionen absteigend nach echten Vote-Zahlen
                           liveOptions.sort((a, b) {
-                            final aVotes = snapshot.hasData ? (a['votes'] as int? ?? 0) : a.votes;
-                            final bVotes = snapshot.hasData ? (b['votes'] as int? ?? 0) : b.votes;
+                            final aId = a.id?.toString() ?? a['id']?.toString() ?? '';
+                            final bId = b.id?.toString() ?? b['id']?.toString() ?? '';
+                            final aVotes = voteCountsByOption[aId] ?? 0;
+                            final bVotes = voteCountsByOption[bId] ?? 0;
 
                             // Primäre Sortierung: Nach Votes absteigend
                             final voteComparison = bVotes.compareTo(aVotes);
                             if (voteComparison != 0) return voteComparison;
 
                             // Sekundäre Sortierung: Nach Text alphabetisch falls Votes gleich sind
-                            final aText = snapshot.hasData ? a['text'] : a.text;
-                            final bText = snapshot.hasData ? b['text'] : b.text;
+                            final aText = a.text ?? a['text'] ?? '';
+                            final bText = b.text ?? b['text'] ?? '';
                             return aText.toString().compareTo(bText.toString());
                           });
 
@@ -503,10 +510,9 @@ class _PollScreenState extends State<PollScreen> {
                                   children: [
                                     ...List.generate(liveOptions.length, (index) {
                                       final option = liveOptions[index];
-                                      final optionId = snapshot.hasData ? option['id'].toString() : option.id;
-                                      final optionText = snapshot.hasData ? option['text'] : option.text;
-                                      final optionVotes =
-                                          snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes;
+                                      final optionId = option.id?.toString() ?? option['id']?.toString() ?? '';
+                                      final optionText = option.text ?? option['text'] ?? '';
+                                      final optionVotes = voteCountsByOption[optionId] ?? 0;
                                       final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
                                       final isSelected = _selectedOptionIds.contains(optionId);
 
@@ -626,12 +632,10 @@ class _PollScreenState extends State<PollScreen> {
                                       final chartOptions = liveOptions.asMap().entries.map((entry) {
                                         final index = entry.key;
                                         final option = entry.value;
-                                        final optionIdStr =
-                                            (snapshot.hasData ? option['id'].toString() : option.id.toString());
-                                        final optionVotes = counts[optionIdStr] ??
-                                            (snapshot.hasData ? (option['votes'] as int? ?? 0) : option.votes);
+                                        final optionIdStr = option.id?.toString() ?? option['id']?.toString() ?? '';
+                                        final optionVotes = counts[optionIdStr] ?? voteCountsByOption[optionIdStr] ?? 0;
                                         return PollOptionData(
-                                          text: snapshot.hasData ? option['text'] : option.text,
+                                          text: option.text ?? option['text'] ?? '',
                                           votes: optionVotes,
                                           color: _optionColors[index % _optionColors.length],
                                           namedVoters:
