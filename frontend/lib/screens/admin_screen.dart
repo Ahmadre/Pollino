@@ -315,18 +315,14 @@ class _AdminScreenState extends State<AdminScreen> {
 
           const SizedBox(height: 12),
 
-          // Edit Poll (placeholder for future feature)
+          // Edit Poll
           _AdminActionCard(
             icon: Icons.edit,
             title: I18nService.instance.translate('admin.actions.editPoll'),
             subtitle: I18nService.instance.translate('admin.actions.editPollDesc'),
             color: Colors.orange,
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(I18nService.instance.translate('admin.actions.comingSoon')),
-                ),
-              );
+              Routemaster.of(context).push('/edit/${widget.pollId}/${widget.adminToken}');
             },
           ),
 

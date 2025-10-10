@@ -376,6 +376,91 @@ class SupabaseService {
     }
   }
 
+  /// Aktualisiert eine bestehende Umfrage (nur mit gültigem Admin-Token)
+  static Future<Poll> updatePoll({
+    required String pollId,
+    required String adminToken,
+    required String title,
+    required List<String> optionTexts,
+    String? description,
+    bool isAnonymous = true,
+    bool allowsMultipleVotes = false,
+    DateTime? expiresAt,
+    bool autoDeleteAfterExpiry = false,
+    String? creatorName,
+  }) async {
+    try {
+      // Erst Admin-Token validieren
+      final isValidToken = await validateAdminToken(pollId, adminToken);
+      if (!isValidToken) {
+        throw Exception('Ungültiges Admin-Token');
+      }
+
+      String? createdBy;
+
+      // Falls nicht anonym, erstelle oder finde den User
+      if (!isAnonymous && creatorName != null && creatorName.isNotEmpty) {
+        final userResult = await _client.rpc('create_or_get_user', params: {
+          'user_name': creatorName,
+        });
+        createdBy = userResult.toString();
+      }
+
+      // Aktualisiere die Umfrage
+      final pollResponse = await _client
+          .from('polls')
+          .update({
+            'title': title,
+            'description': description ?? '',
+            'is_anonymous': isAnonymous,
+            'allows_multiple_votes': allowsMultipleVotes,
+            'expires_at': expiresAt != null ? TimezoneHelper.toIso8601Utc(expiresAt) : null,
+            'auto_delete_after_expiry': autoDeleteAfterExpiry,
+            'created_by': createdBy,
+            'created_by_name': creatorName,
+          })
+          .eq('id', pollId)
+          .select()
+          .single();
+
+      // Lösche alle bestehenden Optionen
+      await _client.from('poll_options').delete().eq('poll_id', pollId);
+
+      // Erstelle neue Optionen
+      final optionsData = optionTexts.map((text) => {'poll_id': int.parse(pollId), 'text': text, 'votes': 0}).toList();
+
+      final optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+
+      // Erstelle die aktualisierte Poll-Instanz
+      final options = optionsResponse.map((optionData) {
+        return Option(
+          id: optionData['id'].toString(),
+          text: optionData['text'],
+          votes: optionData['votes'] ?? 0,
+        );
+      }).toList();
+
+      final updatedPoll = Poll(
+        id: pollId,
+        title: title,
+        description: description ?? '',
+        options: options,
+        isAnonymous: isAnonymous,
+        allowsMultipleVotes: allowsMultipleVotes,
+        expiresAt: expiresAt,
+        autoDeleteAfterExpiry: autoDeleteAfterExpiry,
+        createdByName: creatorName,
+        createdBy: createdBy,
+        likesCount: pollResponse['likes_count'] ?? 0,
+      );
+
+      return updatedPoll;
+    } catch (e) {
+      debugPrint('Error in updatePoll: $e');
+      rethrow;
+    }
+  }
+
   /// Führt automatische Cleanup-Funktion aus (optional - DB macht das jetzt automatisch)
   /// Diese Methode kann manuell aufgerufen werden, ist aber nicht mehr notwendig
   /// da die Database das Cleanup automatisch über Trigger durchführt
