@@ -220,7 +220,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                 ),
               ),
 
-              Expanded(
+              Flexible(
                 child: SingleChildScrollView(
                   child: ResponsiveContainer(
                     type: ResponsiveContainerType.form,
@@ -745,44 +745,44 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                         ],
 
                         const SizedBox(height: 40),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
 
-              // Next Button
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _createPoll,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4F46E5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            I18nService.instance.translate('actions.next'),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                        // Next Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _createPoll,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4F46E5),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                                      ),
+                                    )
+                                  : Text(
+                                      I18nService.instance.translate('actions.next'),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
