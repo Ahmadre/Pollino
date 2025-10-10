@@ -16,8 +16,10 @@
 Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Flutter für das Frontend und Supabase als Backend-as-a-Service. Pollino ermöglicht es Benutzern, einfach Umfragen zu erstellen, zu verwalten und daran teilzunehmen.
 
 <div align="center">
-  <img src="frontend/assets/images/screenshots/poll.jpg" height="500" alt="Poll"/>
+  <img src="frontend/assets/images/screenshots/poll.jpg" height="500" alt="Pollino - Interactive Poll Interface"/>
 </div>
+
+> **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like-System und responsivem Design. Zusätzliche Screenshots für Admin-Features und Management-Interface wurden für optimierte Performance entfernt.
 
 ## 🚀 Features
 
@@ -30,6 +32,9 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **🧭 Navigation**: Routemaster für deklaratives Routing
 - **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
 - **💬 Kommentarsystem**: Benutzer können Kommentare zu Umfragen hinzufügen und bearbeiten
+- **🔧 Admin-Panel**: Umfangreiche Administrationsfunktionen für Umfrage-Verwaltung
+- **✏️ Poll-Bearbeitung**: Vollständige Bearbeitung bestehender Umfragen mit Admin-Token
+- **🌍 Mehrsprachigkeit**: Unterstützung für 6 Sprachen (DE, EN, FR, ES, JA, AR)
 
 ### Backend (Supabase Stack)
 
@@ -40,6 +45,8 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **📁 Storage**: Datei-Upload und -verwaltung
 - **🔧 Edge Functions**: Serverless Deno-basierte Functions
 - **📈 Analytics**: Integrierte Logflare Analytics
+- **🔐 Admin-Funktionen**: Token-basierte Administratorrechte
+- **🔄 Sequenz-Management**: Automatische Datenbank-Sequenz-Synchronisation
 
 ### DevOps & Infrastruktur
 
@@ -295,8 +302,9 @@ Pollino/
 │   │   │   └── polls/             # Poll Feature Module
 │   │   │       ├── data/          # Data Layer (Models, DataSources, Repositories)
 │   │   │       └── domain/        # Domain Layer (Entities, UseCases, Interfaces)
-│   │   ├── screens/               # UI Screens (Home, Poll Detail, Create)
-│   │   └── services/              # Application Services (Supabase, Like System)
+│   │   ├── screens/               # UI Screens (Home, Poll Detail, Create, Edit, Admin)
+│   │   ├── services/              # Application Services (Supabase, Like System)
+│   │   └── widgets/               # Reusable UI Components (PollForm, etc.)
 │   ├── assets/                    # Static Assets & Translations (6 Languages)
 │   ├── web/                       # Web-specific Files & PWA Configuration
 │   ├── test/                      # Unit & Widget Tests
@@ -304,7 +312,7 @@ Pollino/
 ├── 🗄️ volumes/                    # Persistent Data & Configuration
 │   ├── db/                        # Database Configuration
 │   │   ├── init/                  # Database Initialization Scripts
-│   │   ├── migrations/            # Database Schema Migrations (5 Files)
+│   │   ├── migrations/            # Database Schema Migrations (7+ Files)
 │   │   └── data/                  # PostgreSQL Data Directory
 │   ├── functions/                 # Supabase Edge Functions
 │   ├── api/                       # API Gateway Configuration
@@ -319,11 +327,13 @@ Pollino/
 │   ├── docker-compose.dev.yml     # Development Override
 │   └── data.sql                   # Development Sample Data
 ├── 🐳 docker-compose.yml          # Main Services Definition
+├── 🐳 docker-compose.asta.yml     # Production Deployment Configuration
 ├── 🐳 docker-compose.s3.yml       # S3 Storage Extension
 ├── 🔄 reset.sh                    # Database Reset Script
 ├── 📋 README.md                   # This Documentation
 ├── 📝 CHANGELOG.md                # Version History & Changes
 ├── 🔧 .env.example                # Environment Variables Template
+├── 🔧 .env.prod                   # Production Environment Configuration
 └── 📊 .vscode/                    # VS Code Configuration
     └── launch.json                # Debug Configuration
 ```

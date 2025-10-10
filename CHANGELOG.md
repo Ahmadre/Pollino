@@ -14,7 +14,58 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Umfrage-Kategorien und Tags
 - Export-Funktionen (PDF, CSV)
 - Umfrage-Templates
-- Kommentar-System für Umfragen
+
+## [0.2.0] - 2025-10-10 - Admin & Stability Release
+
+### 🚀 Added
+- **🔧 Admin-Edit-Feature**: Vollständige Umfrage-Bearbeitungsfunktionalität
+  - Neue `EditPollScreen` für Administratoren
+  - Wiederverwendbare `PollForm` Widget-Komponente
+  - Admin-Token basierte Berechtigung
+  - Vollständige Bearbeitung aller Umfrage-Eigenschaften
+  - Routing-Integration für Edit-Funktionalität
+- **📸 Screenshot-Dokumentation**: Visuelle Projektdokumentation
+  - High-Quality Screenshots der wichtigsten App-Bereiche
+  - Poll-Ansicht, Admin-Dashboard, und Management-Interface
+  - Optimierte Bildgrößen für README-Integration
+
+### 🌐 Enhanced
+- **🌍 Erweiterte I18n-Unterstützung**: Vollständige Übersetzungen
+  - Admin-Edit-Interface in allen 6 unterstützten Sprachen
+  - Arabisch (ar_SA): 50+ neue Übersetzungsschlüssel
+  - Englisch (en_GB): Komplette Admin-Interface-Übersetzungen
+  - Japanisch (ja_JP): 50+ neue Übersetzungsschlüssel
+  - Deutsche, Französische, Spanische Übersetzungen erweitert
+  - Konsistente Terminologie über alle Sprachen hinweg
+
+### 🐛 Fixed
+- **🔢 Datenbank-Sequenz-Fixes**: Kritische ID-Generierungsprobleme behoben
+  - Neue Migration `001_fix_poll_options_sequence.sql` für Sequenz-Synchronisation
+  - PostgreSQL-Funktion `fix_poll_options_sequence()` für automatische Reparatur
+  - Behebt "duplicate key value violates unique constraint poll_options_pkey" Fehler
+  - Robuste Sequenz-Verwaltung für poll_options Tabelle
+- **⚡ Retry-Mechanismus**: Verbesserte Fehlerbehandlung
+  - Implementierung eines Retry-Mechanismus für poll_options Insertion
+  - Automatische Wiederholung bei Sequenz-Konflikten
+  - Verbesserte Robustheit bei simultanen Umfrage-Erstellungen
+- **🧹 UI-Bereinigung**: Interface-Optimierungen
+  - Entfernung toter Buttons in der Poll-Screen
+  - Saubere Routing-Pfade ohne Duplikate
+  - Verbesserte Datenintegrität bei Updates (keine Datenverluste)
+
+### 🎨 Changed
+- **📱 README-Optimierung**: Fokussierte Dokumentation
+  - Entfernung redundanter Screenshots (admin.jpg, dashboard.jpg)
+  - Konzentration auf die wichtigste Poll-Ansicht
+  - Optimierte Dateigröße und Ladezeiten
+  - Klarere visuelle Hierarchie in der Dokumentation
+
+### 🏗️ Technical
+- **🏗️ Code-Refaktorierung**: Verbesserte Architektur
+  - Extraktion der `PollForm` als wiederverwendbare Komponente
+  - Separation of Concerns zwischen Create und Edit-Funktionalität
+  - Optimierte Service-Layer für Umfrage-Operationen
+  - Erweiterte Error-Handling-Mechanismen
 
 ## [0.1.0] - 2025-10-07 - Alpha Release
 
