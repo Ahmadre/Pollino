@@ -2,12 +2,12 @@
 
 echo "Building Flutter app with runtime environment variables..."
 echo "SUPABASE_URL: ${SUPABASE_URL}"
-echo "SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:0:20}..." # Only show first 20 chars
 
 # Build Flutter web app with runtime environment variables
 flutter build web --release \
     --web-renderer canvaskit \
     --base-href / \
+    --dart-define WEB_APP_URL="${WEB_APP_URL}" \
     --dart-define SUPABASE_URL="${SUPABASE_URL}" \
     --dart-define SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY}" \
     --dart-define SUPABASE_SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY}"
