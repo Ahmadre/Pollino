@@ -5,11 +5,11 @@ class ResponsiveHelper {
   // Breakpoints basierend auf Material Design 3 und UX Best Practices
   static const double mobileBreakpoint = 600;
   static const double tabletBreakpoint = 1024;
-  static const double desktopBreakpoint = 1200;
+  static const double desktopBreakpoint = 1920;
 
   // Container Breiten basierend auf Goldenen Schnitt (1.618)
-  static const double maxContentWidth = 1200; // Desktop Container
-  static const double maxReadingWidth = 800; // Optimale Lesbreite
+  static const double maxContentWidth = 1920; // Desktop Container
+  static const double maxReadingWidth = 1200; // Optimale Lesbreite
   static const double maxFormWidth = 600; // Forms und Input-Bereiche
   static const double maxCardWidth = 400; // Poll Cards
 

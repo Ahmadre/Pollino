@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
-import 'package:pollino/core/utils/responsive_helper.dart';
 import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
@@ -326,6 +325,7 @@ class _PollScreenState extends State<PollScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // Fixed header section (User Info) - always at top
                                 // User Info
                                 Row(
                                   children: [
@@ -507,181 +507,201 @@ class _PollScreenState extends State<PollScreen> {
                                     ),
                                 ],
 
-                                // Poll Options
-                                Column(
-                                  children: [
-                                    ...List.generate(liveOptions.length, (index) {
-                                      final option = liveOptions[index];
-                                      final optionId = option.id?.toString() ?? option['id']?.toString() ?? '';
-                                      final optionText = option.text ?? option['text'] ?? '';
-                                      final optionVotes = voteCountsByOption[optionId] ?? 0;
-                                      final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
-                                      final isSelected = _selectedOptionIds.contains(optionId);
+                                // Responsive layout for voting options and results
+                                ResponsiveTwoColumn(
+                                  leftFlex: 1,
+                                  rightFlex: 1,
+                                  padding: EdgeInsets.zero,
+                                  leftChild: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Poll Options
+                                      Column(
+                                        children: [
+                                          ...List.generate(liveOptions.length, (index) {
+                                            final option = liveOptions[index];
+                                            final optionId = option.id?.toString() ?? option['id']?.toString() ?? '';
+                                            final optionText = option.text ?? option['text'] ?? '';
+                                            final optionVotes = voteCountsByOption[optionId] ?? 0;
+                                            final percentage = totalVotes > 0 ? (optionVotes / totalVotes) : 0.0;
+                                            final isSelected = _selectedOptionIds.contains(optionId);
 
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 12),
-                                        child: _PollOptionWithVoters(
-                                          pollId: widget.pollId,
-                                          optionId: optionId,
-                                          text: optionText,
-                                          votes: optionVotes,
-                                          percentage: percentage,
-                                          color: _optionColors[index % _optionColors.length],
-                                          hasVoted: _hasVoted,
-                                          isSelected: isSelected,
-                                          allowsMultiple: poll.allowsMultipleVotes,
-                                          isAnonymousPoll: poll.isAnonymous,
-                                          onTap: (_hasVoted || _isPollExpired(poll))
-                                              ? null
-                                              : () => _toggleOptionSelection(optionId, poll.allowsMultipleVotes),
-                                        ),
-                                      );
-                                    }),
+                                            return Padding(
+                                              padding: const EdgeInsets.only(bottom: 12),
+                                              child: _PollOptionWithVoters(
+                                                pollId: widget.pollId,
+                                                optionId: optionId,
+                                                text: optionText,
+                                                votes: optionVotes,
+                                                percentage: percentage,
+                                                color: _optionColors[index % _optionColors.length],
+                                                hasVoted: _hasVoted,
+                                                isSelected: isSelected,
+                                                allowsMultiple: poll.allowsMultipleVotes,
+                                                isAnonymousPoll: poll.isAnonymous,
+                                                onTap: (_hasVoted || _isPollExpired(poll))
+                                                    ? null
+                                                    : () => _toggleOptionSelection(optionId, poll.allowsMultipleVotes),
+                                              ),
+                                            );
+                                          }),
 
-                                    // Vote Button oder Expired Message
-                                    if (!_hasVoted) ...[
-                                      if (_isPollExpired(poll))
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 16),
-                                          child: Container(
-                                            width: double.infinity,
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red[50],
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: Colors.red[200]!),
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(Icons.access_time_filled, color: Colors.red[600], size: 24),
-                                                const SizedBox(height: 8),
-                                                Text(
-                                                  'Diese Umfrage ist abgelaufen',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.red[700],
+                                          // Vote Button oder Expired Message
+                                          if (!_hasVoted) ...[
+                                            if (_isPollExpired(poll))
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 16),
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  padding: const EdgeInsets.all(16),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red[50],
+                                                    borderRadius: BorderRadius.circular(12),
+                                                    border: Border.all(color: Colors.red[200]!),
                                                   ),
-                                                  textAlign: TextAlign.center,
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  I18nService.instance.translate('poll.voting.expired'),
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.red[600],
+                                                  child: Column(
+                                                    children: [
+                                                      Icon(Icons.access_time_filled, color: Colors.red[600], size: 24),
+                                                      const SizedBox(height: 8),
+                                                      Text(
+                                                        'Diese Umfrage ist abgelaufen',
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.red[700],
+                                                        ),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        I18nService.instance.translate('poll.voting.expired'),
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color: Colors.red[600],
+                                                        ),
+                                                        textAlign: TextAlign.center,
+                                                      ),
+                                                    ],
                                                   ),
-                                                  textAlign: TextAlign.center,
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                        )
-                                      else if (_selectedOptionIds.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 16),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            height: 50,
-                                            child: ElevatedButton(
-                                              onPressed: _submitVote,
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.blue,
-                                                foregroundColor: Colors.white,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(12),
+                                              )
+                                            else if (_selectedOptionIds.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 16),
+                                                child: SizedBox(
+                                                  width: double.infinity,
+                                                  height: 50,
+                                                  child: ElevatedButton(
+                                                    onPressed: _submitVote,
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: Colors.blue,
+                                                      foregroundColor: Colors.white,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(12),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      poll.allowsMultipleVotes && _selectedOptionIds.length > 1
+                                                          ? I18nService.instance.translate('poll.voting.submitMultiple',
+                                                              params: {'count': '${_selectedOptionIds.length}'})
+                                                          : I18nService.instance.translate('poll.voting.submit'),
+                                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
-                                              child: Text(
-                                                poll.allowsMultipleVotes && _selectedOptionIds.length > 1
-                                                    ? I18nService.instance.translate('poll.voting.submitMultiple',
-                                                        params: {'count': '${_selectedOptionIds.length}'})
-                                                    : I18nService.instance.translate('poll.voting.submit'),
-                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                          ],
+                                        ],
+                                      ),
                                     ],
-                                  ],
-                                ),
+                                  ),
+                                  rightChild: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Poll Results Chart (Stimmen aus user_votes aggregiert)
+                                      if (liveOptions.isNotEmpty)
+                                        StreamBuilder<List<Map<String, dynamic>>>(
+                                          stream: Supabase.instance.client
+                                              .from('user_votes')
+                                              .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
+                                          builder: (context, votesSnapshot) {
+                                            // Aggregiere Stimmenanzahl pro Option aus user_votes
+                                            final Map<String, int> counts = {};
+                                            final Map<String, Set<String>> namesByOption = {};
+                                            if (votesSnapshot.hasData && votesSnapshot.data != null) {
+                                              for (final row in votesSnapshot.data!) {
+                                                final optId = row['option_id']?.toString();
+                                                if (optId == null) continue;
+                                                counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                                                final isAnon = row['is_anonymous'] == true;
+                                                final voterName = row['voter_name'];
+                                                if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+                                                  namesByOption
+                                                      .putIfAbsent(optId, () => <String>{})
+                                                      .add(voterName.trim());
+                                                }
+                                              }
+                                            }
 
-                                // Poll Results Chart (Stimmen aus user_votes aggregiert)
-                                if (liveOptions.isNotEmpty)
-                                  StreamBuilder<List<Map<String, dynamic>>>(
-                                    stream: Supabase.instance.client
-                                        .from('user_votes')
-                                        .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
-                                    builder: (context, votesSnapshot) {
-                                      // Aggregiere Stimmenanzahl pro Option aus user_votes
-                                      final Map<String, int> counts = {};
-                                      final Map<String, Set<String>> namesByOption = {};
-                                      if (votesSnapshot.hasData && votesSnapshot.data != null) {
-                                        for (final row in votesSnapshot.data!) {
-                                          final optId = row['option_id']?.toString();
-                                          if (optId == null) continue;
-                                          counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
-                                          final isAnon = row['is_anonymous'] == true;
-                                          final voterName = row['voter_name'];
-                                          if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
-                                            namesByOption.putIfAbsent(optId, () => <String>{}).add(voterName.trim());
-                                          }
-                                        }
-                                      }
+                                            // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
+                                            final showNames = !poll.isAnonymous;
+                                            final chartOptions = liveOptions.asMap().entries.map((entry) {
+                                              final index = entry.key;
+                                              final option = entry.value;
+                                              final optionIdStr =
+                                                  option.id?.toString() ?? option['id']?.toString() ?? '';
+                                              final optionVotes =
+                                                  counts[optionIdStr] ?? voteCountsByOption[optionIdStr] ?? 0;
+                                              return PollOptionData(
+                                                text: option.text ?? option['text'] ?? '',
+                                                votes: optionVotes,
+                                                color: _optionColors[index % _optionColors.length],
+                                                namedVoters: showNames
+                                                    ? (namesByOption[optionIdStr]?.toList() ?? const [])
+                                                    : const [],
+                                              );
+                                            }).toList()
+                                              ..sort((a, b) {
+                                                // Primäre Sortierung: Nach Votes absteigend
+                                                final voteComparison = b.votes.compareTo(a.votes);
+                                                if (voteComparison != 0) return voteComparison;
+                                                // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
+                                                return a.text.compareTo(b.text);
+                                              });
 
-                                      // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
-                                      final showNames = !poll.isAnonymous;
-                                      final chartOptions = liveOptions.asMap().entries.map((entry) {
-                                        final index = entry.key;
-                                        final option = entry.value;
-                                        final optionIdStr = option.id?.toString() ?? option['id']?.toString() ?? '';
-                                        final optionVotes = counts[optionIdStr] ?? voteCountsByOption[optionIdStr] ?? 0;
-                                        return PollOptionData(
-                                          text: option.text ?? option['text'] ?? '',
-                                          votes: optionVotes,
-                                          color: _optionColors[index % _optionColors.length],
-                                          namedVoters:
-                                              showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
-                                        );
-                                      }).toList()
-                                        ..sort((a, b) {
-                                          // Primäre Sortierung: Nach Votes absteigend
-                                          final voteComparison = b.votes.compareTo(a.votes);
-                                          if (voteComparison != 0) return voteComparison;
-                                          // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
-                                          return a.text.compareTo(b.text);
-                                        });
+                                            final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
+                                            if (totalFromCounts == 0) {
+                                              // Wenn immer noch 0, Chart ausblenden (keine Stimmen)
+                                              return const SizedBox.shrink();
+                                            }
 
-                                      final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
-                                      if (totalFromCounts == 0) {
-                                        // Wenn immer noch 0, Chart ausblenden (keine Stimmen)
-                                        return const SizedBox.shrink();
-                                      }
-
-                                      return ResponsiveChartContainer(
-                                        padding: const EdgeInsets.only(bottom: 16),
-                                        child: PollResultsChart(
-                                          options: chartOptions,
-                                          isVisible: _showChart,
-                                          onToggleVisibility: () {
-                                            setState(() {
-                                              _showChart = !_showChart;
-                                            });
+                                            return ResponsiveChartContainer(
+                                              padding: const EdgeInsets.only(bottom: 16),
+                                              child: PollResultsChart(
+                                                options: chartOptions,
+                                                isVisible: _showChart,
+                                                onToggleVisibility: () {
+                                                  setState(() {
+                                                    _showChart = !_showChart;
+                                                  });
+                                                },
+                                              ),
+                                            );
                                           },
                                         ),
-                                      );
-                                    },
+
+                                      const SizedBox(height: 20),
+
+                                      // Kommentare Sektion
+                                      _CommentsSection(pollId: poll.id),
+
+                                      // Bottom Actions
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 16),
+                                        padding: const EdgeInsets.only(bottom: 16),
+                                      ),
+                                    ],
                                   ),
-
-                                const SizedBox(height: 20),
-
-                                // Kommentare Sektion
-                                _CommentsSection(pollId: poll.id),
-
-                                // Bottom Actions
-                                Container(
-                                  margin: const EdgeInsets.only(top: 16),
-                                  padding: const EdgeInsets.only(bottom: 16),
                                 ),
                               ],
                             ),
