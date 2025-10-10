@@ -322,7 +322,7 @@ class _AdminScreenState extends State<AdminScreen> {
             subtitle: I18nService.instance.translate('admin.actions.editPollDesc'),
             color: Colors.orange,
             onTap: () {
-              Routemaster.of(context).push('/edit/${widget.pollId}/${widget.adminToken}');
+              Routemaster.of(context).push('edit');
             },
           ),
 

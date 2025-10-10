@@ -17,7 +17,7 @@ final routes = RouteMap(
             adminToken: info.pathParameters['token']!,
           ),
         ),
-    '/edit/:pollId/:token': (info) => MaterialPage(
+    '/admin/:pollId/:token/edit': (info) => MaterialPage(
           child: EditPollScreen(
             pollId: info.pathParameters['pollId']!,
             adminToken: info.pathParameters['token']!,

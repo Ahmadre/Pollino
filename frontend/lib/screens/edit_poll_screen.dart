@@ -184,7 +184,7 @@ class _EditPollScreenState extends State<EditPollScreen> {
             onPressed: () {
               Navigator.of(context).pop();
               // Navigiere zurück zur Admin-Seite
-              Routemaster.of(context).push('/admin/${widget.pollId}/${widget.adminToken}');
+              Routemaster.of(context).pop();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF4F46E5),
