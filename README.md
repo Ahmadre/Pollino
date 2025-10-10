@@ -326,9 +326,8 @@ Pollino/
 ├── 🔧 dev/                        # Development Tools
 │   ├── docker-compose.dev.yml     # Development Override
 │   └── data.sql                   # Development Sample Data
-├── 🐳 docker-compose.yml          # Main Services Definition
-├── 🐳 docker-compose.asta.yml     # Production Deployment Configuration
 ├── 🐳 docker-compose.s3.yml       # S3 Storage Extension
+├── 🐳 docker-compose.yml          # Main Services Definition
 ├── 🔄 reset.sh                    # Database Reset Script
 ├── 📋 README.md                   # This Documentation
 ├── 📝 CHANGELOG.md                # Version History & Changes
