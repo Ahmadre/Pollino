@@ -1,9 +1,10 @@
 <div align="center">
   <img src="frontend/web/logo.svg" width="120" height="120" alt="Pollino Logo"/>
-  
-  # Pollino
-  
-  > **Your comprehensive Poll App by your side**
+
+# Pollino
+
+> **Your comprehensive Poll App by your side**
+
 </div>
 
 [![CI Build](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml)
@@ -14,9 +15,16 @@
 
 Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Flutter für das Frontend und Supabase als Backend-as-a-Service. Pollino ermöglicht es Benutzern, einfach Umfragen zu erstellen, zu verwalten und daran teilzunehmen.
 
+<div align="center">
+  <img src="frontend/assets/images/screenshots/poll.jpg"  height="450" alt="Poll"/>
+  <img src="frontend/assets/images/screenshots/dashboard.jpg" height="450" alt="Dashboard"/>
+  <img src="frontend/assets/images/screenshots/admin.jpg" height="450" alt="Admin"/>
+</div>
+
 ## 🚀 Features
 
 ### Frontend (Flutter Web)
+
 - **🎨 Responsive Design**: Optimiert für Desktop und Mobile
 - **⚡ State Management**: BLoC Pattern mit flutter_bloc
 - **💾 Offline Support**: Lokale Datenspeicherung mit Hive
@@ -25,6 +33,7 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
 
 ### Backend (Supabase Stack)
+
 - **🗄️ PostgreSQL Datenbank**: Relationale Datenbank mit RLS
 - **🔐 Authentication**: Supabase Auth mit JWT
 - **🌐 REST API**: PostgREST für automatische API-Generierung
@@ -34,6 +43,7 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **📈 Analytics**: Integrierte Logflare Analytics
 
 ### DevOps & Infrastruktur
+
 - **🐳 Docker**: Vollständig containerisiert
 - **🚀 Multi-Stage Builds**: Optimierte Production Builds
 - **🔄 Reverse Proxy**: Kong Gateway für API-Management
@@ -84,7 +94,7 @@ graph TB
     %% Data Flow Connections
     WEB --> KONG
     MOBILE -.-> KONG
-    
+  
     KONG --> AUTH
     KONG --> REST
     KONG --> REALTIME
@@ -113,11 +123,11 @@ graph TB
     FUNCTIONS -.-> ANALYTICS
 
     VECTOR -.-> ANALYTICS
-    
+  
     %% Cleanup Service Connections
     CLEANUP --> DB
     CLEANUP -.-> ANALYTICS
-    
+  
     %% Styling
     classDef frontend fill:#e1f5fe
     classDef gateway fill:#f3e5f5
@@ -150,7 +160,7 @@ erDiagram
         timestamp expires_at
         boolean auto_delete_after_expiry
     }
-    
+  
     POLL_OPTIONS {
         bigserial id PK
         bigint poll_id FK
@@ -158,7 +168,7 @@ erDiagram
         integer votes
         timestamp created_at
     }
-    
+  
     USER_VOTES {
         bigserial id PK
         bigint poll_id FK
@@ -166,7 +176,7 @@ erDiagram
         uuid user_id FK
         timestamp created_at
     }
-    
+  
     USERS {
         uuid id PK
         text email
@@ -184,6 +194,7 @@ erDiagram
 ### Datenbankfelder im Detail:
 
 **polls Tabelle:**
+
 - `id`: Eindeutige Umfrage-ID (Auto-Increment)
 - `title`: Titel der Umfrage
 - `description`: Optionale Beschreibung
@@ -194,12 +205,14 @@ erDiagram
 - `auto_delete_after_expiry`: Automatische Löschung nach Ablauf
 
 **poll_options Tabelle:**
+
 - `id`: Eindeutige Options-ID
 - `poll_id`: Referenz zur Umfrage
 - `text`: Text der Antwortoption
 - `votes`: Anzahl der erhaltenen Stimmen
 
 **user_votes Tabelle:**
+
 - Verhindert Mehrfachabstimmungen pro User
 - Verknüpft User mit gewählter Option
 - Einzigartigkeits-Constraint auf `(poll_id, user_id)`
@@ -214,12 +227,14 @@ erDiagram
 ## 🔧 Installation & Setup
 
 ### 1. Repository klonen
+
 ```bash
 git clone https://github.com/Ahmadre/Pollino.git
 cd Pollino
 ```
 
 ### 2. Umgebungsvariablen konfigurieren
+
 ```bash
 # .env Datei erstellen (Beispiel)
 cp .env.example .env
@@ -231,6 +246,7 @@ cp .env.example .env
 ```
 
 ### 3. Services starten
+
 ```bash
 # Alle Services starten
 docker compose up -d
@@ -243,6 +259,7 @@ docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up -d
 ```
 
 ### 4. Datenbank initialisieren
+
 ```bash
 # Die Datenbank wird automatisch mit Beispieldaten initialisiert
 # Schema: volumes/db/init/polls_schema.sql
@@ -250,16 +267,17 @@ docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up -d
 
 ## 🌐 Zugriff auf die Anwendung
 
-| Service | URL | Beschreibung |
-|---------|-----|--------------|
-| **Flutter Web App** | http://localhost:3001 | Hauptanwendung |
-| **Supabase Studio** | http://localhost:54323 | Datenbank-Admin |
-| **API Gateway** | http://localhost:8000 | REST API Endpoint |
-| **Analytics** | http://localhost:4000 | Logflare Dashboard |
+| Service                   | URL                    | Beschreibung       |
+| ------------------------- | ---------------------- | ------------------ |
+| **Flutter Web App** | http://localhost:3001  | Hauptanwendung     |
+| **Supabase Studio** | http://localhost:54323 | Datenbank-Admin    |
+| **API Gateway**     | http://localhost:8000  | REST API Endpoint  |
+| **Analytics**       | http://localhost:4000  | Logflare Dashboard |
 
 ## 🏃‍♂️ Entwicklung
 
 ### Flutter Web lokal entwickeln
+
 ```bash
 cd frontend
 
@@ -274,6 +292,7 @@ flutter build web --release --web-renderer canvaskit
 ```
 
 ### Datenbank-Migrationen
+
 ```bash
 # Schema ändern
 # 1. SQL in volumes/db/init/polls_schema.sql anpassen
@@ -283,6 +302,7 @@ docker compose up -d
 ```
 
 ### Logs anzeigen
+
 ```bash
 # Alle Services
 docker compose logs -f
@@ -296,12 +316,14 @@ docker compose logs -f auth
 ## 🧪 Testing
 
 ### Flutter Tests
+
 ```bash
 cd frontend
 flutter test
 ```
 
 ### API Tests
+
 ```bash
 # Health Checks
 curl http://localhost:3001/health
@@ -314,6 +336,7 @@ curl http://localhost:8000/rest/v1/polls
 ## 📦 Deployment
 
 ### Production Build
+
 ```bash
 # Flutter Web optimiert bauen
 docker compose build flutter-web
@@ -323,6 +346,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ### Environment Konfiguration
+
 ```bash
 # Produktive Umgebungsvariablen setzen
 export SUPABASE_PUBLIC_URL=https://your-domain.com
@@ -393,6 +417,7 @@ Pollino/
 ### Häufige Probleme
 
 **Docker Build Fehler:**
+
 ```bash
 # Cache löschen und neu bauen
 docker compose down
@@ -402,6 +427,7 @@ docker compose up -d
 ```
 
 **Datenbank-Verbindungsfehler:**
+
 ```bash
 # Datenbank Status prüfen
 docker compose ps
@@ -412,6 +438,7 @@ docker compose logs db
 ```
 
 **Flutter Dependencies:**
+
 ```bash
 cd frontend
 flutter clean
@@ -430,12 +457,12 @@ Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
 
 ## 📊 Tech Stack Übersicht
 
-| Kategorie | Technologie | Version | Zweck |
-|-----------|-------------|---------|-------|
-| **Frontend** | Flutter | 3.27.1 | Web & Mobile UI |
-| **Backend** | Supabase | 2.x | Backend-as-a-Service |
-| **Datenbank** | PostgreSQL | 15.8 | Primary Data Store |
-| **API Gateway** | Kong | 2.8.1 | Routing & Security |
-| **Web Server** | Nginx | 1.25 | Static File Serving |
-| **Analytics** | Logflare | 1.14.2 | Logging & Monitoring |
-| **Container** | Docker | Latest | Containerization |
+| Kategorie             | Technologie | Version | Zweck                |
+| --------------------- | ----------- | ------- | -------------------- |
+| **Frontend**    | Flutter     | 3.27.1  | Web & Mobile UI      |
+| **Backend**     | Supabase    | 2.x     | Backend-as-a-Service |
+| **Datenbank**   | PostgreSQL  | 15.8    | Primary Data Store   |
+| **API Gateway** | Kong        | 2.8.1   | Routing & Security   |
+| **Web Server**  | Nginx       | 1.25    | Static File Serving  |
+| **Analytics**   | Logflare    | 1.14.2  | Logging & Monitoring |
+| **Container**   | Docker      | Latest  | Containerization     |
