@@ -2,9 +2,9 @@
 class Environment {
   // Default values for development/local testing
   static const String _defaultWebAppUrl = 'http://localhost:8080';
-  static const String _defaultSupabaseUrl = 'https://supabase.asta.hn';
+  static const String _defaultSupabaseUrl = 'http://localhost:8000';
   static const String _defaultAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzU5ODc0NDAwLCJleHAiOjE5MTc2NDA4MDB9.FHDDyOFtuQW9Xaaqrkx6LDamYcBD8FzCO8s_CeIGA54';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE';
 
   // Web App URL for generating shareable links
 
@@ -48,7 +48,7 @@ class Environment {
       return compileTimeKey;
     }
 
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3NTk4NzQ0MDAsImV4cCI6MTkxNzY0MDgwMH0.Ow0M97IuBRkJUK3Sim7gR4p9h8s66YfaaQZS40HcS78';
+    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q';
   }
 
   // Environment detection

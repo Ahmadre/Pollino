@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -75,16 +76,17 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
     }
 
     return Column(
+      mainAxisSize: MainAxisSize.min, // Use minimum space needed
       children: [
         // Chart Controls
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4), // Reduced vertical margin
           child: Row(
             children: [
               Text(
                 'Ergebnisse',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: isMobile ? 14 : 16,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey[700],
                 ),
@@ -116,28 +118,46 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
 
         // Chart Content
         if (widget.isVisible)
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Container(
-              // Dynamic height based on chart type and screen size
-              height: _currentChartType == ChartType.pie ? (isMobile ? 280 : 320) : (isMobile ? 250 : 300),
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: EdgeInsets.all(isMobile ? 12 : 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+          Flexible(
+            // Allow chart to shrink
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Flexible height calculation - avoid infinity!
+                  final maxHeight = constraints.maxHeight.isInfinite || constraints.maxHeight <= 0
+                      ? (isMobile ? 250.0 : 300.0)
+                      : constraints.maxHeight;
+
+                  // Ensure minHeight never exceeds maxHeight to avoid constraint conflicts
+                  final preferredMinHeight = isMobile ? 150.0 : 170.0;
+                  final actualMinHeight = math.min(preferredMinHeight, maxHeight);
+
+                  return Container(
+                    constraints: BoxConstraints(
+                      maxHeight: maxHeight,
+                      minHeight: actualMinHeight,
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.all(isMobile ? 8 : 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: _currentChartType == ChartType.bar
+                        ? _buildResponsiveBarChart(isMobile)
+                        : _buildResponsivePieChart(isMobile),
+                  );
+                },
               ),
-              child: _currentChartType == ChartType.bar
-                  ? _buildResponsiveBarChart(isMobile)
-                  : _buildResponsivePieChart(isMobile),
             ),
           ),
       ],
@@ -148,163 +168,171 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
     final maxVotes = widget.options.isNotEmpty ? widget.options.map((e) => e.votes).reduce((a, b) => a > b ? a : b) : 1;
     final optionCount = widget.options.length;
 
-    // Fixed sizing - no more shrinking
-    final barWidth = isMobile ? 24.0 : 32.0;
-    final fontSize = isMobile ? 10.0 : 11.0;
-    final bottomReservedSize = 50.0;
+    // Responsive sizing based on container
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth;
+        final availableHeight = constraints.maxHeight;
+        final barWidth = (availableWidth / optionCount * 0.6).clamp(16.0, isMobile ? 24.0 : 32.0);
+        final fontSize = isMobile ? 8.0 : 9.0;
+        final bottomReservedSize = (availableHeight * 0.25).clamp(30.0, 40.0); // Responsive bottom space
 
-    // Calculate required width for horizontal scrolling
-    final minBarSpacing = 20.0;
-    final requiredWidth = (optionCount * (barWidth + minBarSpacing)) + 60; // +60 for margins
-    final screenWidth = MediaQuery.of(context).size.width - 32; // Account for container margins
-    final shouldScroll = requiredWidth > screenWidth;
+        // Calculate if we need horizontal scrolling
+        final minBarSpacing = 8.0;
+        final requiredWidth = (optionCount * (barWidth + minBarSpacing)) + 40;
+        final shouldScroll = requiredWidth > availableWidth;
 
-    final chartWidget = BarChart(
-      BarChartData(
-        maxY: maxVotes.toDouble() * 1.15,
-        barTouchData: BarTouchData(
-          enabled: true,
-          touchTooltipData: BarTouchTooltipData(
-            getTooltipColor: (group) => Colors.black87,
-            tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            tooltipMargin: 8,
-            maxContentWidth: isMobile ? 150 : 200,
-            fitInsideHorizontally: true, // Keep tooltips inside chart bounds
-            fitInsideVertically: true, // Keep tooltips inside chart bounds
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final option = widget.options[group.x.toInt()];
-              final totalVotes = widget.options.fold<int>(0, (sum, opt) => sum + opt.votes);
-              final percentage = totalVotes > 0 ? (option.votes / totalVotes * 100).round() : 0;
-              // Build optional named voters suffix (non-anonymous names provided by caller)
-              String namesSuffix = '';
-              if (option.namedVoters.isNotEmpty) {
-                final maxNames = 10; // show up to 10 names to keep tooltip compact
-                final display = option.namedVoters.take(maxNames).join(', ');
-                final remaining = option.namedVoters.length - maxNames;
-                final overflow = remaining > 0 ? ' +$remaining' : '';
-                namesSuffix = '\n$display$overflow';
-              }
-              return BarTooltipItem(
-                '${option.text}\n${option.votes} Stimmen ($percentage%)$namesSuffix',
-                const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
-              );
-            },
-          ),
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (double value, TitleMeta meta) {
-                if (value.toInt() >= widget.options.length) return const SizedBox();
-                final option = widget.options[value.toInt()];
-
-                return Container(
-                  width: barWidth + 10, // Fixed width to prevent overlap
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    option.text,
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w600,
-                      fontSize: fontSize,
+        final chartWidget = BarChart(
+          BarChartData(
+            maxY: maxVotes.toDouble() * 1.15,
+            barTouchData: BarTouchData(
+              enabled: true,
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipColor: (group) => Colors.black87,
+                tooltipPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                tooltipMargin: 8,
+                maxContentWidth: isMobile ? 150 : 200,
+                fitInsideHorizontally: true, // Keep tooltips inside chart bounds
+                fitInsideVertically: true, // Keep tooltips inside chart bounds
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  final option = widget.options[group.x.toInt()];
+                  final totalVotes = widget.options.fold<int>(0, (sum, opt) => sum + opt.votes);
+                  final percentage = totalVotes > 0 ? (option.votes / totalVotes * 100).round() : 0;
+                  // Build optional named voters suffix (non-anonymous names provided by caller)
+                  String namesSuffix = '';
+                  if (option.namedVoters.isNotEmpty) {
+                    final maxNames = 10; // show up to 10 names to keep tooltip compact
+                    final display = option.namedVoters.take(maxNames).join(', ');
+                    final remaining = option.namedVoters.length - maxNames;
+                    final overflow = remaining > 0 ? ' +$remaining' : '';
+                    namesSuffix = '\n$display$overflow';
+                  }
+                  return BarTooltipItem(
+                    '${option.text}\n${option.votes} Stimmen ($percentage%)$namesSuffix',
+                    const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              },
-              reservedSize: bottomReservedSize,
+                  );
+                },
+              ),
             ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: maxVotes > 10 ? (maxVotes / 4).ceilToDouble() : 1,
-              getTitlesWidget: (double value, TitleMeta meta) {
-                if (value == 0) return const SizedBox();
-                return Text(
-                  value.toInt().toString(),
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w500,
-                    fontSize: fontSize,
-                  ),
-                );
-              },
-              reservedSize: isMobile ? 25 : 30,
-            ),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        barGroups: widget.options.asMap().entries.map((entry) {
-          final index = entry.key;
-          final option = entry.value;
-          return BarChartGroupData(
-            x: index,
-            barRods: [
-              BarChartRodData(
-                toY: option.votes.toDouble(),
-                color: option.color,
-                width: barWidth,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(4),
-                  topRight: Radius.circular(4),
-                ),
-                gradient: LinearGradient(
-                  colors: [
-                    option.color.withOpacity(0.8),
-                    option.color,
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+            titlesData: FlTitlesData(
+              show: true,
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (double value, TitleMeta meta) {
+                    if (value.toInt() >= widget.options.length) return const SizedBox();
+                    final option = widget.options[value.toInt()];
+
+                    return Container(
+                      width: barWidth + 10, // Fixed width to prevent overlap
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        option.text.length > 6 ? '${option.text.substring(0, 6)}...' : option.text,
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
+                          fontSize: fontSize,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  },
+                  reservedSize: bottomReservedSize,
                 ),
               ),
-            ],
-          );
-        }).toList(),
-        gridData: FlGridData(
-          show: true,
-          drawHorizontalLine: true,
-          drawVerticalLine: false,
-          horizontalInterval: maxVotes > 10 ? (maxVotes / 4).ceilToDouble() : 1,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: Colors.grey.withOpacity(0.15),
-              strokeWidth: 0.8,
-            );
-          },
-        ),
-        alignment: BarChartAlignment.spaceAround,
-        groupsSpace: minBarSpacing,
-      ),
-    );
-
-    // Wrap in ScrollView if needed
-    if (shouldScroll) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          clipBehavior: Clip.none, // Allow tooltips to overflow
-          child: SizedBox(
-            width: requiredWidth,
-            height: (isMobile ? 250 : 300) - 32,
-            child: chartWidget,
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: maxVotes > 10 ? (maxVotes / 4).ceilToDouble() : 1,
+                  getTitlesWidget: (double value, TitleMeta meta) {
+                    if (value == 0) return const SizedBox();
+                    return Text(
+                      value.toInt().toString(),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                        fontSize: fontSize,
+                      ),
+                    );
+                  },
+                  reservedSize: isMobile ? 25 : 30,
+                ),
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            barGroups: widget.options.asMap().entries.map((entry) {
+              final index = entry.key;
+              final option = entry.value;
+              return BarChartGroupData(
+                x: index,
+                barRods: [
+                  BarChartRodData(
+                    toY: option.votes.toDouble(),
+                    color: option.color,
+                    width: barWidth,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(4),
+                    ),
+                    gradient: LinearGradient(
+                      colors: [
+                        option.color.withOpacity(0.8),
+                        option.color,
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+            gridData: FlGridData(
+              show: true,
+              drawHorizontalLine: true,
+              drawVerticalLine: false,
+              horizontalInterval: maxVotes > 10 ? (maxVotes / 4).ceilToDouble() : 1,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(
+                  color: Colors.grey.withOpacity(0.15),
+                  strokeWidth: 0.8,
+                );
+              },
+            ),
+            alignment: BarChartAlignment.spaceAround,
+            groupsSpace: minBarSpacing,
           ),
-        ),
-      );
-    }
+        );
 
-    return chartWidget;
+        // Safe height calculation - avoid infinity
+        final safeHeight = constraints.maxHeight.isInfinite ? (isMobile ? 200.0 : 250.0) : constraints.maxHeight;
+
+        // Wrap in ScrollView if needed
+        if (shouldScroll) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none, // Allow tooltips to overflow
+            child: SizedBox(
+              width: requiredWidth,
+              height: safeHeight,
+              child: chartWidget,
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: safeHeight,
+          child: chartWidget,
+        );
+      },
+    );
   }
 
   Widget _buildResponsivePieChart(bool isMobile) {

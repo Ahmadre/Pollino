@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
+import 'package:pollino/core/utils/responsive_helper.dart';
+import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -319,8 +321,8 @@ class _PollScreenState extends State<PollScreen> {
                             return aText.toString().compareTo(bText.toString());
                           });
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                          return ResponsiveContainer(
+                            type: ResponsiveContainerType.reading,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -656,8 +658,8 @@ class _PollScreenState extends State<PollScreen> {
                                         return const SizedBox.shrink();
                                       }
 
-                                      return Container(
-                                        margin: const EdgeInsets.only(bottom: 16),
+                                      return ResponsiveChartContainer(
+                                        padding: const EdgeInsets.only(bottom: 16),
                                         child: PollResultsChart(
                                           options: chartOptions,
                                           isVisible: _showChart,

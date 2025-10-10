@@ -7,6 +7,8 @@ import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/language_switcher.dart';
 import 'package:pollino/core/widgets/pollino_logo.dart';
+import 'package:pollino/core/utils/responsive_helper.dart';
+import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
@@ -184,31 +186,51 @@ class _HomeScreenState extends State<HomeScreen> {
                       onRefresh: () async {
                         context.read<PollBloc>().add(const PollEvent.refreshPolls());
                       },
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: state.polls.length + (state.hasMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == state.polls.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
+                      child: ResponsiveHelper.isMobile(context)
+                          ? ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: state.polls.length + (state.hasMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == state.polls.length) {
+                                  return const Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: Center(child: CircularProgressIndicator()),
+                                  );
+                                }
 
-                          final poll = state.polls[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _PollCard(
-                              poll: poll,
-                              colorIndex: index,
-                              optionColors: _optionColors,
-                              demoVoters: _demoVoters,
-                              onPollAction: _handlePollAction,
+                                final poll = state.polls[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _PollCard(
+                                    poll: poll,
+                                    colorIndex: index,
+                                    optionColors: _optionColors,
+                                    demoVoters: _demoVoters,
+                                    onPollAction: _handlePollAction,
+                                  ),
+                                );
+                              },
+                            )
+                          : SingleChildScrollView(
+                              controller: _scrollController,
+                              child: ResponsiveGrid(
+                                children: [
+                                  ...state.polls.asMap().entries.map((entry) {
+                                    final index = entry.key;
+                                    final poll = entry.value;
+                                    return _PollCard(
+                                      poll: poll,
+                                      colorIndex: index,
+                                      optionColors: _optionColors,
+                                      demoVoters: _demoVoters,
+                                      onPollAction: _handlePollAction,
+                                    );
+                                  }),
+                                  if (state.hasMore) const Center(child: CircularProgressIndicator()),
+                                ],
+                              ),
                             ),
-                          );
-                        },
-                      ),
                     );
                   } else if (state is Error) {
                     return Center(
@@ -307,7 +329,19 @@ class _PollCardState extends State<_PollCard> {
     return GestureDetector(
       onTap: () => Routemaster.of(context).push('/poll/${widget.poll.id}'),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -341,59 +375,16 @@ class _PollCardState extends State<_PollCard> {
                       ],
                     ),
                   ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) => widget.onPollAction?.call(value, widget.poll),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete, color: Colors.red),
-                            const SizedBox(width: 8),
-                            Text(I18nService.instance.translate('actions.delete'),
-                                style: const TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
-            ] else ...[
-              // Für anonyme Umfragen - nur Delete-Button rechtsbündig
-              Row(
-                children: [
-                  const Spacer(),
-                  PopupMenuButton<String>(
-                    onSelected: (value) => widget.onPollAction?.call(value, widget.poll),
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete, color: Colors.red),
-                            const SizedBox(width: 8),
-                            Text(I18nService.instance.translate('actions.delete'),
-                                style: const TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
             ],
-
-            const SizedBox(height: 12),
-
             // Poll Title
             Text(
               widget.poll.title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
 
             const SizedBox(height: 8),
@@ -484,8 +475,9 @@ class _PollCardState extends State<_PollCard> {
                       return const SizedBox.shrink();
                     }
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
+                    return ResponsiveChartContainer(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      isInCard: true,
                       child: PollResultsChart(
                         options: chartOptions,
                         isVisible: _showChart,
@@ -557,11 +549,6 @@ class _PollCardState extends State<_PollCard> {
                 ),
               ],
             ),
-
-            const SizedBox(height: 20),
-
-            // Separator line
-            Container(height: 1, color: Colors.grey[200]),
           ],
         ),
       ),
