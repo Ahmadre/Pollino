@@ -138,7 +138,11 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
                       maxHeight: maxHeight,
                       minHeight: actualMinHeight,
                     ),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: EdgeInsets.only(
+                      left: 4,
+                      right: 4,
+                      top: isMobile ? 8 : 4, // Add top margin for mobile
+                    ),
                     padding: EdgeInsets.all(isMobile ? 8 : 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -337,47 +341,49 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
 
   Widget _buildResponsivePieChart(bool isMobile) {
     final totalVotes = widget.options.fold<int>(0, (sum, option) => sum + option.votes);
-    final hasMoreOptions = widget.options.length > 4;
 
-    // For mobile with many options, use vertical layout
-    if (isMobile && hasMoreOptions) {
+    // For mobile, always use vertical layout to prevent overlapping
+    if (isMobile) {
       return Column(
         children: [
           // Pie Chart on top
           Expanded(
             flex: 3,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 1,
-                centerSpaceRadius: isMobile ? 30 : 40,
-                sections: widget.options.asMap().entries.map((entry) {
-                  final option = entry.value;
-                  final percentage = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0.0;
+            child: Padding(
+              padding: EdgeInsets.all(isMobile ? 8 : 4), // Add padding to prevent overflow
+              child: PieChart(
+                PieChartData(
+                  sectionsSpace: 1,
+                  centerSpaceRadius: isMobile ? 25 : 40,
+                  sections: widget.options.asMap().entries.map((entry) {
+                    final option = entry.value;
+                    final percentage = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0.0;
 
-                  return PieChartSectionData(
-                    color: option.color,
-                    value: option.votes.toDouble(),
-                    title: percentage > 5 ? '${percentage.round()}%' : '',
-                    radius: isMobile ? 45 : 55,
-                    titleStyle: TextStyle(
-                      fontSize: isMobile ? 10 : 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0.5, 0.5),
-                          blurRadius: 1,
-                          color: Colors.black.withOpacity(0.5),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                pieTouchData: PieTouchData(
-                  enabled: true,
-                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                    // Optional: Add haptic feedback or animations
-                  },
+                    return PieChartSectionData(
+                      color: option.color,
+                      value: option.votes.toDouble(),
+                      title: percentage > 5 ? '${percentage.round()}%' : '',
+                      radius: isMobile ? 35 : 55, // Smaller radius for mobile
+                      titleStyle: TextStyle(
+                        fontSize: isMobile ? 10 : 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0.5, 0.5),
+                            blurRadius: 1,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  pieTouchData: PieTouchData(
+                    enabled: true,
+                    touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                      // Optional: Add haptic feedback or animations
+                    },
+                  ),
                 ),
               ),
             ),
@@ -437,45 +443,48 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
       children: [
         // Pie Chart
         Expanded(
-          flex: isMobile ? 5 : 3,
-          child: PieChart(
-            PieChartData(
-              sectionsSpace: 1.5,
-              centerSpaceRadius: isMobile ? 35 : 45,
-              sections: widget.options.asMap().entries.map((entry) {
-                final option = entry.value;
-                final percentage = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0.0;
+          flex: isMobile ? 3 : 3, // Reduced flex for mobile to give more space to legend
+          child: Padding(
+            padding: EdgeInsets.all(isMobile ? 12 : 4), // More padding for mobile
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 1.5,
+                centerSpaceRadius: isMobile ? 25 : 45, // Smaller center for mobile
+                sections: widget.options.asMap().entries.map((entry) {
+                  final option = entry.value;
+                  final percentage = totalVotes > 0 ? (option.votes / totalVotes) * 100 : 0.0;
 
-                return PieChartSectionData(
-                  color: option.color,
-                  value: option.votes.toDouble(),
-                  title: percentage > 8 ? '${percentage.round()}%' : '',
-                  radius: isMobile ? 50 : 60,
-                  titleStyle: TextStyle(
-                    fontSize: isMobile ? 10 : 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        offset: const Offset(0.5, 0.5),
-                        blurRadius: 1,
-                        color: Colors.black.withOpacity(0.5),
-                      ),
-                    ],
-                  ),
-                  gradient: RadialGradient(
-                    colors: [
-                      option.color.withOpacity(0.8),
-                      option.color,
-                    ],
-                  ),
-                );
-              }).toList(),
-              pieTouchData: PieTouchData(
-                enabled: true,
-                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                  // Optional: Add interactions
-                },
+                  return PieChartSectionData(
+                    color: option.color,
+                    value: option.votes.toDouble(),
+                    title: percentage > 8 ? '${percentage.round()}%' : '',
+                    radius: isMobile ? 35 : 60, // Much smaller radius for mobile
+                    titleStyle: TextStyle(
+                      fontSize: isMobile ? 10 : 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0.5, 0.5),
+                          blurRadius: 1,
+                          color: Colors.black.withOpacity(0.5),
+                        ),
+                      ],
+                    ),
+                    gradient: RadialGradient(
+                      colors: [
+                        option.color.withOpacity(0.8),
+                        option.color,
+                      ],
+                    ),
+                  );
+                }).toList(),
+                pieTouchData: PieTouchData(
+                  enabled: true,
+                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                    // Optional: Add interactions
+                  },
+                ),
               ),
             ),
           ),
@@ -485,7 +494,7 @@ class _PollResultsChartState extends State<PollResultsChart> with SingleTickerPr
 
         // Legend
         Expanded(
-          flex: isMobile ? 4 : 3,
+          flex: isMobile ? 5 : 3, // More flex for legend on mobile
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: isMobile ? 160 : 200,
