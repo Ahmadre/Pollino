@@ -29,6 +29,7 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **🔄 Real-time Updates**: Live-Synchronisation mit Supabase
 - **🧭 Navigation**: Routemaster für deklaratives Routing
 - **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
+- **💬 Kommentarsystem**: Benutzer können Kommentare zu Umfragen hinzufügen und bearbeiten
 
 ### Backend (Supabase Stack)
 
@@ -139,81 +140,6 @@ graph TB
     class DB,POOLER,VOLUMES database
     class ANALYTICS,META,IMGPROXY,VECTOR,CLEANUP infrastructure
 ```
-
-## 🗃️ Datenbankschema
-
-Das folgende ER-Diagramm zeigt die Datenbankstruktur für das Pollino-System:
-
-```mermaid
-erDiagram
-    POLLS {
-        bigserial id PK
-        text title
-        text description
-        timestamp created_at
-        timestamp updated_at
-        uuid created_by FK
-        boolean is_active
-        integer likes_count
-        timestamp expires_at
-        boolean auto_delete_after_expiry
-    }
-  
-    POLL_OPTIONS {
-        bigserial id PK
-        bigint poll_id FK
-        text text
-        integer votes
-        timestamp created_at
-    }
-  
-    USER_VOTES {
-        bigserial id PK
-        bigint poll_id FK
-        bigint option_id FK
-        uuid user_id FK
-        timestamp created_at
-    }
-  
-    USERS {
-        uuid id PK
-        text email
-        text username
-        timestamp created_at
-    }
-
-    POLLS ||--o{ POLL_OPTIONS : "contains"
-    POLLS ||--o{ USER_VOTES : "receives"
-    POLL_OPTIONS ||--o{ USER_VOTES : "gets_votes_for"
-    USERS ||--o{ USER_VOTES : "casts"
-    USERS ||--o{ POLLS : "creates"
-```
-
-### Datenbankfelder im Detail:
-
-**polls Tabelle:**
-
-- `id`: Eindeutige Umfrage-ID (Auto-Increment)
-- `title`: Titel der Umfrage
-- `description`: Optionale Beschreibung
-- `created_by`: Referenz zum Ersteller (User UUID)
-- `is_active`: Status der Umfrage (aktiv/inaktiv)
-- `likes_count`: Anzahl der Likes (Standard: 0)
-- `expires_at`: Ablaufzeitpunkt der Umfrage
-- `auto_delete_after_expiry`: Automatische Löschung nach Ablauf
-
-**poll_options Tabelle:**
-
-- `id`: Eindeutige Options-ID
-- `poll_id`: Referenz zur Umfrage
-- `text`: Text der Antwortoption
-- `votes`: Anzahl der erhaltenen Stimmen
-
-**user_votes Tabelle:**
-
-- Verhindert Mehrfachabstimmungen pro User
-- Verknüpft User mit gewählter Option
-- Einzigartigkeits-Constraint auf `(poll_id, user_id)`
 
 ## 📋 Voraussetzungen
 
@@ -333,7 +259,7 @@ curl http://localhost:8000/rest/v1/polls
 
 ## 📦 Deployment
 
-### Production Build
+### Entwicklungsumgebung
 
 ```bash
 # Flutter Web optimiert bauen
@@ -354,7 +280,7 @@ export JWT_SECRET=your_production_jwt_secret
 
 ## 📁 Projektstruktur
 
-```
+```text
 Pollino/
 ├── 📱 frontend/                    # Flutter Web Application
 │   ├── lib/
