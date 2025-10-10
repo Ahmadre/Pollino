@@ -119,7 +119,16 @@ class _EditPollScreenState extends State<EditPollScreen> {
           children: [
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 8),
-            Text(I18nService.instance.translate('edit.success.title')),
+            Expanded(child: Text(I18nService.instance.translate('edit.success.title'))),
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(Icons.close),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              tooltip: I18nService.instance.translate('actions.close'),
+            ),
           ],
         ),
         content: Column(

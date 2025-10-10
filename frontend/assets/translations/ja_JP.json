@@ -192,7 +192,8 @@
     "back": "戻る",
     "next": "次へ",
     "finish": "完了",
-    "continue": "続行"
+    "continue": "続行",
+    "update": "更新"
   },
   "validation": {
     "required": "このフィールドは必須です",
@@ -229,6 +230,53 @@
       "add": { "error": "コメントを送信できませんでした" },
       "edit": { "error": "編集に失敗しました" },
       "delete": { "error": "削除に失敗しました" }
+    }
+  },
+  "admin": {
+    "title": "アンケート管理",
+    "error": {
+      "title": "アクセス拒否",
+      "generic": "エラーが発生しました",
+      "invalidToken": "無効な管理リンクまたはアンケートが見つかりません",
+      "goHome": "ホームに戻る"
+    },
+    "actions": {
+      "title": "管理オプション",
+      "sharePoll": "アンケートを共有", 
+      "sharePollDesc": "アンケートのリンクをコピー",
+      "copyAdminUrl": "管理リンクをコピー",
+      "copyAdminUrlDesc": "この管理リンクを再度コピー",
+      "editPoll": "アンケートを編集",
+      "editPollDesc": "タイトル、選択肢、設定を変更",
+      "deletePoll": "アンケートを削除",
+      "comingSoon": "この機能は近日公開予定です"
+    },
+    "url": {
+      "copied": "管理リンクをコピーしました"
+    },
+    "poll": {
+      "linkCopied": "アンケートリンクをコピーしました"
+    },
+    "delete": {
+      "title": "アンケートを削除",
+      "confirmation": "本当にアンケート「{{title}}」を削除しますか？すべての投票とコメントが失われます。この操作は元に戻せません。",
+      "success": "アンケートを正常に削除しました",
+      "error": "アンケートの削除中にエラーが発生しました"
+    },
+    "danger": {
+      "title": "危険ゾーン",
+      "description": "これらの操作は元に戻せません。注意してください。"
+    }
+  },
+  "edit": {
+    "title": "アンケートを編集",
+    "error": "アンケートの編集中にエラーが発生しました",
+    "success": {
+      "title": "アンケートが正常に更新されました",
+      "description": "変更が保存され、すぐに表示されます。",
+      "updatedPoll": "更新されたアンケート",
+      "viewPoll": "アンケートを表示",
+      "backToAdmin": "管理に戻る"
     }
   }
 }

@@ -192,7 +192,8 @@
     "back": "Atrás",
     "next": "Siguiente",
     "finish": "Finalizar",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "update": "Actualizar"
   },
   "validation": {
     "required": "Este campo es obligatorio",
@@ -229,6 +230,17 @@
     "snackbar": {
       "copied": "Enlace copiado",
       "failed": "Error al compartir"
+    }
+  },
+  "edit": {
+    "title": "Editar Encuesta",
+    "error": "Error al editar la encuesta",
+    "success": {
+      "title": "Encuesta actualizada exitosamente",
+      "description": "Tus cambios han sido guardados y son inmediatamente visibles.",
+      "updatedPoll": "Encuesta Actualizada",
+      "viewPoll": "Ver Encuesta",
+      "backToAdmin": "Volver a Gestión"
     }
   }
 }

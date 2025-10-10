@@ -204,7 +204,8 @@
     "back": "Zurück",
     "next": "Weiter",
     "finish": "Fertig",
-    "continue": "Fortfahren"
+    "continue": "Fortfahren",
+    "update": "Aktualisieren"
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",
@@ -278,6 +279,17 @@
     "danger": {
       "title": "Gefahrenbereich",
       "description": "Diese Aktionen sind unwiderruflich. Bitte sei vorsichtig."
+    }
+  },
+  "edit": {
+    "title": "Umfrage bearbeiten",
+    "error": "Fehler beim Bearbeiten der Umfrage",
+    "success": {
+      "title": "Umfrage erfolgreich aktualisiert",
+      "description": "Deine Änderungen wurden gespeichert und sind sofort sichtbar.",
+      "updatedPoll": "Aktualisierte Umfrage",
+      "viewPoll": "Umfrage ansehen",
+      "backToAdmin": "Zurück zur Verwaltung"
     }
   }
 }

@@ -192,7 +192,8 @@
     "back": "Back",
     "next": "Next",
     "finish": "Finish",
-    "continue": "Continue"
+    "continue": "Continue",
+    "update": "Update"
   },
   "validation": {
     "required": "This field is required",
@@ -230,6 +231,53 @@
     "snackbar": {
       "copied": "Link copied",
       "failed": "Share failed"
+    }
+  },
+  "admin": {
+    "title": "Manage Poll",
+    "error": {
+      "title": "Access Denied",
+      "generic": "An error occurred",
+      "invalidToken": "Invalid admin link or poll not found",
+      "goHome": "Go to Home"
+    },
+    "actions": {
+      "title": "Management Options",
+      "sharePoll": "Share Poll", 
+      "sharePollDesc": "Copy link to poll",
+      "copyAdminUrl": "Copy Admin Link",
+      "copyAdminUrlDesc": "Copy this management link again",
+      "editPoll": "Edit Poll",
+      "editPollDesc": "Change title, options or settings",
+      "deletePoll": "Delete Poll",
+      "comingSoon": "This feature is coming soon"
+    },
+    "url": {
+      "copied": "Admin link copied"
+    },
+    "poll": {
+      "linkCopied": "Poll link copied"
+    },
+    "delete": {
+      "title": "Delete Poll",
+      "confirmation": "Do you really want to delete the poll \"{{title}}\"? All votes and comments will be lost. This action cannot be undone.",
+      "success": "Poll successfully deleted",
+      "error": "Error deleting poll"
+    },
+    "danger": {
+      "title": "Danger Zone",
+      "description": "These actions are irreversible. Please be careful."
+    }
+  },
+  "edit": {
+    "title": "Edit Poll",
+    "error": "Error editing poll",
+    "success": {
+      "title": "Poll successfully updated",
+      "description": "Your changes have been saved and are immediately visible.",
+      "updatedPoll": "Updated Poll",
+      "viewPoll": "View Poll",
+      "backToAdmin": "Back to Management"
     }
   }
 }

@@ -192,7 +192,8 @@
     "back": "Retour",
     "next": "Suivant",
     "finish": "Terminer",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "update": "Mettre à jour"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -208,6 +209,17 @@
     "snackbar": {
       "copied": "Lien copié",
       "failed": "Échec du partage"
+    }
+  },
+  "edit": {
+    "title": "Modifier le Sondage",
+    "error": "Erreur lors de la modification du sondage",
+    "success": {
+      "title": "Sondage mis à jour avec succès",
+      "description": "Vos modifications ont été sauvegardées et sont immédiatement visibles.",
+      "updatedPoll": "Sondage Mis à Jour",
+      "viewPoll": "Voir le Sondage",
+      "backToAdmin": "Retour à la Gestion"
     }
   }
 }
