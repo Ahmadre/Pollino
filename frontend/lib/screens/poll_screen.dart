@@ -287,11 +287,11 @@ class _PollScreenState extends State<PollScreen> {
                         builder: (context, votesSnapshot) {
                           // Erstelle eine veränderbare Kopie der Optionen
                           List<dynamic> liveOptions = List.from(poll.options);
-                          
+
                           // Zähle echte Stimmen aus user_votes
                           final Map<String, int> voteCountsByOption = {};
                           int totalVotes = 0;
-                          
+
                           if (votesSnapshot.hasData && votesSnapshot.data != null) {
                             for (final vote in votesSnapshot.data!) {
                               final optionId = vote['option_id']?.toString();
@@ -641,7 +641,14 @@ class _PollScreenState extends State<PollScreen> {
                                           namedVoters:
                                               showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
                                         );
-                                      }).toList();
+                                      }).toList()
+                                        ..sort((a, b) {
+                                          // Primäre Sortierung: Nach Votes absteigend
+                                          final voteComparison = b.votes.compareTo(a.votes);
+                                          if (voteComparison != 0) return voteComparison;
+                                          // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
+                                          return a.text.compareTo(b.text);
+                                        });
 
                                       final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
                                       if (totalFromCounts == 0) {

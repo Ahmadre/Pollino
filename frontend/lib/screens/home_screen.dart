@@ -456,6 +456,7 @@ class _PollCardState extends State<_PollCard> {
 
                     // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
                     final showNames = !widget.poll.isAnonymous;
+                    // Chart-Optionen erstellen und nach Votes absteigend sortieren
                     final chartOptions = liveOptions.asMap().entries.map((entry) {
                       final index = entry.key;
                       final option = entry.value;
@@ -469,7 +470,14 @@ class _PollCardState extends State<_PollCard> {
                         color: widget.optionColors[index % widget.optionColors.length],
                         namedVoters: showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
                       );
-                    }).toList();
+                    }).toList()
+                      ..sort((a, b) {
+                        // Primäre Sortierung: Nach Votes absteigend
+                        final voteComparison = b.votes.compareTo(a.votes);
+                        if (voteComparison != 0) return voteComparison;
+                        // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
+                        return a.text.compareTo(b.text);
+                      });
 
                     final totalFromCounts = chartOptions.fold<int>(0, (s, o) => s + o.votes);
                     if (totalFromCounts == 0) {
