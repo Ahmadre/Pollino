@@ -423,22 +423,60 @@ class SupabaseService {
           .select()
           .single();
 
-      // Lösche alle bestehenden Optionen
-      await _client.from('poll_options').delete().eq('poll_id', pollId);
+      // Hole bestehende Optionen mit aktuellen Votes
+      final existingOptionsResponse =
+          await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
 
-      // Erstelle neue Optionen
-      final optionsData = optionTexts.map((text) => {'poll_id': int.parse(pollId), 'text': text, 'votes': 0}).toList();
+      final existingOptions = existingOptionsResponse as List;
 
-      final optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+      // Aktualisiere bestehende Optionen und füge neue hinzu
+      final List<Option> updatedOptions = [];
 
-      // Erstelle die aktualisierte Poll-Instanz
-      final options = optionsResponse.map((optionData) {
-        return Option(
-          id: optionData['id'].toString(),
-          text: optionData['text'],
-          votes: optionData['votes'] ?? 0,
-        );
-      }).toList();
+      for (int i = 0; i < optionTexts.length; i++) {
+        final newText = optionTexts[i];
+
+        if (i < existingOptions.length) {
+          // Aktualisiere bestehende Option (behält Votes)
+          final existingOption = existingOptions[i];
+
+          if (existingOption['text'] != newText) {
+            // Text wurde geändert - aktualisiere ihn
+            await _client.from('poll_options').update({'text': newText}).eq('id', existingOption['id']);
+          }
+
+          updatedOptions.add(Option(
+            id: existingOption['id'].toString(),
+            text: newText,
+            votes: existingOption['votes'] ?? 0,
+          ));
+        } else {
+          // Neue Option hinzufügen
+          final newOptionResponse = await _client
+              .from('poll_options')
+              .insert({
+                'poll_id': int.parse(pollId),
+                'text': newText,
+                'votes': 0,
+              })
+              .select()
+              .single();
+
+          updatedOptions.add(Option(
+            id: newOptionResponse['id'].toString(),
+            text: newText,
+            votes: 0,
+          ));
+        }
+      }
+
+      // Lösche überflüssige bestehende Optionen (falls weniger Optionen als vorher)
+      if (existingOptions.length > optionTexts.length) {
+        for (int i = optionTexts.length; i < existingOptions.length; i++) {
+          await _client.from('poll_options').delete().eq('id', existingOptions[i]['id']);
+        }
+      }
+
+      final options = updatedOptions;
 
       final updatedPoll = Poll(
         id: pollId,
