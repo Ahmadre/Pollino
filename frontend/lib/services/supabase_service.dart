@@ -225,10 +225,27 @@ class SupabaseService {
       final pollId = pollResponse['id'];
       final adminToken = pollResponse['admin_token'];
 
-      // Erstelle die Optionen
-      final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+      // Erstelle die Optionen mit Retry-Mechanismus für Sequenz-Probleme
+      List<Map<String, dynamic>> optionsResponse = [];
+      try {
+        final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+        optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+      } catch (e) {
+        // Falls Sequenz-Problem auftritt, synchronisiere die Sequenz und versuche erneut
+        if (e.toString().contains('duplicate key value violates unique constraint') &&
+            e.toString().contains('poll_options_pkey')) {
+          debugPrint('Sequence synchronization needed, retrying...');
 
-      final optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+          // Synchronisiere die Sequenz
+          await _client.rpc('fix_poll_options_sequence');
+
+          // Versuche erneut
+          final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+          optionsResponse = await _client.from('poll_options').insert(optionsData).select();
+        } else {
+          rethrow;
+        }
+      }
 
       // Erstelle die Poll-Instanz
       final options = optionsResponse.map((optionData) {
