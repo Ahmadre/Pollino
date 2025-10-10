@@ -62,56 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handlePollAction(String action, dynamic poll) {
-    switch (action) {
-      case 'delete':
-        _showDeleteConfirmation(poll);
-        break;
-    }
-  }
-
-  Future<void> _showDeleteConfirmation(dynamic poll) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('actions.delete'.tr()),
-        content: Text(
-          I18nService.instance.translate('poll.delete.confirmation', params: {'title': poll.title}),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('actions.cancel'.tr()),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: Text('actions.delete'.tr(), style: const TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-
-    if (shouldDelete == true && mounted) {
-      try {
-        context.read<PollBloc>().add(PollEvent.deletePoll(poll.id));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Umfrage erfolgreich gelöscht'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${I18nService.instance.translate('poll.delete.error')}: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     colorIndex: index,
                                     optionColors: _optionColors,
                                     demoVoters: _demoVoters,
-                                    onPollAction: _handlePollAction,
                                   ),
                                 );
                               },
@@ -224,7 +173,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       colorIndex: index,
                                       optionColors: _optionColors,
                                       demoVoters: _demoVoters,
-                                      onPollAction: _handlePollAction,
                                     );
                                   }),
                                   if (state.hasMore) const Center(child: CircularProgressIndicator()),
@@ -279,14 +227,11 @@ class _PollCard extends StatefulWidget {
   final int colorIndex;
   final List<Color> optionColors;
   final List<List<String>> demoVoters;
-  final Function(String, dynamic)? onPollAction;
-
   const _PollCard({
     required this.poll,
     required this.colorIndex,
     required this.optionColors,
     required this.demoVoters,
-    this.onPollAction,
   });
 
   @override

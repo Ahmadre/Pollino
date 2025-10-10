@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:pollino/env.dart' show Environment;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
@@ -184,7 +185,7 @@ class SupabaseService {
   }
 
   /// Erstellt eine neue Umfrage
-  static Future<Poll> createPoll({
+  static Future<Map<String, dynamic>> createPoll({
     required String title,
     required List<String> optionTexts,
     String? description,
@@ -205,7 +206,7 @@ class SupabaseService {
         createdBy = userResult.toString();
       }
 
-      // Erstelle die Umfrage
+      // Erstelle die Umfrage (admin_token wird automatisch via Trigger generiert)
       final pollResponse = await _client
           .from('polls')
           .insert({
@@ -218,10 +219,11 @@ class SupabaseService {
             'created_by': createdBy,
             'created_by_name': creatorName,
           })
-          .select()
+          .select('*, admin_token')
           .single();
 
       final pollId = pollResponse['id'];
+      final adminToken = pollResponse['admin_token'];
 
       // Erstelle die Optionen
       final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
@@ -237,7 +239,7 @@ class SupabaseService {
         );
       }).toList();
 
-      return Poll(
+      final poll = Poll(
         id: pollId.toString(),
         title: title,
         description: description ?? '',
@@ -250,6 +252,14 @@ class SupabaseService {
         createdBy: createdBy,
         likesCount: 0, // Neue Umfragen beginnen mit 0 Likes
       );
+
+      final path = '/admin/$pollId/$adminToken';
+
+      return {
+        'poll': poll,
+        'admin_token': adminToken,
+        'admin_url': Uri.base.origin.isNotEmpty ? '${Uri.base.origin}$path' : '${Environment.webAppUrl}$path',
+      };
     } catch (e) {
       debugPrint('Error in createPoll: $e');
       rethrow;
@@ -349,6 +359,20 @@ class SupabaseService {
     } catch (e) {
       debugPrint('Error in toggleLike: $e');
       rethrow;
+    }
+  }
+
+  /// Validiert ein Admin-Token für eine Umfrage
+  static Future<bool> validateAdminToken(String pollId, String adminToken) async {
+    try {
+      final result = await _client.rpc('validate_admin_token', params: {
+        'poll_id': int.parse(pollId),
+        'token': adminToken,
+      });
+      return result == true;
+    } catch (e) {
+      debugPrint('Error in validateAdminToken: $e');
+      return false;
     }
   }
 

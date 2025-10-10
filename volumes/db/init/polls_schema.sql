@@ -1,3 +1,6 @@
+-- Aktiviere pgcrypto Extension für gen_random_bytes()
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
 -- Tabelle für Benutzer (mit Name als eindeutigem Identifier)
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

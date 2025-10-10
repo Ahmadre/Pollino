@@ -133,8 +133,20 @@
       "creating": "Wird erstellt...",
       "cancel": "Abbrechen"
     },
-    "success": "Umfrage erfolgreich erstellt!",
-    "error": "Fehler beim Erstellen der Umfrage"
+    "success": {
+      "default": "Umfrage erfolgreich erstellt!",
+      "withAdmin": "Umfrage erstellt und Admin-Link kopiert!"
+    },
+    "error": "Fehler beim Erstellen der Umfrage",
+    "admin": {
+      "title": "Admin-Link erstellt",
+      "description": "Deine Umfrage wurde erstellt! Mit diesem Admin-Link kannst du sie später bearbeiten oder löschen:",
+      "url": "Admin-URL:",
+      "copy": "Kopieren", 
+      "copied": "Link kopiert!",
+      "warning": "⚠️ Bewahre diesen Link sicher auf - er ist der einzige Weg, deine Umfrage zu verwalten!",
+      "copyAndClose": "Link kopieren & schließen"
+    }
   },
   "time": {
     "units": {
@@ -230,6 +242,42 @@
     "snackbar": {
       "copied": "Link kopiert",
       "failed": "Teilen fehlgeschlagen"
+    }
+  },
+  "admin": {
+    "title": "Umfrage verwalten",
+    "error": {
+      "title": "Zugriff verweigert",
+      "generic": "Es ist ein Fehler aufgetreten",
+      "invalidToken": "Ungültiger Admin-Link oder Umfrage nicht gefunden",
+      "goHome": "Zur Startseite"
+    },
+    "actions": {
+      "title": "Verwaltungsoptionen",
+      "sharePoll": "Umfrage teilen", 
+      "sharePollDesc": "Link zur Umfrage kopieren",
+      "copyAdminUrl": "Admin-Link kopieren",
+      "copyAdminUrlDesc": "Diesen Verwaltungslink erneut kopieren",
+      "editPoll": "Umfrage bearbeiten",
+      "editPollDesc": "Titel, Optionen oder Einstellungen ändern",
+      "deletePoll": "Umfrage löschen",
+      "comingSoon": "Diese Funktion kommt bald"
+    },
+    "url": {
+      "copied": "Admin-Link kopiert"
+    },
+    "poll": {
+      "linkCopied": "Umfrage-Link kopiert"
+    },
+    "delete": {
+      "title": "Umfrage löschen",
+      "confirmation": "Möchtest du die Umfrage \"{{title}}\" wirklich löschen? Alle Stimmen und Kommentare gehen dabei verloren. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success": "Umfrage erfolgreich gelöscht",
+      "error": "Fehler beim Löschen der Umfrage"
+    },
+    "danger": {
+      "title": "Gefahrenbereich",
+      "description": "Diese Aktionen sind unwiderruflich. Bitte sei vorsichtig."
     }
   }
 }
