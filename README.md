@@ -16,9 +16,7 @@
 Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Flutter für das Frontend und Supabase als Backend-as-a-Service. Pollino ermöglicht es Benutzern, einfach Umfragen zu erstellen, zu verwalten und daran teilzunehmen.
 
 <div align="center">
-  <img src="frontend/assets/images/screenshots/poll.jpg"  height="450" alt="Poll"/>
-  <img src="frontend/assets/images/screenshots/dashboard.jpg" height="450" alt="Dashboard"/>
-  <img src="frontend/assets/images/screenshots/admin.jpg" height="450" alt="Admin"/>
+  <img src="frontend/assets/images/screenshots/poll.jpg" height="500" alt="Poll"/>
 </div>
 
 ## 🚀 Features
