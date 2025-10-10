@@ -821,117 +821,121 @@ class _PollOption extends StatelessWidget {
           color: Colors.white,
           border: !hasVoted && isSelected ? Border.all(color: color, width: 2) : null,
         ),
-        child: Stack(
-          children: [
-            // Background progress bar - immer sichtbar, mit Transparenz vor dem Voting
-            Container(
-              height: 54,
-              width: MediaQuery.of(context).size.width * 0.85 * percentage,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(27),
-                  color:
-                      color.withValues(alpha: hasVoted ? 1.0 : 0.3) // Transparent vor Voting, voll sichtbar nach Voting
-                  ),
-            ),
-
-            // Content
-            Container(
-              height: 54,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Selection indicator
-                  if (!hasVoted)
-                    Container(
-                      width: 20,
-                      height: 20,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: BoxDecoration(
-                        shape: allowsMultiple ? BoxShape.rectangle : BoxShape.circle,
-                        borderRadius: allowsMultiple ? BorderRadius.circular(4) : null,
-                        border: Border.all(
-                          color: isSelected ? color : Colors.grey[400]!,
-                          width: 2,
-                        ),
-                        color: isSelected ? color : Colors.white,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                // Background progress bar - immer sichtbar, mit Transparenz vor dem Voting
+                Container(
+                  height: 54,
+                  width: constraints.maxWidth * percentage, // Use actual available width
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(27),
+                      color: color.withValues(
+                          alpha: hasVoted ? 1.0 : 0.3) // Transparent vor Voting, voll sichtbar nach Voting
                       ),
-                      child: isSelected
-                          ? Icon(
-                              allowsMultiple ? Icons.check : Icons.circle,
-                              size: allowsMultiple ? 14 : 10,
-                              color: Colors.white,
-                            )
-                          : null,
-                    )
-                  // Check mark for voted option
-                  else if (hasVoted)
-                    Container(
-                      width: 20,
-                      height: 20,
-                      margin: const EdgeInsets.only(right: 12),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: percentage > 0 ? Colors.white : Colors.grey[300],
-                      ),
-                      child: percentage > 0 ? const Icon(Icons.check, size: 14, color: Colors.green) : null,
-                    ),
+                ),
 
-                  // Option text
-                  Expanded(
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
-                      ),
-                    ),
-                  ),
-
-                  // Voters avatars mit Initialen
-                  if (hasVoted && voters.isNotEmpty) ...[
-                    Row(
-                      children: voters
-                          .take(3)
-                          .map(
-                            (voterName) => Container(
-                              width: 24,
-                              height: 24,
-                              margin: const EdgeInsets.only(left: 2),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFF4F46E5),
-                                border: Border.all(color: Colors.white, width: 1),
-                              ),
-                              child: Center(
-                                  child: Text(voterName.isNotEmpty ? voterName[0].toUpperCase() : '?',
-                                      style: const TextStyle(
-                                          fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white))),
+                // Content
+                Container(
+                  height: 54,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Selection indicator
+                      if (!hasVoted)
+                        Container(
+                          width: 20,
+                          height: 20,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            shape: allowsMultiple ? BoxShape.rectangle : BoxShape.circle,
+                            borderRadius: allowsMultiple ? BorderRadius.circular(4) : null,
+                            border: Border.all(
+                              color: isSelected ? color : Colors.grey[400]!,
+                              width: 2,
                             ),
-                          )
-                          .toList(),
-                    ),
-                    const SizedBox(width: 12),
-                  ],
+                            color: isSelected ? color : Colors.white,
+                          ),
+                          child: isSelected
+                              ? Icon(
+                                  allowsMultiple ? Icons.check : Icons.circle,
+                                  size: allowsMultiple ? 14 : 10,
+                                  color: Colors.white,
+                                )
+                              : null,
+                        )
+                      // Check mark for voted option
+                      else if (hasVoted)
+                        Container(
+                          width: 20,
+                          height: 20,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: percentage > 0 ? Colors.white : Colors.grey[300],
+                          ),
+                          child: percentage > 0 ? const Icon(Icons.check, size: 14, color: Colors.green) : null,
+                        ),
 
-                  // Percentage - immer sichtbar
-                  AnimatedOpacity(
-                    opacity: hasVoted ? 1.0 : 0.3,
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      '${(percentage * 100).round()}%',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
+                      // Option text
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
+                          ),
+                        ),
                       ),
-                    ),
+
+                      // Voters avatars mit Initialen
+                      if (hasVoted && voters.isNotEmpty) ...[
+                        Row(
+                          children: voters
+                              .take(3)
+                              .map(
+                                (voterName) => Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: const EdgeInsets.only(left: 2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF4F46E5),
+                                    border: Border.all(color: Colors.white, width: 1),
+                                  ),
+                                  child: Center(
+                                      child: Text(voterName.isNotEmpty ? voterName[0].toUpperCase() : '?',
+                                          style: const TextStyle(
+                                              fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white))),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+
+                      // Percentage - immer sichtbar
+                      AnimatedOpacity(
+                        opacity: hasVoted ? 1.0 : 0.3,
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          '${(percentage * 100).round()}%',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87, // Immer dunkler Text für bessere Lesbarkeit
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
