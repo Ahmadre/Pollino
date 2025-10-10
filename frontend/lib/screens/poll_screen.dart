@@ -356,11 +356,6 @@ class _PollScreenState extends State<PollScreen> {
                                         ),
                                       ],
                                     ),
-                                    const Spacer(),
-                                    IconButton(
-                                      onPressed: () {},
-                                      icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-                                    ),
                                   ],
                                 ),
 
