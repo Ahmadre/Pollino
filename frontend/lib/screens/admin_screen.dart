@@ -216,10 +216,11 @@ class _AdminScreenState extends State<AdminScreen> {
     final poll = _poll!;
 
     return ResponsiveContainer(
+      padding: const EdgeInsets.all(16).copyWith(bottom: 0, top: 0),
       type: ResponsiveContainerType.reading,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
+          const SizedBox(height: 16),
           // Poll Info Header
           Container(
             padding: const EdgeInsets.all(20),
@@ -257,19 +258,19 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                 ],
                 const SizedBox(height: 16),
-                Row(
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 5,
                   children: [
                     _InfoChip(
                       icon: Icons.how_to_vote,
                       label:
                           '${poll.options.fold<int>(0, (sum, opt) => sum + opt.votes)} ${I18nService.instance.translate('poll.votes')}',
                     ),
-                    const SizedBox(width: 8),
                     _InfoChip(
                       icon: Icons.list,
                       label: '${poll.options.length} ${I18nService.instance.translate('poll.options')}',
                     ),
-                    const SizedBox(width: 8),
                     if (poll.allowsMultipleVotes)
                       _InfoChip(
                         icon: Icons.checklist,
@@ -377,6 +378,7 @@ class _AdminScreenState extends State<AdminScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
