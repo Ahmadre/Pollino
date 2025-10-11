@@ -19,7 +19,7 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
   <img src="frontend/assets/images/screenshots/poll.jpg" height="500" alt="Pollino - Interactive Poll Interface"/>
 </div>
 
-> **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like-System und responsivem Design. Zusätzliche Screenshots für Admin-Features und Management-Interface wurden für optimierte Performance entfernt.
+> **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like- und Kommentar-System und responsivem Design.
 
 ## 🚀 Features
 
