@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:routemaster/routemaster.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/bloc/poll.dart';
@@ -264,7 +265,7 @@ class _SuccessContent extends StatelessWidget {
                 child: TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Navigate to the poll (implement if needed)
+                    Routemaster.of(context).replace('/poll/${poll.id}');
                   },
                   child: Text(I18nService.instance.translate('create.success.viewPoll')),
                 ),

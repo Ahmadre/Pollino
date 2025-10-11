@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pollino/core/localization/i18n_service.dart';
 
 class PollPrimaryButton extends StatelessWidget {
   final bool isLoading;

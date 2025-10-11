@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/widgets/poll_primary_button.dart';
+import 'package:routemaster/routemaster.dart';
 import 'package:wolt_modal_sheet/wolt_modal_sheet.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/bloc/edit_poll_bloc.dart';
@@ -198,7 +199,9 @@ class _SuccessContent extends StatelessWidget {
                     child: TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        // Navigate to the poll (implement if needed)
+                        if (state is EditPollUpdated) {
+                          Routemaster.of(context).replace('/poll/${state.updatedPoll.id}');
+                        }
                       },
                       child: Text(I18nService.instance.translate('edit.success.viewPoll')),
                     ),
