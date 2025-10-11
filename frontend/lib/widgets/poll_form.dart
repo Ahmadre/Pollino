@@ -43,19 +43,31 @@ class PollFormData {
 class PollForm extends StatefulWidget {
   final PollFormData? initialData;
   final bool isEditMode;
-  final Function(PollFormData) onSubmit;
-  final bool isLoading;
+  final Function(PollFormData)? onSubmit;
+  final PollFormController? controller;
 
   const PollForm({
     super.key,
     this.initialData,
     this.isEditMode = false,
-    required this.onSubmit,
-    this.isLoading = false,
+    this.onSubmit,
+    this.controller,
   });
 
   @override
   State<PollForm> createState() => _PollFormState();
+}
+
+class PollFormController {
+  _PollFormState? _state;
+
+  bool get isValid => _state?._formKey.currentState?.validate() ?? false;
+
+  PollFormData? get formData => _state?._getFormData();
+
+  void submit() {
+    _state?._submitForm();
+  }
 }
 
 class _PollFormState extends State<PollForm> {
@@ -72,6 +84,7 @@ class _PollFormState extends State<PollForm> {
   @override
   void initState() {
     super.initState();
+    widget.controller?._state = this;
     _initializeForm();
   }
 
@@ -105,6 +118,7 @@ class _PollFormState extends State<PollForm> {
 
   @override
   void dispose() {
+    widget.controller?._state = null;
     _questionController.dispose();
     _creatorNameController.dispose();
     for (final controller in _optionControllers) {
@@ -183,8 +197,8 @@ class _PollFormState extends State<PollForm> {
     }
   }
 
-  void _submitForm() {
-    if (!_formKey.currentState!.validate()) return;
+  PollFormData? _getFormData() {
+    if (!_formKey.currentState!.validate()) return null;
 
     final question = _questionController.text.trim();
     final options =
@@ -197,10 +211,10 @@ class _PollFormState extends State<PollForm> {
           backgroundColor: Colors.red,
         ),
       );
-      return;
+      return null;
     }
 
-    final formData = PollFormData(
+    return PollFormData(
       question: question,
       options: options,
       creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
@@ -210,8 +224,13 @@ class _PollFormState extends State<PollForm> {
       selectedExpirationDate: _selectedExpirationDate,
       autoDeleteAfterExpiry: _hasExpirationDate ? _autoDeleteAfterExpiry : false,
     );
+  }
 
-    widget.onSubmit(formData);
+  void _submitForm() {
+    final formData = _getFormData();
+    if (formData != null) {
+      widget.onSubmit?.call(formData);
+    }
   }
 
   @override
@@ -741,45 +760,7 @@ class _PollFormState extends State<PollForm> {
                 ),
               ],
 
-              const SizedBox(height: 40),
-
-              // Submit Button
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: widget.isLoading ? null : _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4F46E5),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: widget.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            widget.isEditMode
-                                ? I18nService.instance.translate('actions.update')
-                                : I18nService.instance.translate('actions.next'),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
+              const SizedBox(height: kToolbarHeight),
             ],
           ),
         ),

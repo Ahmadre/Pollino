@@ -7,6 +7,7 @@ import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/supabase_service.dart';
 import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
+import 'package:pollino/widgets/edit_poll_modal_sheet.dart';
 import 'package:routemaster/routemaster.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -323,7 +324,11 @@ class _AdminScreenState extends State<AdminScreen> {
             subtitle: I18nService.instance.translate('admin.actions.editPollDesc'),
             color: Colors.orange,
             onTap: () {
-              Routemaster.of(context).push('edit');
+              EditPollModalSheet.show(
+                context,
+                pollId: widget.pollId,
+                adminToken: widget.adminToken,
+              );
             },
           ),
 

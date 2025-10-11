@@ -15,6 +15,7 @@ import 'package:routemaster/routemaster.dart';
 import 'package:pollino/services/comments_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
+import 'package:pollino/widgets/create_poll_modal_sheet.dart';
 import 'package:share_plus/share_plus.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -66,6 +67,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      floatingActionButton: ResponsiveHelper.isMobile(context)
+          ? FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+              onPressed: () => CreatePollModalSheet.show(context),
+              backgroundColor: const Color(0xFF4F46E5),
+              foregroundColor: Colors.white,
+              tooltip: I18nService.instance.translate('create.title'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,14 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  IconButton(
-                    onPressed: () => Routemaster.of(context).push('/create'),
-                    icon: const Icon(Icons.add, size: 24),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    tooltip: 'Neue Umfrage erstellen',
-                  ),
-                  const SizedBox(width: 12),
+                  if (!ResponsiveHelper.isMobile(context)) ...[
+                    IconButton(
+                      onPressed: () => CreatePollModalSheet.show(context),
+                      icon: const Icon(Icons.add, size: 24),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Neue Umfrage erstellen',
+                    ),
+                    const SizedBox(width: 12),
+                  ],
                   const PollinoLogo(
                     size: 32,
                     showText: false,
@@ -123,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 24),
                             ElevatedButton.icon(
-                              onPressed: () => Routemaster.of(context).push('/create'),
+                              onPressed: () => CreatePollModalSheet.show(context),
                               icon: const Icon(Icons.add),
                               label: Text('home.empty.button'.tr()),
                             ),
