@@ -46,10 +46,12 @@ class CreatePollModalSheet {
         ),
       ),
       isTopBarLayerAlwaysVisible: true,
-      trailingNavBarWidget: IconButton(
-        padding: const EdgeInsets.all(8),
-        icon: const Icon(Icons.close),
-        onPressed: () => Navigator.of(context).pop(),
+      trailingNavBarWidget: Container(
+        margin: const EdgeInsets.all(8).copyWith(right: 16),
+        child: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       stickyActionBar: BlocProvider.value(
         value: bloc,
@@ -331,7 +333,7 @@ class _CreatePollContentState extends State<_CreatePollContent> {
       },
       builder: (context, state) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
           child: PollForm(
             controller: context.read<CreatePollBloc>().formController,
           ),

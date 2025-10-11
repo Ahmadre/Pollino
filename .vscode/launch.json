@@ -11,7 +11,7 @@
       "type": "dart",
       "args": [
         "-d",
-        "web-server",
+        "chrome",
         "--web-port",
         "8080",
       ]

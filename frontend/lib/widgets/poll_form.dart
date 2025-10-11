@@ -7,6 +7,7 @@ import 'package:pollino/bloc/poll.dart';
 
 class PollFormData {
   String question;
+  String? description;
   List<String> options;
   String? creatorName;
   bool allowMultipleOptions;
@@ -17,6 +18,7 @@ class PollFormData {
 
   PollFormData({
     this.question = '',
+    this.description,
     this.options = const [],
     this.creatorName,
     this.allowMultipleOptions = false,
@@ -29,6 +31,7 @@ class PollFormData {
   factory PollFormData.fromPoll(Poll poll) {
     return PollFormData(
       question: poll.title,
+      description: poll.description,
       options: poll.options.map((option) => option.text).toList(),
       creatorName: poll.createdByName,
       allowMultipleOptions: poll.allowsMultipleVotes,
@@ -73,6 +76,7 @@ class PollFormController {
 class _PollFormState extends State<PollForm> {
   final _formKey = GlobalKey<FormState>();
   final _questionController = TextEditingController();
+  final _descriptionController = TextEditingController();
   final _creatorNameController = TextEditingController();
   final List<TextEditingController> _optionControllers = [];
   bool _allowMultipleOptions = false;
@@ -92,6 +96,7 @@ class _PollFormState extends State<PollForm> {
     if (widget.initialData != null) {
       final data = widget.initialData!;
       _questionController.text = data.question;
+      _descriptionController.text = data.description ?? '';
       _creatorNameController.text = data.creatorName ?? '';
       _allowMultipleOptions = data.allowMultipleOptions;
       _enableAnonymousVoting = data.enableAnonymousVoting;
@@ -120,6 +125,7 @@ class _PollFormState extends State<PollForm> {
   void dispose() {
     widget.controller?._state = null;
     _questionController.dispose();
+    _descriptionController.dispose();
     _creatorNameController.dispose();
     for (final controller in _optionControllers) {
       controller.dispose();
@@ -216,6 +222,7 @@ class _PollFormState extends State<PollForm> {
 
     return PollFormData(
       question: question,
+      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       options: options,
       creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
       allowMultipleOptions: _allowMultipleOptions,
@@ -282,6 +289,44 @@ class _PollFormState extends State<PollForm> {
                     }
                     return null;
                   },
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Poll Description (optional)
+              Text(
+                I18nService.instance.translate('create.description.label'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE9ECEF)),
+                ),
+                child: TextFormField(
+                  controller: _descriptionController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: I18nService.instance.translate('create.description.placeholder'),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFFADB5BD),
+                      fontSize: 16,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(16),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
                 ),
               ),
 

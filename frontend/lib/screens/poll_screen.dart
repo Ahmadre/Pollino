@@ -371,6 +371,27 @@ class _PollScreenState extends State<PollScreen> {
                                   ),
                                 ),
 
+                                // Poll Description (if present)
+                                if (poll.description != null && poll.description!.isNotEmpty) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8F9FA),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE9ECEF)),
+                                    ),
+                                    child: Text(
+                                      poll.description!,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[700],
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
                                 const SizedBox(height: 16),
 
                                 // Vote count and expiration info (Votes via user_votes gezählt)
@@ -670,21 +691,22 @@ class _PollScreenState extends State<PollScreen> {
                                               return const SizedBox.shrink();
                                             }
 
-                                            return ResponsiveChartContainer(
-                                              child: PollResultsChart(
-                                                options: chartOptions,
-                                                isVisible: _showChart,
-                                                onToggleVisibility: () {
-                                                  setState(() {
-                                                    _showChart = !_showChart;
-                                                  });
-                                                },
+                                            return Container(
+                                              margin: const EdgeInsets.only(bottom: 20),
+                                              child: ResponsiveChartContainer(
+                                                child: PollResultsChart(
+                                                  options: chartOptions,
+                                                  isVisible: _showChart,
+                                                  onToggleVisibility: () {
+                                                    setState(() {
+                                                      _showChart = !_showChart;
+                                                    });
+                                                  },
+                                                ),
                                               ),
                                             );
                                           },
                                         ),
-
-                                      const SizedBox(height: 20),
 
                                       // Kommentare Sektion
                                       _CommentsSection(pollId: poll.id),

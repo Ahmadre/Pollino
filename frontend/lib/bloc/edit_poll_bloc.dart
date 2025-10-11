@@ -73,6 +73,7 @@ class EditPollBloc extends Bloc<EditPollEvent, EditPollState> {
           pollId: pollId,
           adminToken: adminToken,
           title: formData.question,
+          description: formData.description,
           optionTexts: formData.options,
           isAnonymous: formData.enableAnonymousVoting,
           allowsMultipleVotes: formData.allowMultipleOptions,
