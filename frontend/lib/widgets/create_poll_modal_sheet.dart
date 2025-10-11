@@ -158,8 +158,9 @@ class _SuccessContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFF0EA5E9)),
             ),
+            width: double.maxFinite,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
                   I18nService.instance.translate('create.success.createdPoll'),
