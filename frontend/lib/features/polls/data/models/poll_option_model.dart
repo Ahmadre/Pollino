@@ -11,6 +11,7 @@ class PollOptionModel with _$PollOptionModel {
     required String id,
     required String text,
     @Default(0) int votes,
+    @Default(0) int order,
   }) = _PollOptionModel;
 
   factory PollOptionModel.fromJson(Map<String, dynamic> json) => _$PollOptionModelFromJson(json);
@@ -24,6 +25,7 @@ extension PollOptionModelX on PollOptionModel {
       id: id,
       text: text,
       votes: votes,
+      order: order,
     );
   }
 }
@@ -36,6 +38,7 @@ extension PollOptionModelFactory on PollOptionModel {
       id: option.id,
       text: option.text,
       votes: option.votes,
+      order: option.order,
     );
   }
 }

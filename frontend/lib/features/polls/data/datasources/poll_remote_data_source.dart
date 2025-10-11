@@ -74,13 +74,15 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
 
       for (final pollData in pollsResponse) {
         // Fetch options for each poll
-        final optionsResponse = await client.from('poll_options').select('*').eq('poll_id', pollData['id']).order('id');
+        final optionsResponse =
+            await client.from('poll_options').select('*').eq('poll_id', pollData['id']).order('option_order, id');
 
         final options = (optionsResponse as List).map((optionData) {
           return PollOptionModel(
             id: optionData['id'].toString(),
             text: optionData['text'] ?? '',
             votes: optionData['votes'] ?? 0,
+            order: optionData['option_order'] ?? 0,
           );
         }).toList();
 
@@ -110,13 +112,15 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
     try {
       final pollResponse = await client.from('polls').select('*').eq('id', pollId).single();
 
-      final optionsResponse = await client.from('poll_options').select('*').eq('poll_id', pollId).order('id');
+      final optionsResponse =
+          await client.from('poll_options').select('*').eq('poll_id', pollId).order('option_order, id');
 
       final options = (optionsResponse as List).map((optionData) {
         return PollOptionModel(
           id: optionData['id'].toString(),
           text: optionData['text'] ?? '',
           votes: optionData['votes'] ?? 0,
+          order: optionData['option_order'] ?? 0,
         );
       }).toList();
 
@@ -180,10 +184,13 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
 
       // Create options
       final optionsData = optionTexts
-          .map((text) => {
+          .asMap()
+          .entries
+          .map((entry) => {
                 'poll_id': pollId,
-                'text': text,
+                'text': entry.value,
                 'votes': 0,
+                'option_order': entry.key + 1,
               })
           .toList();
 
@@ -194,6 +201,7 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
           id: optionData['id'].toString(),
           text: optionData['text'] ?? '',
           votes: optionData['votes'] ?? 0,
+          order: optionData['option_order'] ?? 0,
         );
       }).toList();
 

@@ -423,7 +423,7 @@ class _PollCardState extends State<_PollCard> {
                       );
                     }).toList()
                       ..sort((a, b) {
-                        // Primäre Sortierung: Nach Votes absteigend
+                        // Primäre Sortierung: Nach Votes absteigend (für Charts sinnvoll)
                         final voteComparison = b.votes.compareTo(a.votes);
                         if (voteComparison != 0) return voteComparison;
                         // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind

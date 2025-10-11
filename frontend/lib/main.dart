@@ -29,7 +29,7 @@ Future<void> main() async {
   // Initialize i18n Service with automatic system locale detection (uses Hive)
   await I18nService.instance.initWithSystemLocale();
   Hive.registerAdapter<Poll>(PollAdapter());
-  Hive.registerAdapter<Option>(OptionAdapter());
+  Hive.registerAdapter<Option>(SafeOptionAdapter()); // Sicherer Adapter für order-Feld
   final hiveBox = await Hive.openBox<Poll>('polls');
 
   // Initialize LikeService for local like storage

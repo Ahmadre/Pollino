@@ -148,6 +148,16 @@ class _PollFormState extends State<PollForm> {
     }
   }
 
+  void _reorderOptions(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final TextEditingController controller = _optionControllers.removeAt(oldIndex);
+      _optionControllers.insert(newIndex, controller);
+    });
+  }
+
   void _setExpirationTime(Duration duration) {
     setState(() {
       _selectedExpirationDate = TimezoneHelper.nowLocal().add(duration);
@@ -343,78 +353,89 @@ class _PollFormState extends State<PollForm> {
               ),
               const SizedBox(height: 16),
 
-              // Options List
-              ...List.generate(_optionControllers.length, (index) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    children: [
-                      // Drag handle
-                      Container(
-                        width: 20,
-                        height: 20,
-                        margin: const EdgeInsets.only(right: 12),
-                        child: Icon(
-                          Icons.drag_indicator,
-                          color: Colors.grey[400],
-                          size: 16,
-                        ),
-                      ),
-
-                      // Option input
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8F9FA),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _optionControllers[index].text.isNotEmpty
-                                  ? const Color(0xFF4F46E5)
-                                  : const Color(0xFFE9ECEF),
-                              width: _optionControllers[index].text.isNotEmpty ? 2 : 1,
+              // Options List - Reorderable
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _optionControllers.length,
+                onReorder: _reorderOptions,
+                buildDefaultDragHandles: false, // Deaktiviert automatische Drag-Handles
+                itemBuilder: (context, index) {
+                  return Padding(
+                    key: ValueKey('option_$index'),
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        // Drag handle
+                        Container(
+                          width: 20,
+                          height: 20,
+                          margin: const EdgeInsets.only(right: 12),
+                          child: ReorderableDragStartListener(
+                            index: index,
+                            child: Icon(
+                              Icons.drag_indicator,
+                              color: Colors.grey[600],
+                              size: 16,
                             ),
                           ),
-                          child: TextFormField(
-                            controller: _optionControllers[index],
-                            onChanged: (value) => setState(() {}),
-                            decoration: InputDecoration(
-                              hintText: I18nService.instance
-                                  .translate('create.options.placeholder', params: {'number': '${index + 1}'}),
-                              hintStyle: const TextStyle(
-                                color: Color(0xFFADB5BD),
-                                fontSize: 16,
+                        ),
+
+                        // Option input
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: _optionControllers[index].text.isNotEmpty
+                                    ? const Color(0xFF4F46E5)
+                                    : const Color(0xFFE9ECEF),
+                                width: _optionControllers[index].text.isNotEmpty ? 2 : 1,
                               ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.all(16),
                             ),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
+                            child: TextFormField(
+                              controller: _optionControllers[index],
+                              onChanged: (value) => setState(() {}),
+                              decoration: InputDecoration(
+                                hintText: I18nService.instance
+                                    .translate('create.options.placeholder', params: {'number': '${index + 1}'}),
+                                hintStyle: const TextStyle(
+                                  color: Color(0xFFADB5BD),
+                                  fontSize: 16,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.all(16),
+                              ),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return I18nService.instance.translate('create.validation.optionEmpty');
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return I18nService.instance.translate('create.validation.optionEmpty');
-                              }
-                              return null;
-                            },
                           ),
                         ),
-                      ),
 
-                      // Remove button
-                      if (_optionControllers.length > 2)
-                        IconButton(
-                          onPressed: () => _removeOption(index),
-                          icon: Icon(
-                            Icons.close,
-                            color: Colors.grey[400],
-                            size: 20,
+                        // Remove button
+                        if (_optionControllers.length > 2)
+                          IconButton(
+                            onPressed: () => _removeOption(index),
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.grey[400],
+                              size: 20,
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
-                );
-              }),
+                      ],
+                    ),
+                  );
+                },
+              ),
 
               // Add Another Option
               const SizedBox(height: 8),

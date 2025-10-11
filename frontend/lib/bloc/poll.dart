@@ -33,7 +33,50 @@ class Option with _$Option {
     @HiveField(0) required String id,
     @HiveField(1) required String text,
     @HiveField(2) required int votes,
+    @HiveField(3) @Default(0) int order,
   }) = _Option;
 
   factory Option.fromJson(Map<String, dynamic> json) => _$OptionFromJson(json);
+}
+
+// Custom Hive Adapter für bessere Null-Safety
+class SafeOptionAdapter extends TypeAdapter<Option> {
+  @override
+  final int typeId = 1;
+
+  @override
+  Option read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return Option(
+      id: fields[0] as String,
+      text: fields[1] as String,
+      votes: fields[2] as int,
+      order: (fields[3] as int?) ?? 0, // Null-safe mit Fallback auf 0
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Option obj) {
+    writer
+      ..writeByte(4)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.text)
+      ..writeByte(2)
+      ..write(obj.votes)
+      ..writeByte(3)
+      ..write(obj.order);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SafeOptionAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

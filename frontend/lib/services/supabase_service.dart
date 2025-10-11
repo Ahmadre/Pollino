@@ -39,8 +39,11 @@ class SupabaseService {
       for (final pollData in pollsResponse) {
         final pollId = pollData['id'];
 
-        final optionsResponse =
-            await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
+        final optionsResponse = await _client
+            .from('poll_options')
+            .select('id, text, votes, option_order')
+            .eq('poll_id', pollId)
+            .order('option_order, id');
 
         debugPrint('Options for poll $pollId: $optionsResponse');
 
@@ -49,6 +52,7 @@ class SupabaseService {
             id: optionData['id'].toString(),
             text: optionData['text'] ?? '',
             votes: optionData['votes'] ?? 0,
+            order: optionData['option_order'] ?? 0,
           );
         }).toList();
 
@@ -90,13 +94,20 @@ class SupabaseService {
       debugPrint('Single poll response: $pollResponse');
 
       // Hole die Optionen für diese Umfrage
-      final optionsResponse =
-          await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
+      final optionsResponse = await _client
+          .from('poll_options')
+          .select('id, text, votes, option_order')
+          .eq('poll_id', pollId)
+          .order('option_order, id');
 
       debugPrint('Options response: $optionsResponse');
 
       final options = (optionsResponse as List).map((optionData) {
-        return Option(id: optionData['id'].toString(), text: optionData['text'] ?? '', votes: optionData['votes'] ?? 0);
+        return Option(
+            id: optionData['id'].toString(),
+            text: optionData['text'] ?? '',
+            votes: optionData['votes'] ?? 0,
+            order: optionData['option_order'] ?? 0);
       }).toList();
 
       return Poll(
@@ -228,7 +239,16 @@ class SupabaseService {
       // Erstelle die Optionen mit Retry-Mechanismus für Sequenz-Probleme
       List<Map<String, dynamic>> optionsResponse = [];
       try {
-        final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+        final optionsData = optionTexts
+            .asMap()
+            .entries
+            .map((entry) => {
+                  'poll_id': pollId,
+                  'text': entry.value,
+                  'votes': 0,
+                  'option_order': entry.key + 1,
+                })
+            .toList();
         optionsResponse = await _client.from('poll_options').insert(optionsData).select();
       } catch (e) {
         // Falls Sequenz-Problem auftritt, synchronisiere die Sequenz und versuche erneut
@@ -240,7 +260,16 @@ class SupabaseService {
           await _client.rpc('fix_poll_options_sequence');
 
           // Versuche erneut
-          final optionsData = optionTexts.map((text) => {'poll_id': pollId, 'text': text, 'votes': 0}).toList();
+          final optionsData = optionTexts
+              .asMap()
+              .entries
+              .map((entry) => {
+                    'poll_id': pollId,
+                    'text': entry.value,
+                    'votes': 0,
+                    'option_order': entry.key + 1,
+                  })
+              .toList();
           optionsResponse = await _client.from('poll_options').insert(optionsData).select();
         } else {
           rethrow;
@@ -253,6 +282,7 @@ class SupabaseService {
           id: optionData['id'].toString(),
           text: optionData['text'],
           votes: optionData['votes'] ?? 0,
+          order: optionData['option_order'] ?? 0,
         );
       }).toList();
 
@@ -441,8 +471,11 @@ class SupabaseService {
           .single();
 
       // Hole bestehende Optionen mit aktuellen Votes
-      final existingOptionsResponse =
-          await _client.from('poll_options').select('id, text, votes').eq('poll_id', pollId).order('id');
+      final existingOptionsResponse = await _client
+          .from('poll_options')
+          .select('id, text, votes, option_order')
+          .eq('poll_id', pollId)
+          .order('option_order, id');
 
       final existingOptions = existingOptionsResponse as List;
 
@@ -451,20 +484,25 @@ class SupabaseService {
 
       for (int i = 0; i < optionTexts.length; i++) {
         final newText = optionTexts[i];
+        final newOrder = i + 1;
 
         if (i < existingOptions.length) {
-          // Aktualisiere bestehende Option (behält Votes)
+          // Aktualisiere bestehende Option (behält Votes, aktualisiert Text und Order)
           final existingOption = existingOptions[i];
 
-          if (existingOption['text'] != newText) {
-            // Text wurde geändert - aktualisiere ihn
-            await _client.from('poll_options').update({'text': newText}).eq('id', existingOption['id']);
+          if (existingOption['text'] != newText || (existingOption['option_order'] ?? 0) != newOrder) {
+            // Text oder Order wurde geändert - aktualisiere beides
+            await _client.from('poll_options').update({
+              'text': newText,
+              'option_order': newOrder,
+            }).eq('id', existingOption['id']);
           }
 
           updatedOptions.add(Option(
             id: existingOption['id'].toString(),
             text: newText,
             votes: existingOption['votes'] ?? 0,
+            order: newOrder,
           ));
         } else {
           // Neue Option hinzufügen
@@ -474,6 +512,7 @@ class SupabaseService {
                 'poll_id': int.parse(pollId),
                 'text': newText,
                 'votes': 0,
+                'option_order': newOrder,
               })
               .select()
               .single();
@@ -482,6 +521,7 @@ class SupabaseService {
             id: newOptionResponse['id'].toString(),
             text: newText,
             votes: 0,
+            order: newOrder,
           ));
         }
       }

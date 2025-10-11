@@ -7,11 +7,13 @@ class PollOption extends Equatable {
   final String id;
   final String text;
   final int votes;
+  final int order;
 
   const PollOption({
     required this.id,
     required this.text,
     required this.votes,
+    this.order = 0,
   });
 
   /// Creates a new poll option
@@ -30,6 +32,7 @@ class PollOption extends Equatable {
       id: id,
       text: text.trim(),
       votes: 0,
+      order: 0,
     );
   }
 
@@ -56,14 +59,16 @@ class PollOption extends Equatable {
     String? id,
     String? text,
     int? votes,
+    int? order,
   }) {
     return PollOption(
       id: id ?? this.id,
       text: text ?? this.text,
       votes: votes ?? this.votes,
+      order: order ?? this.order,
     );
   }
 
   @override
-  List<Object> get props => [id, text, votes];
+  List<Object> get props => [id, text, votes, order];
 }

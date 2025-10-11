@@ -303,21 +303,32 @@ class _PollScreenState extends State<PollScreen> {
                             }
                           }
 
-                          // Sortiere Optionen absteigend nach echten Vote-Zahlen
+                          // Sortiere Optionen: Nach Votes (falls vorhanden) oder nach Order
                           liveOptions.sort((a, b) {
                             final aId = a.id?.toString() ?? a['id']?.toString() ?? '';
                             final bId = b.id?.toString() ?? b['id']?.toString() ?? '';
                             final aVotes = voteCountsByOption[aId] ?? 0;
                             final bVotes = voteCountsByOption[bId] ?? 0;
 
-                            // Primäre Sortierung: Nach Votes absteigend
-                            final voteComparison = bVotes.compareTo(aVotes);
-                            if (voteComparison != 0) return voteComparison;
+                            // Wenn es Votes gibt, sortiere nach Votes absteigend
+                            if (totalVotes > 0) {
+                              final voteComparison = bVotes.compareTo(aVotes);
+                              if (voteComparison != 0) return voteComparison;
 
-                            // Sekundäre Sortierung: Nach Text alphabetisch falls Votes gleich sind
-                            final aText = a.text ?? a['text'] ?? '';
-                            final bText = b.text ?? b['text'] ?? '';
-                            return aText.toString().compareTo(bText.toString());
+                              // Sekundäre Sortierung: Nach Text alphabetisch falls Votes gleich sind
+                              final aText = a.text ?? a['text'] ?? '';
+                              final bText = b.text ?? b['text'] ?? '';
+                              return aText.toString().compareTo(bText.toString());
+                            } else {
+                              // Keine Votes vorhanden: Sortiere nach Order aufsteigend
+                              final aOrder = a.order ?? 0;
+                              final bOrder = b.order ?? 0;
+                              final orderComparison = aOrder.compareTo(bOrder);
+                              if (orderComparison != 0) return orderComparison;
+
+                              // Fallback: Nach ID falls Order gleich ist
+                              return aId.compareTo(bId);
+                            }
                           });
 
                           return ResponsiveContainer(
