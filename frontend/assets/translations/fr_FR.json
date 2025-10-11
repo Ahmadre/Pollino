@@ -133,8 +133,23 @@
       "creating": "Création...",
       "cancel": "Annuler"
     },
-    "success": "Sondage créé avec succès !",
-    "error": "Erreur lors de la création du sondage"
+    "submit": "Créer le sondage",
+    "success": {
+      "title": "Sondage créé avec succès !",
+      "description": "Votre sondage a été créé et est prêt à recevoir des votes.",
+      "createdPoll": "Sondage Créé",
+      "viewPoll": "Voir le Sondage"
+    },
+    "error": "Erreur lors de la création du sondage",
+    "admin": {
+      "title": "Lien d'Administration Créé",
+      "description": "Votre sondage a été créé ! Utilisez ce lien d'administration pour le modifier ou le supprimer plus tard :",
+      "url": "URL d'Administration :",
+      "copy": "Copier",
+      "copied": "Lien copié !",
+      "warning": "⚠️ Gardez ce lien en sécurité - c'est le seul moyen de gérer votre sondage !",
+      "copyAndClose": "Copier le Lien et Fermer"
+    }
   },
   "time": {
     "units": {
@@ -209,6 +224,63 @@
     "snackbar": {
       "copied": "Lien copié",
       "failed": "Échec du partage"
+    }
+  },
+  "comments": {
+    "title": "Commentaires",
+    "empty": "Soyez le premier à écrire un commentaire.",
+    "placeholder": "Écrire un commentaire…",
+    "send": "Envoyer",
+    "withName": "Commenter avec nom",
+    "nameOptional": "Nom (optionnel)",
+    "edited": "modifié",
+    "guest": "Invité",
+    "badge": { "new": "nouveau" },
+    "dialog": {
+      "editTitle": "Modifier le commentaire",
+      "deleteTitle": "Supprimer le commentaire ?",
+      "deleteMessage": "Cette action ne peut pas être annulée."
+    },
+    "snackbar": {
+      "add": { "error": "Impossible d'envoyer le commentaire" },
+      "edit": { "error": "Échec de la modification" },
+      "delete": { "error": "Échec de la suppression" }
+    }
+  },
+  "admin": {
+    "title": "Gérer le Sondage",
+    "error": {
+      "title": "Accès Refusé",
+      "generic": "Une erreur s'est produite",
+      "invalidToken": "Lien d'administration invalide ou sondage non trouvé",
+      "goHome": "Aller à l'Accueil"
+    },
+    "actions": {
+      "title": "Options de Gestion",
+      "sharePoll": "Partager le Sondage",
+      "sharePollDesc": "Copier le lien vers le sondage",
+      "copyAdminUrl": "Copier le Lien d'Administration",
+      "copyAdminUrlDesc": "Copier à nouveau ce lien de gestion",
+      "editPoll": "Modifier le Sondage",
+      "editPollDesc": "Changer le titre, les options ou les paramètres",
+      "deletePoll": "Supprimer le Sondage",
+      "comingSoon": "Cette fonctionnalité arrive bientôt"
+    },
+    "url": {
+      "copied": "Lien d'administration copié"
+    },
+    "poll": {
+      "linkCopied": "Lien du sondage copié"
+    },
+    "delete": {
+      "title": "Supprimer le Sondage",
+      "confirmation": "Voulez-vous vraiment supprimer le sondage \"{{title}}\" ? Tous les votes et commentaires seront perdus. Cette action ne peut pas être annulée.",
+      "success": "Sondage supprimé avec succès",
+      "error": "Erreur lors de la suppression du sondage"
+    },
+    "danger": {
+      "title": "Zone de Danger",
+      "description": "Ces actions sont irréversibles. Veuillez être prudent."
     }
   },
   "edit": {

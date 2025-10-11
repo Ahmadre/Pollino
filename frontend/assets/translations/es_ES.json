@@ -133,8 +133,23 @@
       "creating": "Creando...",
       "cancel": "Cancelar"
     },
-    "success": "¡Encuesta creada exitosamente!",
-    "error": "Error al crear la encuesta"
+    "submit": "Crear encuesta",
+    "success": {
+      "title": "¡Encuesta creada exitosamente!",
+      "description": "Tu encuesta ha sido creada y está lista para recibir votos.",
+      "createdPoll": "Encuesta Creada",
+      "viewPoll": "Ver Encuesta"
+    },
+    "error": "Error al crear la encuesta",
+    "admin": {
+      "title": "Enlace de Administración Creado",
+      "description": "¡Tu encuesta ha sido creada! Usa este enlace de administración para editarla o eliminarla más tarde:",
+      "url": "URL de Administración:",
+      "copy": "Copiar",
+      "copied": "¡Enlace copiado!",
+      "warning": "⚠️ ¡Guarda este enlace de forma segura - es la única manera de gestionar tu encuesta!",
+      "copyAndClose": "Copiar Enlace y Cerrar"
+    }
   },
   "time": {
     "units": {
@@ -230,6 +245,42 @@
     "snackbar": {
       "copied": "Enlace copiado",
       "failed": "Error al compartir"
+    }
+  },
+  "admin": {
+    "title": "Gestionar Encuesta",
+    "error": {
+      "title": "Acceso Denegado",
+      "generic": "Ocurrió un error",
+      "invalidToken": "Enlace de administración inválido o encuesta no encontrada",
+      "goHome": "Ir al Inicio"
+    },
+    "actions": {
+      "title": "Opciones de Gestión",
+      "sharePoll": "Compartir Encuesta",
+      "sharePollDesc": "Copiar enlace a la encuesta",
+      "copyAdminUrl": "Copiar Enlace de Administración",
+      "copyAdminUrlDesc": "Copiar este enlace de gestión nuevamente",
+      "editPoll": "Editar Encuesta",
+      "editPollDesc": "Cambiar título, opciones o configuración",
+      "deletePoll": "Eliminar Encuesta",
+      "comingSoon": "Esta función llegará pronto"
+    },
+    "url": {
+      "copied": "Enlace de administración copiado"
+    },
+    "poll": {
+      "linkCopied": "Enlace de encuesta copiado"
+    },
+    "delete": {
+      "title": "Eliminar Encuesta",
+      "confirmation": "¿Realmente quieres eliminar la encuesta \"{{title}}\"? Todos los votos y comentarios se perderán. Esta acción no se puede deshacer.",
+      "success": "Encuesta eliminada exitosamente",
+      "error": "Error al eliminar la encuesta"
+    },
+    "danger": {
+      "title": "Zona de Peligro",
+      "description": "Estas acciones son irreversibles. Por favor ten cuidado."
     }
   },
   "edit": {

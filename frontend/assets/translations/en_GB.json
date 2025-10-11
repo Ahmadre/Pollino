@@ -133,8 +133,23 @@
       "creating": "Creating...",
       "cancel": "Cancel"
     },
-    "success": "Poll created successfully!",
-    "error": "Error creating poll"
+    "submit": "Create Poll",
+    "success": {
+      "title": "Poll created successfully!",
+      "description": "Your poll has been created and is ready to receive votes.",
+      "createdPoll": "Created Poll",
+      "viewPoll": "View Poll"
+    },
+    "error": "Error creating poll",
+    "admin": {
+      "title": "Admin Link Created",
+      "description": "Your poll has been created! Use this admin link to edit or delete it later:",
+      "url": "Admin URL:",
+      "copy": "Copy",
+      "copied": "Link copied!",
+      "warning": "⚠️ Keep this link safe - it's the only way to manage your poll!",
+      "copyAndClose": "Copy Link & Close"
+    }
   },
   "time": {
     "units": {

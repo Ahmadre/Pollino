@@ -133,9 +133,12 @@
       "creating": "Wird erstellt...",
       "cancel": "Abbrechen"
     },
+    "submit": "Umfrage erstellen",
     "success": {
-      "default": "Umfrage erfolgreich erstellt!",
-      "withAdmin": "Umfrage erstellt und Admin-Link kopiert!"
+      "title": "Umfrage erfolgreich erstellt!",
+      "description": "Deine Umfrage wurde erstellt und ist bereit, Stimmen zu erhalten.",
+      "createdPoll": "Erstellte Umfrage",
+      "viewPoll": "Umfrage ansehen"
     },
     "error": "Fehler beim Erstellen der Umfrage",
     "admin": {
