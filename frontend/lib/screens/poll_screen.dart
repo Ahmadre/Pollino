@@ -14,6 +14,7 @@ import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
 import 'package:pollino/services/comments_service.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:pollino/services/pdf_service.dart';
 
 class PollScreen extends StatefulWidget {
   final String pollId;
@@ -258,6 +259,13 @@ class _PollScreenState extends State<PollScreen> {
                               : I18nService.instance.translate('share.tooltip.share'),
                           onPressed: () => _sharePoll(poll),
                           icon: const Icon(Icons.share, size: 22),
+                        ),
+                        IconButton(
+                          tooltip: 'Als PDF exportieren',
+                          onPressed: () async {
+                            await PdfService.exportPublicPoll(widget.pollId);
+                          },
+                          icon: const Icon(Icons.picture_as_pdf, size: 22),
                         ),
                       ],
                     );

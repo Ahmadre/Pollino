@@ -9,6 +9,7 @@ import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/edit_poll_modal_sheet.dart';
 import 'package:routemaster/routemaster.dart';
+import 'package:pollino/services/pdf_service.dart';
 
 class AdminScreen extends StatefulWidget {
   final String pollId;
@@ -161,6 +162,15 @@ class _AdminScreenState extends State<AdminScreen> {
           onPressed: () => Routemaster.of(context).replace('/'),
           icon: const Icon(Icons.home),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Als PDF exportieren (Admin)',
+            onPressed: () async {
+              await PdfService.exportAdminPoll(widget.pollId);
+            },
+            icon: const Icon(Icons.picture_as_pdf),
+          )
+        ],
       ),
       body: SafeArea(
         child: _isLoading
