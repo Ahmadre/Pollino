@@ -17,6 +17,8 @@ class SupabaseService {
           .from('polls')
           .select('id')
           .eq('is_active', true)
+          // Nur öffentliche (nicht anonyme) Umfragen für die Startseite zählen
+          .eq('is_anonymous', false)
           .or('expires_at.is.null,expires_at.gt.now(),and(expires_at.lt.now(),auto_delete_after_expiry.is.false)')
           .count(CountOption.exact);
       final total = countResponse.count;
@@ -27,6 +29,8 @@ class SupabaseService {
           .select(
               'id, title, description, created_at, is_active, is_anonymous, created_by_name, created_by, allows_multiple_votes, expires_at, auto_delete_after_expiry, likes_count')
           .eq('is_active', true)
+          // Nur öffentliche (nicht anonyme) Umfragen auf der Startseite laden
+          .eq('is_anonymous', false)
           .or('expires_at.is.null,expires_at.gt.now(),and(expires_at.lt.now(),auto_delete_after_expiry.is.false)')
           .range(offset, offset + limit - 1)
           .order('created_at', ascending: false);

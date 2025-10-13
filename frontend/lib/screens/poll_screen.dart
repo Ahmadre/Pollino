@@ -670,8 +670,6 @@ class _PollScreenState extends State<PollScreen> {
                                               }
                                             }
 
-                                            // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
-                                            final showNames = !poll.isAnonymous;
                                             final chartOptions = liveOptions.asMap().entries.map((entry) {
                                               final index = entry.key;
                                               final option = entry.value;
@@ -683,9 +681,8 @@ class _PollScreenState extends State<PollScreen> {
                                                 text: option.text ?? option['text'] ?? '',
                                                 votes: optionVotes,
                                                 color: _optionColors[index % _optionColors.length],
-                                                namedVoters: showNames
-                                                    ? (namesByOption[optionIdStr]?.toList() ?? const [])
-                                                    : const [],
+                                                // Immer Namen der nicht-anonymen Stimmen anzeigen (sofern vorhanden)
+                                                namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
                                               );
                                             }).toList()
                                               ..sort((a, b) {

@@ -120,7 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (state is Loading) {
                     return const Center(child: CircularProgressIndicator());
                   } else if (state is Loaded) {
-                    if (state.polls.isEmpty) {
+                    // Sicherheits-Filter: Keine anonymen Umfragen auf der Startseite anzeigen
+                    final visiblePolls = state.polls.where((p) => p.isAnonymous == false).toList();
+                    if (visiblePolls.isEmpty) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -155,16 +157,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? ListView.builder(
                               controller: _scrollController,
                               padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: state.polls.length + (state.hasMore ? 1 : 0),
+                              itemCount: visiblePolls.length + (state.hasMore ? 1 : 0),
                               itemBuilder: (context, index) {
-                                if (index == state.polls.length) {
+                                if (index == visiblePolls.length) {
                                   return const Padding(
                                     padding: EdgeInsets.all(16),
                                     child: Center(child: CircularProgressIndicator()),
                                   );
                                 }
 
-                                final poll = state.polls[index];
+                                final poll = visiblePolls[index];
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
                                   child: _PollCard(
@@ -180,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               controller: _scrollController,
                               child: ResponsiveGrid(
                                 children: [
-                                  ...state.polls.asMap().entries.map((entry) {
+                                  ...visiblePolls.asMap().entries.map((entry) {
                                     final index = entry.key;
                                     final poll = entry.value;
                                     return _PollCard(
@@ -405,8 +407,6 @@ class _PollCardState extends State<_PollCard> {
                       }
                     }
 
-                    // Nur bei nicht-anonymer Umfrage Namen an Chart übergeben
-                    final showNames = !widget.poll.isAnonymous;
                     // Chart-Optionen erstellen und nach Votes absteigend sortieren
                     final chartOptions = liveOptions.asMap().entries.map((entry) {
                       final index = entry.key;
@@ -419,7 +419,8 @@ class _PollCardState extends State<_PollCard> {
                         text: text,
                         votes: votes,
                         color: widget.optionColors[index % widget.optionColors.length],
-                        namedVoters: showNames ? (namesByOption[optionIdStr]?.toList() ?? const []) : const [],
+                        // Immer Namen der nicht-anonymen Stimmen anzeigen (sofern vorhanden)
+                        namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
                       );
                     }).toList()
                       ..sort((a, b) {
