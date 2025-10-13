@@ -186,6 +186,9 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+        constraints: BoxConstraints(
+          maxWidth: 400,
+        ),
       ),
 
       // DatePicker Theme
@@ -323,6 +326,9 @@ class AppTheme {
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: 400,
         ),
       ),
       datePickerTheme: const DatePickerThemeData(
