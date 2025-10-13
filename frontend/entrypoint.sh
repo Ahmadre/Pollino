@@ -5,7 +5,6 @@ echo "SUPABASE_URL: ${SUPABASE_URL}"
 
 # Build Flutter web app with runtime environment variables
 flutter build web --release \
-    --web-renderer canvaskit \
     --base-href / \
     --dart-define WEB_APP_URL="${WEB_APP_URL}" \
     --dart-define SUPABASE_URL="${SUPABASE_URL}" \
