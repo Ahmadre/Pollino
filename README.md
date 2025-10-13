@@ -21,6 +21,13 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 
 > **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like- und Kommentar-System und responsivem Design.
 
+## 🆕 Was ist neu in 1.0.0
+
+- Drag & Drop Sortierung der Antwortoptionen mit persistenter Reihenfolge (option_order)
+- Anonyme Umfragen erscheinen nicht mehr auf der Startseite; Zugriff nur per Direktlink (z. B. /poll/5)
+- Tooltips zeigen Namen der Teilnehmenden, sofern diese nicht anonym abgestimmt haben
+- Verbesserte Edit-Funktion und stabilere Speicherung (Hive-Adapter für order-Feld)
+
 ## 🚀 Features
 
 ### Frontend (Flutter Web)
@@ -31,10 +38,12 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **🔄 Real-time Updates**: Live-Synchronisation mit Supabase
 - **🧭 Navigation**: Routemaster für deklaratives Routing
 - **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
+- **↕️ Drag & Drop Reihenfolge**: Antwortoptionen per Drag & Drop sortieren (persistente Reihenfolge)
 - **💬 Kommentarsystem**: Benutzer können Kommentare zu Umfragen hinzufügen und bearbeiten
 - **🔧 Admin-Panel**: Umfangreiche Administrationsfunktionen für Umfrage-Verwaltung
 - **✏️ Poll-Bearbeitung**: Vollständige Bearbeitung bestehender Umfragen mit Admin-Token
 - **🌍 Mehrsprachigkeit**: Unterstützung für 6 Sprachen (DE, EN, FR, ES, JA, AR)
+- **🔒 Anonymitätslogik**: Anonyme Umfragen werden nicht gelistet (nur Direktlink), Tooltips zeigen Namen nur bei nicht-anonymen Stimmen
 
 ### Backend (Supabase Stack)
 
@@ -47,6 +56,7 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **📈 Analytics**: Integrierte Logflare Analytics
 - **🔐 Admin-Funktionen**: Token-basierte Administratorrechte
 - **🔄 Sequenz-Management**: Automatische Datenbank-Sequenz-Synchronisation
+- **🗄️ Poll-Optionen-Order**: Neues Feld `option_order` in `poll_options` mit Indizes und konsistenter Sortierung
 
 ### DevOps & Infrastruktur
 
@@ -194,6 +204,32 @@ docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up -d
 ```bash
 # Die Datenbank wird automatisch mit Beispieldaten initialisiert
 # Schema: volumes/db/init/polls_schema.sql
+
+### 5. Upgrade auf 1.0.0
+
+Falls du von einer älteren Version kommst (z. B. 0.2.0):
+
+1. Datenbankmigration anwenden (neues Feld `option_order`):
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+1. Frontend neu generieren (Freezed/Build Runner):
+
+```bash
+cd frontend
+dart run build_runner build --delete-conflicting-outputs
+```
+
+1. Optional Caches leeren (empfohlen bei Schema-/Adapter-Updates):
+
+```bash
+cd frontend
+flutter clean
+flutter pub get
+```
 ```
 
 ## 🌐 Zugriff auf die Anwendung
@@ -230,6 +266,9 @@ flutter build web --release --web-renderer canvaskit
 # 2. Services neu starten
 docker compose down
 docker compose up -d
+
+# Relevante Migrationen für 1.0.0:
+# volumes/db/migrations/004_add_poll_options_order.sql
 ```
 
 ### Logs anzeigen

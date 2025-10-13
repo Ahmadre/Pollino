@@ -15,6 +15,46 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Export-Funktionen (PDF, CSV)
 - Umfrage-Templates
 
+## [1.0.0] - 2025-10-13 - First Stable Release
+
+### 🚀 Added (1.0.0)
+
+- Drag & Drop für Antwortoptionen in Erstellen- und Bearbeiten-Flow
+  - Reorder per ReorderableListView mit eigenem Linke-Seiten-Handle
+  - Persistente Reihenfolge über neues Feld `option_order`
+- Tooltips zeigen die Namen von Teilnehmenden an, sofern diese nicht anonym abgestimmt haben
+  - Gilt auf Startseite (Karten) und Detailseite (Diagramme)
+- Beschreibung der Umfrage in der UI (ergänzend zur DB)
+
+### 🎨 Changed (1.0.0)
+
+- Anonyme Umfragen werden auf der Startseite nicht mehr gelistet
+  - Zugriff nur noch per Direktlink (/poll/:id)
+- Sortierlogik der Optionen:
+  - Ohne Stimmen: Reihenfolge gemäß `option_order`
+  - Mit Stimmen: Sortierung wie bisher nach Anzahl der Stimmen (absteigend)
+- UI-Bedienung: Ein einziger Drag-Handle links; der automatische rechte Handle wurde entfernt
+
+### 🐛 Fixed (1.0.0)
+
+- Hive-Deserialisierung für neues Feld `order` abgesichert
+  - Einführung eines `SafeOptionAdapter`, der Null-Werte für `order` auf 0 setzt
+- Entferntes doppeltes Drag-Icon, das das Schließen (X) blockierte
+
+### 🗄️ Database / Migration (1.0.0)
+
+- Neue Migration: `004_add_poll_options_order.sql`
+  - Spalte `option_order INTEGER` in `poll_options`
+  - Initiale Befüllung/Indexierung und Query-Anpassungen
+
+### 🔧 Upgrade Notes (1.0.0)
+
+- Datenbankmigration anwenden (siehe volumes/db/migrations/004_add_poll_options_order.sql)
+- Frontend neu bauen und Generatoren ausführen:
+  - `dart run build_runner build --delete-conflicting-outputs`
+- Optional Caches bereinigen:
+  - `flutter clean` (besonders nach Schema-/Adapter-Updates)
+
 ## [0.2.0] - 2025-10-10 - Admin & Stability Release
 
 ### 🚀 Added
