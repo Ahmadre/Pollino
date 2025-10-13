@@ -52,7 +52,7 @@
       "expiresAt": "Läuft ab am",
       "autoDelete": "Wird automatisch gelöscht"
     },
-    "voting": {
+  "voting": {
       "select": "Option wählen",
       "selectMultiple": "Du kannst mehrere Optionen wählen",
       "submit": "Abstimmen",
@@ -66,8 +66,16 @@
       "nameLabel": "Dein Name",
       "nameHint": "Gib deinen Namen ein",
       "votesSummary": "{{votes}} Stimmen",
-      "expiresIn": "Läuft ab in: {{time}}"
+      "expiresIn": "Läuft ab in: {{time}}",
+      "validation": {
+        "selectAtLeastOne": "Bitte wähle mindestens eine Option",
+        "enterName": "Bitte gib deinen Namen ein"
+      },
+      "successSingle": "Stimme erfolgreich abgegeben!",
+      "successMultiple": "{{count}} Stimmen erfolgreich abgegeben!"
     },
+    "noData": "Keine Umfragedaten verfügbar.",
+    "votingExpiredDetailed": "Diese Umfrage ist bereits abgelaufen und kann nicht mehr bearbeitet werden.",
     "delete": {
       "confirmation": "Möchtest du die Umfrage \"{{title}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "error": "Fehler beim Löschen"
@@ -208,7 +216,9 @@
     "next": "Weiter",
     "finish": "Fertig",
     "continue": "Fortfahren",
-    "update": "Aktualisieren"
+    "update": "Aktualisieren",
+    "more": "Mehr",
+    "exportPdf": "Als PDF exportieren"
   },
   "validation": {
     "required": "Dieses Feld ist erforderlich",

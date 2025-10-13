@@ -222,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   }
-                  return const Center(child: Text('Keine Umfragen verfügbar.'));
+                  return Center(child: Text(I18nService.instance.translate('home.empty.title')));
                 },
               ),
             ),
@@ -280,7 +280,7 @@ class _PollCardState extends State<_PollCard> {
       // Fehler beim Teilen leise ignorieren oder optional snackBar zeigen
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Teilen fehlgeschlagen: ${e.toString()}')),
+          SnackBar(content: Text(I18nService.instance.translate('share.snackbar.failed'))),
         );
       }
     }
@@ -559,7 +559,7 @@ class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
           Icon(Icons.access_time, size: 12, color: Colors.red[600]),
           const SizedBox(width: 4),
           Text(
-            'Abgelaufen',
+            I18nService.instance.translate('poll.expiration.expired'),
             style: TextStyle(
               fontSize: 12,
               color: Colors.red[600],
@@ -571,7 +571,7 @@ class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
             Icon(Icons.delete_outline, size: 12, color: Colors.red[600]),
             const SizedBox(width: 2),
             Text(
-              '(wird automatisch gelöscht)',
+              '(${I18nService.instance.translate('poll.expiration.autoDelete')})',
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.red[400],

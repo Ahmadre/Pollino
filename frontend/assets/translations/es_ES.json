@@ -52,7 +52,7 @@
       "expiresAt": "Expira el",
       "autoDelete": "Se eliminará automáticamente"
     },
-    "voting": {
+  "voting": {
       "select": "Seleccionar opción",
       "selectMultiple": "Puedes elegir múltiples opciones",
       "submit": "Votar",
@@ -66,8 +66,16 @@
       "nameLabel": "Tu nombre",
       "nameHint": "Ingresa tu nombre",
       "votesSummary": "{{votes}} Votos",
-      "expiresIn": "Vence en: {{time}}"
+      "expiresIn": "Vence en: {{time}}",
+      "validation": {
+        "selectAtLeastOne": "Selecciona al menos una opción",
+        "enterName": "Por favor ingresa tu nombre"
+      },
+      "successSingle": "¡Voto enviado exitosamente!",
+      "successMultiple": "¡{{count}} votos enviados exitosamente!"
     },
+    "noData": "No hay datos de la encuesta disponibles.",
+    "votingExpiredDetailed": "Esta encuesta ya ha expirado y no se puede editar.",
     "delete": {
       "confirmation": "¿Realmente quieres eliminar la encuesta \"{{title}}\"? Esta acción no se puede deshacer.",
       "error": "Error al eliminar"
@@ -208,7 +216,9 @@
     "next": "Siguiente",
     "finish": "Finalizar",
     "continue": "Continuar",
-    "update": "Actualizar"
+    "update": "Actualizar",
+    "more": "Más",
+    "exportPdf": "Exportar como PDF"
   },
   "validation": {
     "required": "Este campo es obligatorio",

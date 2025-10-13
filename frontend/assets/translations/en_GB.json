@@ -52,7 +52,7 @@
       "expiresAt": "Expires on",
       "autoDelete": "Will be automatically deleted"
     },
-    "voting": {
+  "voting": {
       "select": "Select option",
       "selectMultiple": "You can choose multiple options",
       "submit": "Vote",
@@ -66,8 +66,16 @@
       "nameLabel": "Your Name",
       "nameHint": "Enter your name",
       "votesSummary": "{{votes}} Votes",
-      "expiresIn": "Expires in: {{time}}"
+      "expiresIn": "Expires in: {{time}}",
+      "validation": {
+        "selectAtLeastOne": "Please select at least one option",
+        "enterName": "Please enter your name"
+      },
+      "successSingle": "Vote submitted successfully!",
+      "successMultiple": "{{count}} votes submitted successfully!"
     },
+    "noData": "No poll data available.",
+    "votingExpiredDetailed": "This poll has already expired and can no longer be edited.",
     "delete": {
       "confirmation": "Do you really want to delete the poll \"{{title}}\"? This action cannot be undone.",
       "error": "Error deleting"
@@ -208,7 +216,9 @@
     "next": "Next",
     "finish": "Finish",
     "continue": "Continue",
-    "update": "Update"
+    "update": "Update",
+    "more": "More",
+    "exportPdf": "Export as PDF"
   },
   "validation": {
     "required": "This field is required",

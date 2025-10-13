@@ -52,7 +52,7 @@
       "expiresAt": "Expire le",
       "autoDelete": "Sera automatiquement supprimé"
     },
-    "voting": {
+  "voting": {
       "select": "Sélectionner une option",
       "selectMultiple": "Vous pouvez choisir plusieurs options",
       "submit": "Voter",
@@ -66,8 +66,16 @@
       "nameLabel": "Votre nom",
       "nameHint": "Entrez votre nom",
       "votesSummary": "{{votes}} Votes",
-      "expiresIn": "Expire dans : {{time}}"
+      "expiresIn": "Expire dans : {{time}}",
+      "validation": {
+        "selectAtLeastOne": "Veuillez sélectionner au moins une option",
+        "enterName": "Veuillez entrer votre nom"
+      },
+      "successSingle": "Vote soumis avec succès !",
+      "successMultiple": "{{count}} votes soumis avec succès !"
     },
+    "noData": "Aucune donnée de sondage disponible.",
+    "votingExpiredDetailed": "Ce sondage a expiré et ne peut plus être modifié.",
     "delete": {
       "confirmation": "Voulez-vous vraiment supprimer le sondage \"{{title}}\" ? Cette action ne peut pas être annulée.",
       "error": "Erreur lors de la suppression"
@@ -208,7 +216,9 @@
     "next": "Suivant",
     "finish": "Terminer",
     "continue": "Continuer",
-    "update": "Mettre à jour"
+    "update": "Mettre à jour",
+    "more": "Plus",
+    "exportPdf": "Exporter en PDF"
   },
   "validation": {
     "required": "Ce champ est obligatoire",

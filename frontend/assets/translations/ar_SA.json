@@ -52,7 +52,7 @@
       "expiresAt": "ينتهي في",
       "autoDelete": "سيتم حذفه تلقائياً"
     },
-    "voting": {
+  "voting": {
       "select": "اختر خياراً",
       "selectMultiple": "يمكنك اختيار عدة خيارات",
       "submit": "صوت",
@@ -66,8 +66,16 @@
       "nameLabel": "اسمك",
       "nameHint": "أدخل اسمك",
       "votesSummary": "{{votes}} أصوات",
-      "expiresIn": "ينتهي في: {{time}}"
+      "expiresIn": "ينتهي في: {{time}}",
+      "validation": {
+        "selectAtLeastOne": "يرجى اختيار خيار واحد على الأقل",
+        "enterName": "يرجى إدخال اسمك"
+      },
+      "successSingle": "تم إرسال التصويت بنجاح!",
+      "successMultiple": "تم إرسال {{count}} من الأصوات بنجاح!"
     },
+    "noData": "لا توجد بيانات استطلاع متاحة.",
+    "votingExpiredDetailed": "انتهت صلاحية هذا الاستطلاع بالفعل ولا يمكن تعديله.",
     "delete": {
       "confirmation": "هل تريد حقاً حذف الاستطلاع \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
       "error": "خطأ في الحذف"
@@ -229,7 +237,9 @@
     "next": "التالي",
     "finish": "إنهاء",
     "continue": "متابعة",
-    "update": "تحديث"
+    "update": "تحديث",
+    "more": "المزيد",
+    "exportPdf": "تصدير كملف PDF"
   },
   "validation": {
     "required": "هذا الحقل مطلوب",

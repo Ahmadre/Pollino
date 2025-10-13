@@ -55,7 +55,7 @@ class _PollScreenState extends State<PollScreen> {
       // Fehler beim Teilen leise ignorieren oder optional snackBar zeigen
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Teilen fehlgeschlagen: ${e.toString()}')),
+          SnackBar(content: Text(I18nService.instance.translate('share.snackbar.failed'))),
         );
       }
     }
@@ -100,8 +100,8 @@ class _PollScreenState extends State<PollScreen> {
       final poll = currentState.polls.first;
       if (_isPollExpired(poll)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Diese Umfrage ist bereits abgelaufen und kann nicht mehr bearbeitet werden.'),
+          SnackBar(
+            content: Text(I18nService.instance.translate('poll.voting.expiredDetailed')),
             backgroundColor: Colors.red,
           ),
         );
@@ -111,14 +111,14 @@ class _PollScreenState extends State<PollScreen> {
 
     if (_selectedOptionIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte wähle mindestens eine Option')),
+        SnackBar(content: Text(I18nService.instance.translate('poll.voting.validation.selectAtLeastOne'))),
       );
       return;
     }
 
     if (!_isAnonymousVote && _voterNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bitte gib deinen Namen ein')),
+        SnackBar(content: Text(I18nService.instance.translate('poll.voting.validation.enterName'))),
       );
       return;
     }
@@ -160,9 +160,12 @@ class _PollScreenState extends State<PollScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_selectedOptionIds.length == 1
-              ? 'Stimme erfolgreich abgegeben!'
-              : '${_selectedOptionIds.length} Stimmen erfolgreich abgegeben!'),
+          content: Text(
+            _selectedOptionIds.length == 1
+                ? I18nService.instance.translate('poll.voting.successSingle')
+                : I18nService.instance
+                    .translate('poll.voting.successMultiple', params: {'count': '${_selectedOptionIds.length}'}),
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -254,7 +257,7 @@ class _PollScreenState extends State<PollScreen> {
                           },
                         ),
                         PopupMenuButton<String>(
-                          tooltip: 'Mehr',
+                          tooltip: I18nService.instance.translate('actions.more'),
                           icon: const Icon(Icons.more_vert, size: 22),
                           onSelected: (value) async {
                             if (value == 'share') {
@@ -277,10 +280,10 @@ class _PollScreenState extends State<PollScreen> {
                             PopupMenuItem<String>(
                               value: 'pdf',
                               child: Row(
-                                children: const [
+                                children: [
                                   Icon(Icons.picture_as_pdf, size: 18),
                                   SizedBox(width: 8),
-                                  Text('Export als PDF'),
+                                  Text(I18nService.instance.translate('actions.exportPdf')),
                                 ],
                               ),
                             ),
@@ -618,7 +621,7 @@ class _PollScreenState extends State<PollScreen> {
                                                       Icon(Icons.access_time_filled, color: Colors.red[600], size: 24),
                                                       const SizedBox(height: 8),
                                                       Text(
-                                                        'Diese Umfrage ist abgelaufen',
+                                                        I18nService.instance.translate('poll.expiration.expired'),
                                                         style: TextStyle(
                                                           fontSize: 16,
                                                           fontWeight: FontWeight.w600,
@@ -762,7 +765,7 @@ class _PollScreenState extends State<PollScreen> {
                     } else if (state is Error) {
                       return Center(child: Text(state.message));
                     }
-                    return const Center(child: Text('Keine Umfragedaten verfügbar.'));
+                    return Center(child: Text(I18nService.instance.translate('poll.noData')));
                   },
                 ),
               ],
@@ -1056,7 +1059,7 @@ class _ExpirationIndicatorState extends State<_ExpirationIndicator> {
               Icon(Icons.auto_delete, size: 14, color: Colors.red[600]),
               const SizedBox(width: 4),
               Text(
-                '(wird automatisch gelöscht)',
+                '(${I18nService.instance.translate('poll.expiration.autoDelete')})',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.red[500],

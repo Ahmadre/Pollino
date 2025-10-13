@@ -52,7 +52,7 @@
       "expiresAt": "期限",
       "autoDelete": "自動的に削除されます"
     },
-    "voting": {
+  "voting": {
       "select": "選択肢を選ぶ",
       "selectMultiple": "複数の選択肢を選べます",
       "submit": "投票する",
@@ -66,8 +66,16 @@
       "nameLabel": "お名前",
       "nameHint": "お名前を入力してください",
       "votesSummary": "{{votes}}票",
-      "expiresIn": "{{time}}で期限切れ"
+      "expiresIn": "{{time}}で期限切れ",
+      "validation": {
+        "selectAtLeastOne": "少なくとも1つの選択肢を選んでください",
+        "enterName": "お名前を入力してください"
+      },
+      "successSingle": "投票が正常に送信されました！",
+      "successMultiple": "{{count}}件の投票が正常に送信されました！"
     },
+    "noData": "利用可能な投票データがありません。",
+    "votingExpiredDetailed": "この投票はすでに期限切れで、編集できません。",
     "delete": {
       "confirmation": "投票「{{title}}」を本当に削除しますか？この操作は元に戻すことができません。",
       "error": "削除エラー"
@@ -208,7 +216,9 @@
     "next": "次へ",
     "finish": "完了",
     "continue": "続行",
-    "update": "更新"
+    "update": "更新",
+    "more": "その他",
+    "exportPdf": "PDFとしてエクスポート"
   },
   "validation": {
     "required": "このフィールドは必須です",
