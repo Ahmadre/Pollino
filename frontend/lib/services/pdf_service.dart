@@ -185,33 +185,96 @@ class PdfService {
         return a.text.compareTo(b.text);
       });
 
-    final rows = <pw.TableRow>[
-      pw.TableRow(
-        decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+    // Header
+    final header = pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey200,
+        border: pw.Border.all(color: PdfColors.grey300, width: 0.2),
+      ),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
-          _cell('Option', bold: true),
-          _cell('Stimmen', bold: true),
-          _cell('Anteil', bold: true),
-          if (showNames) _cell('Teilnehmende (nicht anonym)', bold: true),
+          pw.Expanded(
+              flex: 6, child: pw.Text('Option', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+          pw.Expanded(
+              flex: 2, child: pw.Text('Stimmen', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+          pw.Expanded(
+              flex: 2, child: pw.Text('Anteil', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+          if (showNames)
+            pw.Expanded(
+                flex: 5,
+                child: pw.Text('Teilnehmende (nicht anonym)',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
         ],
       ),
-    ];
+    );
 
+    // Rows with background bars
+    final List<pw.Widget> rows = [header];
     for (final r in entries) {
-      rows.add(
-        pw.TableRow(children: [
-          _cell(r.text),
-          _cell(r.votes.toString()),
-          _cell('${r.percent.toStringAsFixed(1)}%'),
-          if (showNames) _cell(_formatNames(r.names)),
-        ]),
-      );
+      rows.add(_barRow(r, showNames: showNames));
     }
 
-    return pw.Table(
-      border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.3),
-      defaultVerticalAlignment: pw.TableCellVerticalAlignment.middle,
-      children: rows,
+    return pw.Column(children: rows);
+  }
+
+  static pw.Widget _barRow(_RowData r, {required bool showNames}) {
+    final baseFlex = 1000;
+    final pctFlex = (r.percent.clamp(0, 100) * 10).round(); // 0..1000
+    final restFlex = baseFlex - pctFlex;
+    final barColor = PdfColors.indigo100; // dezent und transparent
+
+    return pw.Container(
+      height: 22,
+      decoration: pw.BoxDecoration(
+        border: pw.Border(
+          left: pw.BorderSide(color: PdfColors.grey300, width: 0.3),
+          right: pw.BorderSide(color: PdfColors.grey300, width: 0.3),
+          bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.3),
+        ),
+      ),
+      child: pw.Stack(
+        children: [
+          // Background bar
+          pw.Row(children: [
+            pw.Expanded(flex: pctFlex > 0 ? pctFlex : 0, child: pw.Container(color: barColor)),
+            if (restFlex > 0) pw.Expanded(flex: restFlex, child: pw.SizedBox()),
+          ]),
+          // Foreground content
+          pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 8),
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Expanded(
+                  flex: 6,
+                  child: pw.Text(r.text, style: const pw.TextStyle(fontSize: 10)),
+                ),
+                pw.Expanded(
+                  flex: 2,
+                  child: pw.Align(
+                    alignment: pw.Alignment.centerLeft,
+                    child: pw.Text('${r.votes}', style: const pw.TextStyle(fontSize: 10)),
+                  ),
+                ),
+                pw.Expanded(
+                  flex: 2,
+                  child: pw.Align(
+                    alignment: pw.Alignment.centerLeft,
+                    child: pw.Text('${r.percent.toStringAsFixed(1)}%', style: const pw.TextStyle(fontSize: 10)),
+                  ),
+                ),
+                if (showNames)
+                  pw.Expanded(
+                    flex: 5,
+                    child: pw.Text(_formatNames(r.names), style: const pw.TextStyle(fontSize: 9)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -220,16 +283,6 @@ class PdfService {
     if (names.length <= 10) return names.join(', ');
     final display = names.take(10).join(', ');
     return '$display +${names.length - 10}';
-  }
-
-  static pw.Widget _cell(String text, {bool bold = false}) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(6),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(fontSize: 10, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal),
-      ),
-    );
   }
 
   static pw.Widget _footer() {
