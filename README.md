@@ -21,6 +21,13 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 
 > **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like- und Kommentar-System und responsivem Design.
 
+## 🆕 Was ist neu in 1.0.1
+
+- Einheitliches Popup-Menü-Design: abgerundete Ecken und weißer Hintergrund app-weit
+- Konsistente Dialoge (Alert/Simple), DatePicker und TimePicker: weißer Hintergrund, runde Ecken
+- Zentrale maximale Dialogbreite über Theme (`DialogTheme.insetPadding`) – angenehme Darstellung auf großen Bildschirmen
+- I18n: Harte Texte in Poll- und Home-Screen durch Übersetzungs-Keys ersetzt; neue Keys in allen 6 Sprachen ergänzt
+
 ## 🆕 Was ist neu in 1.0.0
 
 - Drag & Drop Sortierung der Antwortoptionen mit persistenter Reihenfolge (option_order)
@@ -205,6 +212,8 @@ docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up -d
 # Die Datenbank wird automatisch mit Beispieldaten initialisiert
 # Schema: volumes/db/init/polls_schema.sql
 
+```
+
 ### 5. Upgrade auf 1.0.0
 
 Falls du von einer älteren Version kommst (z. B. 0.2.0):
@@ -230,16 +239,15 @@ cd frontend
 flutter clean
 flutter pub get
 ```
-```
 
 ## 🌐 Zugriff auf die Anwendung
 
 | Service                   | URL                    | Beschreibung       |
 | ------------------------- | ---------------------- | ------------------ |
-| **Flutter Web App** | http://localhost:3001  | Hauptanwendung     |
-| **Supabase Studio** | http://localhost:54323 | Datenbank-Admin    |
-| **API Gateway**     | http://localhost:8000  | REST API Endpoint  |
-| **Analytics**       | http://localhost:4000  | Logflare Dashboard |
+| **Flutter Web App** | [http://localhost:3001](http://localhost:3001)  | Hauptanwendung     |
+| **Supabase Studio** | [http://localhost:54323](http://localhost:54323) | Datenbank-Admin    |
+| **API Gateway**     | [http://localhost:8000](http://localhost:8000)  | REST API Endpoint  |
+| **Analytics**       | [http://localhost:4000](http://localhost:4000)  | Logflare Dashboard |
 
 ## 🏃‍♂️ Entwicklung
 
@@ -417,7 +425,7 @@ flutter clean
 flutter pub get
 ```
 
-## �📄 Lizenz
+## 📄 Lizenz
 
 Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
 

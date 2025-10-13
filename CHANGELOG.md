@@ -8,12 +8,37 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### 🔮 Planned
+
 - Mobile App (iOS/Android) mit Flutter
 - Push-Benachrichtigungen für neue Umfragen
 - Benutzer-Authentifizierung und Profile
 - Umfrage-Kategorien und Tags
-- Export-Funktionen (PDF, CSV)
+- Export-Funktion (CSV)
 - Umfrage-Templates
+
+## [1.0.1] - 2025-10-13 - UI Polish & i18n
+
+### 🚀 Added (1.0.1)
+
+- Globales Popup-Menü-Theme: Abgerundete Ecken und weißer Hintergrund in der gesamten App
+- Globale Dialog-Themes (Alert/Simple), DatePicker und TimePicker: Weißer Hintergrund, runde Ecken, konsistenter Look
+- Zentrale Breitenbegrenzung für Dialoge via `DialogTheme.insetPadding` für angenehme Maximalbreite auf großen Bildschirmen
+- PDF-Export: Umfragen als PDF herunterladen (Aktion im Drei-Punkte-Menü)
+
+### 🎨 Changed (1.0.1)
+
+- Harte Text-Strings in Poll- und Home-Screen durch i18n-Keys ersetzt
+- Neue Übersetzungs-Keys hinzugefügt und in allen 6 Sprachen gepflegt:
+  - `actions.more`, `actions.exportPdf`
+  - `poll.noData`
+  - `poll.voting.validation.selectAtLeastOne`, `poll.voting.validation.enterName`
+  - `poll.voting.successSingle`, `poll.voting.successMultiple`
+  - `poll.votingExpiredDetailed`
+
+### 🐛 Fixed (1.0.1)
+
+- Dialoge waren auf großen Displays zu breit – nun konsistent begrenzt
+- Fehlende Übersetzungen (u. a. Share-Fehler, „Abgelaufen“/Auto-Delete-Hinweis) ergänzt
 
 ## [1.0.0] - 2025-10-13 - First Stable Release
 
@@ -44,8 +69,8 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### 🗄️ Database / Migration (1.0.0)
 
 - Neue Migration: `004_add_poll_options_order.sql`
-  - Spalte `option_order INTEGER` in `poll_options`
-  - Initiale Befüllung/Indexierung und Query-Anpassungen
+- Spalte `option_order INTEGER` in `poll_options`
+- Initiale Befüllung/Indexierung und Query-Anpassungen
 
 ### 🔧 Upgrade Notes (1.0.0)
 
@@ -57,20 +82,22 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [0.2.0] - 2025-10-10 - Admin & Stability Release
 
-### 🚀 Added
-- **🔧 Admin-Edit-Feature**: Vollständige Umfrage-Bearbeitungsfunktionalität
+### 🚀 Added (0.2.0)
+
+- 🔧 Admin-Edit-Feature: Vollständige Umfrage-Bearbeitungsfunktionalität
   - Neue `EditPollScreen` für Administratoren
   - Wiederverwendbare `PollForm` Widget-Komponente
   - Admin-Token basierte Berechtigung
   - Vollständige Bearbeitung aller Umfrage-Eigenschaften
   - Routing-Integration für Edit-Funktionalität
-- **📸 Screenshot-Dokumentation**: Visuelle Projektdokumentation
+- 📸 Screenshot-Dokumentation: Visuelle Projektdokumentation
   - High-Quality Screenshots der wichtigsten App-Bereiche
   - Poll-Ansicht, Admin-Dashboard, und Management-Interface
   - Optimierte Bildgrößen für README-Integration
 
-### 🌐 Enhanced
-- **🌍 Erweiterte I18n-Unterstützung**: Vollständige Übersetzungen
+### 🌐 Enhanced (0.2.0)
+
+- 🌍 Erweiterte I18n-Unterstützung: Vollständige Übersetzungen
   - Admin-Edit-Interface in allen 6 unterstützten Sprachen
   - Arabisch (ar_SA): 50+ neue Übersetzungsschlüssel
   - Englisch (en_GB): Komplette Admin-Interface-Übersetzungen
@@ -78,30 +105,33 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   - Deutsche, Französische, Spanische Übersetzungen erweitert
   - Konsistente Terminologie über alle Sprachen hinweg
 
-### 🐛 Fixed
-- **🔢 Datenbank-Sequenz-Fixes**: Kritische ID-Generierungsprobleme behoben
+### 🐛 Fixed (0.2.0)
+
+- 🔢 Datenbank-Sequenz-Fixes: Kritische ID-Generierungsprobleme behoben
   - Neue Migration `001_fix_poll_options_sequence.sql` für Sequenz-Synchronisation
   - PostgreSQL-Funktion `fix_poll_options_sequence()` für automatische Reparatur
-  - Behebt "duplicate key value violates unique constraint poll_options_pkey" Fehler
-  - Robuste Sequenz-Verwaltung für poll_options Tabelle
-- **⚡ Retry-Mechanismus**: Verbesserte Fehlerbehandlung
-  - Implementierung eines Retry-Mechanismus für poll_options Insertion
+  - Behebt „duplicate key value violates unique constraint poll_options_pkey“ Fehler
+  - Robuste Sequenz-Verwaltung für `poll_options` Tabelle
+- ⚡ Retry-Mechanismus: Verbesserte Fehlerbehandlung
+  - Implementierung eines Retry-Mechanismus für `poll_options` Insertion
   - Automatische Wiederholung bei Sequenz-Konflikten
   - Verbesserte Robustheit bei simultanen Umfrage-Erstellungen
-- **🧹 UI-Bereinigung**: Interface-Optimierungen
+- 🧹 UI-Bereinigung: Interface-Optimierungen
   - Entfernung toter Buttons in der Poll-Screen
   - Saubere Routing-Pfade ohne Duplikate
   - Verbesserte Datenintegrität bei Updates (keine Datenverluste)
 
-### 🎨 Changed
-- **📱 README-Optimierung**: Fokussierte Dokumentation
+### 🎨 Changed (0.2.0)
+
+- 📱 README-Optimierung: Fokussierte Dokumentation
   - Entfernung redundanter Screenshots (admin.jpg, dashboard.jpg)
   - Konzentration auf die wichtigste Poll-Ansicht
   - Optimierte Dateigröße und Ladezeiten
   - Klarere visuelle Hierarchie in der Dokumentation
 
-### 🏗️ Technical
-- **🏗️ Code-Refaktorierung**: Verbesserte Architektur
+### 🏗️ Technical (0.2.0)
+
+- 🏗️ Code-Refaktorierung: Verbesserte Architektur
   - Extraktion der `PollForm` als wiederverwendbare Komponente
   - Separation of Concerns zwischen Create und Edit-Funktionalität
   - Optimierte Service-Layer für Umfrage-Operationen
@@ -109,127 +139,134 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [0.1.0] - 2025-10-07 - Alpha Release
 
-### 🚀 Added
-- **Like System**: Vollständige Like-Funktionalität für Umfragen
+### 🚀 Added (0.1.0)
+
+- Like System: Vollständige Like-Funktionalität für Umfragen
   - Lokale Speicherung mit Hive statt SharedPreferences
   - Anonyme Likes ohne Benutzerregistrierung
   - Live-Updates der Like-Counts
   - Optimistische UI-Updates
   - Database Functions für increment/decrement
-- **I18n Unterstützung**: Mehrsprachige Unterstützung
+- I18n Unterstützung: Mehrsprachige Unterstützung
   - Deutsch, Englisch, Französisch, Spanisch, Japanisch, Arabisch
   - Automatische Systemspracherkennung
   - Live-Sprachenwechsel ohne App-Neustart
   - Reaktive Locale-Updates mit StreamController
-- **Automatische Poll-Bereinigung**: 
+- Automatische Poll-Bereinigung:
   - Docker Container-basierte Cleanup-Jobs alle 15 Minuten
   - Database Triggers für automatisches Löschen abgelaufener Umfragen
-  - Konfigurierbare auto_delete_after_expiry Option
+  - Konfigurierbare `auto_delete_after_expiry` Option
   - Logging aller Cleanup-Operationen
-- **Navigation Verbesserungen**:
+- Navigation Verbesserungen:
   - Schutz vor doppelter Navigation nach dem Abstimmen
   - PopScope für saubere Hardware-Zurück-Button-Behandlung
   - Optimierte Pagination ohne Endlos-Loading
   - Visuelles Feedback bei Navigation-Sperren
 
-### 🎨 Changed
-- **UI Vereinfachung**: Entfernung unnötiger Tabs (Startseite, Dateien, Fotos)
+### 🎨 Changed (0.1.0)
+
+- UI Vereinfachung: Entfernung unnötiger Tabs (Startseite, Dateien, Fotos)
   - Fokus auf Umfrage-Funktionalität
   - Reduzierte UI-Komplexität
   - Klarere Navigation
-- **Clean Architecture**: Implementierung von Domain-Driven Design (DDD)
-  - Repository Pattern mit Clean Architecture Prinzipien  
+- Clean Architecture: Implementierung von Domain-Driven Design (DDD)
+  - Repository Pattern mit Clean Architecture Prinzipien
   - BLoC State Management für bessere Testbarkeit
   - Dependency Injection mit GetIt
   - Trennung von Business Logic und UI
-- **Umfrage-Features**:
+- Umfrage-Features:
   - Multiple Choice Abstimmungen
   - Anonyme und namentliche Abstimmungen
   - Umfrage-Erstellung mit Ablaufzeiten
   - Real-time Vote-Updates via Supabase Realtime
   - Ablaufzeit-Anzeige mit Live-Countdown
 
-### 🔧 Fixed
-- **Navigation**: Verhindert "Nirvana" white screen durch doppelte Navigation
+### 🔧 Fixed (0.1.0)
+
+- Navigation: Verhindert „Nirvana“ white screen durch doppelte Navigation
   - Implementierung von Navigation-Guards
   - Korrekte PopScope-Behandlung
   - Race Condition Schutz
-- **Pagination**: CircularProgressIndicator stoppt korrekt bei Ende der Liste
+- Pagination: CircularProgressIndicator stoppt korrekt bei Ende der Liste
   - Synchronisierte Count-Queries mit Filterbedingungen
-  - Korrekte hasMore-Berechnung
+  - Korrekte `hasMore`-Berechnung
   - Optimierte Poll-Loading-Logic
-- **UI**: Overflow-Probleme in verschiedenen Bildschirmgrößen
-- **Database**: Konsistente Timezone-Behandlung für Umfrage-Ablaufzeiten
+- UI: Overflow-Probleme in verschiedenen Bildschirmgrößen
+- Database: Konsistente Timezone-Behandlung für Umfrage-Ablaufzeiten
   - UTC-basierte Speicherung
   - Lokale Timezone-Konvertierung im Frontend
   - TimezoneHelper für konsistente Berechnungen
 
-### 🏗️ Technical
-- **Database**: PostgreSQL mit Supabase RLS (Row Level Security)
+### 🏗️ Technical (0.1.0)
+
+- Database: PostgreSQL mit Supabase RLS (Row Level Security)
   - Automatische Poll-Cleanup Functions
   - Like-System mit increment/decrement Functions
   - Erweiterte Trigger-Logik
-- **Frontend**: Flutter 3.27.1 Web mit optimiertem Build
+- Frontend: Flutter 3.27.1 Web mit optimiertem Build
   - Hive für lokale Datenspeicherung
   - BLoC für State Management
   - Freezed für immutable Data Classes
-- **Backend**: Supabase Stack mit Edge Functions
+- Backend: Supabase Stack mit Edge Functions
   - Real-time Updates
   - Row Level Security
   - Auto-generated REST API
-- **DevOps**: Vollständige Docker-Containerisierung
+- DevOps: Vollständige Docker-Containerisierung
   - Multi-stage Builds
   - Health Checks
   - Automated Cleanup Services
 
 ## [0.0.1] - 2025-10-06 - Initial Alpha
 
-### 🚀 Added
-- **Grundlegende Umfrage-Funktionalität**:
+### 🚀 Added (0.0.1)
+
+- Grundlegende Umfrage-Funktionalität:
   - Umfragen erstellen und anzeigen
   - Einfache Abstimmungen
   - Supabase Integration
   - Basic CRUD Operations
-- **Docker Setup**: Vollständige Containerisierung
+- Docker Setup: Vollständige Containerisierung
   - Docker Compose mit allen Services
   - Entwicklungs- und Produktions-Konfigurationen
   - Automatisierte Service-Orchestrierung
-- **Projekt Setup**: Flutter Web + Supabase Backend
+- Projekt Setup: Flutter Web + Supabase Backend
   - Flutter Web für responsive UI
   - Supabase für Backend-as-a-Service
   - PostgreSQL als primäre Datenbank
-- **Basis UI**: Grundlegende Benutzeroberfläche
+- Basis UI: Grundlegende Benutzeroberfläche
   - Material Design 3
   - Responsive Layout
   - Poll-Karten Design
 
-### 🏗️ Infrastructure
-- **Supabase Stack**: Auth, Database, Real-time, Storage
+### 🏗️ Infrastructure (0.0.1)
+
+- Supabase Stack: Auth, Database, Real-time, Storage
   - GoTrue für Authentifizierung
   - PostgREST für automatische REST API
   - Realtime für Live-Updates
-- **Flutter Web**: Responsive Design
+- Flutter Web: Responsive Design
   - Single Page Application
   - Material Design Components
   - State Management Setup
-- **Docker Compose**: Multi-Service Setup
+- Docker Compose: Multi-Service Setup
   - Development und Production Konfigurationen
   - Persistent Volumes
   - Service Dependencies
-- **Kong Gateway**: API Management
+- Kong Gateway: API Management
   - Reverse Proxy
   - Rate Limiting
   - Security Headers
-- **PostgreSQL**: Relationale Datenbank
+- PostgreSQL: Relationale Datenbank
   - Strukturierte Datenmodelle
   - Foreign Key Constraints
   - Indexing für Performance
 
-### 📝 Documentation
-- **README**: Umfassende Projektdokumentation
-- **Docker**: Setup und Deployment Guides
-- **Architecture**: System Design Diagramme
-- **Database**: Schema Dokumentation
+### 📝 Documentation (0.0.1)
+
+- README: Umfassende Projektdokumentation
+- Docker: Setup und Deployment Guides
+- Architecture: System Design Diagramme
+- Database: Schema Dokumentation
 
 ---
 
@@ -238,7 +275,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 **MAJOR.MINOR.PATCH** Format:
 
 - **MAJOR** (0 → 1): Breaking changes, nicht rückwärts kompatibel
-- **MINOR** (0.0 → 0.1): Neue Features, rückwärts kompatibel  
+- **MINOR** (0.0 → 0.1): Neue Features, rückwärts kompatibel
 - **PATCH** (0.1.0 → 0.1.1): Bug fixes, rückwärts kompatibel
 
 **Pre-Release Kennzeichnungen:**
