@@ -378,17 +378,14 @@ class _AdminScreenState extends State<AdminScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _deletePoll,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEF4444),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: Text(I18nService.instance.translate('admin.actions.deletePoll')),
+                ElevatedButton(
+                  onPressed: _deletePoll,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFEF4444),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
                   ),
+                  child: Text(I18nService.instance.translate('admin.actions.deletePoll')),
                 ),
               ],
             ),
