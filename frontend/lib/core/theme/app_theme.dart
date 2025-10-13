@@ -181,11 +181,34 @@ class AppTheme {
 
       // Dialog Theme
       dialogTheme: DialogThemeData(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Colors.white,
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
+      ),
+
+      // DatePicker Theme
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        headerBackgroundColor: Colors.white,
+        headerForegroundColor: AppColors.textPrimary,
+        dividerColor: AppColors.border,
+      ),
+
+      // TimePicker Theme
+      timePickerTheme: const TimePickerThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        dialBackgroundColor: Colors.white,
+        hourMinuteTextColor: AppColors.textPrimary,
+        dayPeriodTextColor: AppColors.textPrimary,
+        helpTextStyle: TextStyle(color: AppColors.textSecondary),
       ),
 
       // Scaffold Background
@@ -293,6 +316,33 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: AppColors.textPrimary,
         ),
+      ),
+      // Dialoge ebenfalls weiß & rund im Dark Mode
+      dialogTheme: const DialogThemeData(
+        backgroundColor: Colors.white,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+      ),
+      datePickerTheme: const DatePickerThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        headerBackgroundColor: Colors.white,
+        headerForegroundColor: AppColors.textPrimary,
+        dividerColor: AppColors.border,
+      ),
+      timePickerTheme: const TimePickerThemeData(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        dialBackgroundColor: Colors.white,
+        hourMinuteTextColor: AppColors.textPrimary,
+        dayPeriodTextColor: AppColors.textPrimary,
+        helpTextStyle: TextStyle(color: AppColors.textSecondary),
       ),
       // Dark theme spezifische Anpassungen können hier hinzugefügt werden
     );
