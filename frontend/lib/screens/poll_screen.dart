@@ -222,7 +222,7 @@ class _PollScreenState extends State<PollScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.black),
             ),
             actions: [
-              // Like + Share Buttons in AppBar
+              // Like + More (Share/PDF) in AppBar
               BlocBuilder<PollBloc, PollState>(
                 builder: (context, state) {
                   if (state is Loaded && state.polls.isNotEmpty) {
@@ -253,19 +253,38 @@ class _PollScreenState extends State<PollScreen> {
                             );
                           },
                         ),
-                        IconButton(
-                          tooltip: kIsWeb
-                              ? I18nService.instance.translate('share.tooltip.copyLink')
-                              : I18nService.instance.translate('share.tooltip.share'),
-                          onPressed: () => _sharePoll(poll),
-                          icon: const Icon(Icons.share, size: 22),
-                        ),
-                        IconButton(
-                          tooltip: 'Als PDF exportieren',
-                          onPressed: () async {
-                            await PdfService.exportPublicPoll(widget.pollId);
+                        PopupMenuButton<String>(
+                          tooltip: 'Mehr',
+                          icon: const Icon(Icons.more_vert, size: 22),
+                          onSelected: (value) async {
+                            if (value == 'share') {
+                              _sharePoll(poll);
+                            } else if (value == 'pdf') {
+                              await PdfService.exportPublicPoll(widget.pollId);
+                            }
                           },
-                          icon: const Icon(Icons.picture_as_pdf, size: 22),
+                          itemBuilder: (context) => [
+                            PopupMenuItem<String>(
+                              value: 'share',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.share, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(I18nService.instance.translate('actions.share')),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'pdf',
+                              child: Row(
+                                children: const [
+                                  Icon(Icons.picture_as_pdf, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Export als PDF'),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     );
@@ -1393,12 +1412,8 @@ class _CommentsSectionState extends State<_CommentsSection> {
                   IconButton(
                     onPressed: _submitting ? null : _submit,
                     icon: _submitting
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.send, size: 16),
+                        ? CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                        : const Icon(Icons.send),
                   ),
                 ],
               ),
