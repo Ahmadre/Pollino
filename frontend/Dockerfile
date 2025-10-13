@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Flutter SDK (updated to a newer stable version)
 # Hinweis: Version angehoben, damit neue Material APIs (z. B. DialogThemeData) verfügbar sind
-RUN git clone https://github.com/flutter/flutter.git -b 3.29.0 /flutter
+RUN git clone https://github.com/flutter/flutter.git /flutter
 ENV PATH="/flutter/bin:${PATH}"
 
 # Pre-download Flutter web tools and enable web
