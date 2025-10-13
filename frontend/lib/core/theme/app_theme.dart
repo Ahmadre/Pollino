@@ -60,6 +60,21 @@ class AppTheme {
         onError: Colors.white,
       ),
 
+      // Popup Menus: abgerundete Ecken und weißer Hintergrund
+      popupMenuTheme: PopupMenuThemeData(
+        color: Colors.white,
+        surfaceTintColor: Colors.transparent, // verhindert lila/tonale Überlagerung in M3
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary,
+        ),
+      ),
+
       // App Bar Theme
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
@@ -265,6 +280,20 @@ class AppTheme {
   static ThemeData get darkTheme {
     return lightTheme.copyWith(
       brightness: Brightness.dark,
+      // Popup Menus sollen auch im Dark Mode weiß mit runden Ecken sein
+      popupMenuTheme: const PopupMenuThemeData(
+        color: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        textStyle: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary,
+        ),
+      ),
       // Dark theme spezifische Anpassungen können hier hinzugefügt werden
     );
   }
