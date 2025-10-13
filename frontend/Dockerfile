@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y \
     libglu1-mesa \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Flutter SDK (specific version 3.27.1)
-RUN git clone https://github.com/flutter/flutter.git -b 3.27.1 /flutter
+# Install Flutter SDK (updated to a newer stable version)
+# Hinweis: Version angehoben, damit neue Material APIs (z. B. DialogThemeData) verfügbar sind
+RUN git clone https://github.com/flutter/flutter.git -b 3.29.0 /flutter
 ENV PATH="/flutter/bin:${PATH}"
 
 # Pre-download Flutter web tools and enable web
