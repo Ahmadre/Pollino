@@ -446,3 +446,4 @@ Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
 | **Web Server**  | Nginx       | 1.25    | Static File Serving  |
 | **Analytics**   | Logflare    | 1.14.2  | Logging & Monitoring |
 | **Container**   | Docker      | Latest  | Containerization     |
+
