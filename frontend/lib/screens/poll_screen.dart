@@ -12,6 +12,7 @@ import 'package:pollino/services/like_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
+import 'package:pollino/widgets/poll_not_found_widget.dart';
 import 'package:pollino/services/comments_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pollino/services/pdf_service.dart';
@@ -310,6 +311,11 @@ class _PollScreenState extends State<PollScreen> {
                     if (state is Loading) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (state is Loaded) {
+                      // If backend returned no rows / poll was deleted, show friendly empty state
+                      if (state.polls.isEmpty) {
+                        return const PollNotFoundWidget();
+                      }
+
                       final poll = state.polls.first;
                       return StreamBuilder<List<Map<String, dynamic>>>(
                         stream: Supabase.instance.client
@@ -763,6 +769,12 @@ class _PollScreenState extends State<PollScreen> {
                         },
                       );
                     } else if (state is Error) {
+                      final msg = state.message.toLowerCase();
+                      // supabase/postgrest returns PGRST116 when no rows returned for single-row request
+                      if (msg.contains('pgrst116') || msg.contains('result contains 0 rows') || msg.contains('0 rows') || msg.contains('no rows')) {
+                        return const PollNotFoundWidget();
+                      }
+
                       return Center(child: Text(state.message));
                     }
                     return Center(child: Text(I18nService.instance.translate('poll.noData')));

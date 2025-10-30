@@ -52,6 +52,12 @@
       "expiresAt": "Läuft ab am",
       "autoDelete": "Wird automatisch gelöscht"
     },
+    "notFound": {
+      "title": "Umfrage nicht gefunden",
+      "message": "Diese Umfrage existiert nicht mehr oder wurde gelöscht.",
+      "back": "Zurück zur Übersicht",
+      "home": "Zur Startseite"
+    },
   "voting": {
       "select": "Option wählen",
       "selectMultiple": "Du kannst mehrere Optionen wählen",

@@ -52,6 +52,12 @@
       "expiresAt": "Expires on",
       "autoDelete": "Will be automatically deleted"
     },
+    "notFound": {
+      "title": "Poll not found",
+      "message": "This poll no longer exists or has been deleted.",
+      "back": "Back to list",
+      "home": "Go to Home"
+    },
   "voting": {
       "select": "Select option",
       "selectMultiple": "You can choose multiple options",

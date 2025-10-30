@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Flutter Web",
+      "name": "Flutter Web (Mac, Linux)",
       "cwd": "${workspaceFolder}/frontend",
       "request": "launch",
       "type": "dart",
@@ -16,5 +16,18 @@
         "8080",
       ]
     },
+    {
+      "name": "Flutter Web (Windows)",
+      "cwd": "${workspaceFolder}/frontend",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-d",
+        "web-server",
+        "--web-port",
+        "8080",
+        "--dart-define=SUPABASE_URL=https://localhost:8443",
+      ]
+    }
   ]
 }

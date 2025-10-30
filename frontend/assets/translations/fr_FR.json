@@ -52,6 +52,12 @@
       "expiresAt": "Expire le",
       "autoDelete": "Sera automatiquement supprimé"
     },
+    "notFound": {
+      "title": "Sondage introuvable",
+      "message": "Ce sondage n'existe plus ou a été supprimé.",
+      "back": "Retour à la liste",
+      "home": "Accueil"
+    },
   "voting": {
       "select": "Sélectionner une option",
       "selectMultiple": "Vous pouvez choisir plusieurs options",

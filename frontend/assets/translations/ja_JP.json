@@ -52,6 +52,12 @@
       "expiresAt": "期限",
       "autoDelete": "自動的に削除されます"
     },
+    "notFound": {
+      "title": "投票が見つかりません",
+      "message": "この投票は存在しないか削除されました。",
+      "back": "一覧に戻る",
+      "home": "ホームへ"
+    },
   "voting": {
       "select": "選択肢を選ぶ",
       "selectMultiple": "複数の選択肢を選べます",

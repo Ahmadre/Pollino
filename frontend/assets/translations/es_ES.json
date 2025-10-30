@@ -52,6 +52,12 @@
       "expiresAt": "Expira el",
       "autoDelete": "Se eliminará automáticamente"
     },
+    "notFound": {
+      "title": "Encuesta no encontrada",
+      "message": "Esta encuesta ya no existe o ha sido eliminada.",
+      "back": "Volver a la lista",
+      "home": "Ir al inicio"
+    },
   "voting": {
       "select": "Seleccionar opción",
       "selectMultiple": "Puedes elegir múltiples opciones",
