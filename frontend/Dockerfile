@@ -46,5 +46,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Expose port
 EXPOSE 8080
 
-# Set custom entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# Use explicit /bin/sh interpreter to avoid shebang/CRLF exec format errors
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
