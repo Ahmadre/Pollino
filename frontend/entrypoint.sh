@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 set -eu
 
 echo "Building Flutter app with runtime environment variables..."

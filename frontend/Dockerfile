@@ -11,9 +11,8 @@ RUN apt-get update && apt-get install -y \
     libglu1-mesa \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Flutter SDK (updated to a newer stable version)
-# Hinweis: Version angehoben, damit neue Material APIs (z. B. DialogThemeData) verfügbar sind
-RUN git clone https://github.com/flutter/flutter.git /flutter
+# Install Flutter SDK - pinned to stable 3.27.1 (Dart 3.6.0)
+RUN git clone -b 3.27.1 --depth 1 https://github.com/flutter/flutter.git /flutter
 ENV PATH="/flutter/bin:${PATH}"
 
 # Pre-download Flutter web tools and enable web
@@ -35,9 +34,9 @@ RUN dart run build_runner build --delete-conflicting-outputs
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Copy and make entrypoint executable
+# Copy and make entrypoint executable (strip BOM + CRLF)
 COPY entrypoint.sh /entrypoint.sh
-RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+RUN sed -i '1s/^\xEF\xBB\xBF//' /entrypoint.sh && sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
