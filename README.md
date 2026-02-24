@@ -7,13 +7,15 @@
 
 </div>
 
-[![CI Build](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml)
+[![CI Frontend](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml)
+[![CI Backend](https://github.com/Ahmadre/Pollino/actions/workflows/backend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/backend-docker-build.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.27.1-blue.svg)](https://flutter.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-2.x-green.svg)](https://supabase.com)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-green.svg)](https://spring.io/projects/spring-boot)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7-brightgreen.svg)](https://www.mongodb.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Flutter für das Frontend und Supabase als Backend-as-a-Service. Pollino ermöglicht es Benutzern, einfach Umfragen zu erstellen, zu verwalten und daran teilzunehmen.
+Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Flutter für das Frontend und Spring Boot mit MongoDB als Backend. Pollino ermöglicht es Benutzern, einfach Umfragen zu erstellen, zu verwalten und daran teilzunehmen.
 
 <div align="center">
   <img src="frontend/assets/images/screenshots/poll.jpg" height="500" alt="Pollino - Interactive Poll Interface"/>
@@ -21,19 +23,14 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 
 > **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like- und Kommentar-System und responsivem Design.
 
-## 🆕 Was ist neu in 1.0.1
+## 🆕 Was ist neu in 2.0.0
 
-- Einheitliches Popup-Menü-Design: abgerundete Ecken und weißer Hintergrund app-weit
-- Konsistente Dialoge (Alert/Simple), DatePicker und TimePicker: weißer Hintergrund, runde Ecken
-- Zentrale maximale Dialogbreite über Theme (`DialogTheme.insetPadding`) – angenehme Darstellung auf großen Bildschirmen
-- I18n: Harte Texte in Poll- und Home-Screen durch Übersetzungs-Keys ersetzt; neue Keys in allen 6 Sprachen ergänzt
-
-## 🆕 Was ist neu in 1.0.0
-
-- Drag & Drop Sortierung der Antwortoptionen mit persistenter Reihenfolge (option_order)
-- Anonyme Umfragen erscheinen nicht mehr auf der Startseite; Zugriff nur per Direktlink (z. B. /poll/5)
-- Tooltips zeigen Namen der Teilnehmenden, sofern diese nicht anonym abgestimmt haben
-- Verbesserte Edit-Funktion und stabilere Speicherung (Hive-Adapter für order-Feld)
+- **Architektur-Migration**: Komplett neues Backend — von Supabase (PostgreSQL) auf Spring Boot 3.3 + MongoDB 7
+- **Vereinfachte Infrastruktur**: Nur noch 3 Container (MongoDB, Backend, Frontend) statt 15+ Supabase-Services
+- **Spring Boot REST API**: Eigene API mit Rate Limiting, API-Key-Auth und Actuator Health Checks
+- **Integrierter Cleanup-Service**: Abgelaufene Umfragen werden direkt im Backend per Cron-Job bereinigt (kein separater Container mehr)
+- **CI/CD für Backend**: Neuer GitHub Actions Workflow für automatischen Docker-Build bei Änderungen am Backend
+- **Bugfixes**: TimePicker-Validierung, CRLF-Fixes für Docker-Builds auf Windows
 
 ## 🚀 Features
 
@@ -42,7 +39,6 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **🎨 Responsive Design**: Optimiert für Desktop und Mobile
 - **⚡ State Management**: BLoC Pattern mit flutter_bloc
 - **💾 Offline Support**: Lokale Datenspeicherung mit Hive
-- **🔄 Real-time Updates**: Live-Synchronisation mit Supabase
 - **🧭 Navigation**: Routemaster für deklaratives Routing
 - **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
 - **↕️ Drag & Drop Reihenfolge**: Antwortoptionen per Drag & Drop sortieren (persistente Reihenfolge)
@@ -51,27 +47,26 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **✏️ Poll-Bearbeitung**: Vollständige Bearbeitung bestehender Umfragen mit Admin-Token
 - **🌍 Mehrsprachigkeit**: Unterstützung für 6 Sprachen (DE, EN, FR, ES, JA, AR)
 - **🔒 Anonymitätslogik**: Anonyme Umfragen werden nicht gelistet (nur Direktlink), Tooltips zeigen Namen nur bei nicht-anonymen Stimmen
+- **📄 PDF-Export**: Umfragen als PDF herunterladen
 
-### Backend (Supabase Stack)
+### Backend (Spring Boot + MongoDB)
 
-- **🗄️ PostgreSQL Datenbank**: Relationale Datenbank mit RLS
-- **🔐 Authentication**: Supabase Auth mit JWT
-- **🌐 REST API**: PostgREST für automatische API-Generierung
-- **⚡ Realtime**: WebSocket-basierte Live-Updates
-- **📁 Storage**: Datei-Upload und -verwaltung
-- **🔧 Edge Functions**: Serverless Deno-basierte Functions
-- **📈 Analytics**: Integrierte Logflare Analytics
-- **🔐 Admin-Funktionen**: Token-basierte Administratorrechte
-- **🔄 Sequenz-Management**: Automatische Datenbank-Sequenz-Synchronisation
-- **🗄️ Poll-Optionen-Order**: Neues Feld `option_order` in `poll_options` mit Indizes und konsistenter Sortierung
+- **☕ Spring Boot 3.3**: Java 21 basierte REST API
+- **🍃 MongoDB 7**: NoSQL-Datenbank für flexible Datenstruktur
+- **🔐 API-Key-Authentifizierung**: Sicherer Zugriff über API-Key-Filter
+- **⚡ Rate Limiting**: Konfigurierbare Request-Limits (60/min allgemein, 10/min für Votes)
+- **🔧 Admin-Funktionen**: Token-basierte Administratorrechte für Umfrage-Verwaltung
+- **🧹 Automatischer Cleanup**: Integrierter Cron-Job für abgelaufene Umfragen
+- **💚 Health Checks**: Spring Actuator für Health- und Info-Endpoints
+- **🔄 CORS**: Konfigurierbare Cross-Origin Resource Sharing
 
 ### DevOps & Infrastruktur
 
-- **🐳 Docker**: Vollständig containerisiert
-- **🚀 Multi-Stage Builds**: Optimierte Production Builds
-- **🔄 Reverse Proxy**: Kong Gateway für API-Management
-- **📊 Monitoring**: Health Checks und Logging
-- **🔒 Security**: Nginx Security Headers
+- **🐳 Docker**: Vollständig containerisiert (3 Services)
+- **🚀 Multi-Stage Builds**: Optimierte Production Builds für Backend und Frontend
+- **🔄 CI/CD**: GitHub Actions für automatische Docker-Image-Builds
+- **📊 Monitoring**: Health Checks für alle Services
+- **🔒 Security**: Nginx Security Headers, API-Key-Auth, Rate Limiting
 
 ## 🏗️ Architektur
 
@@ -79,90 +74,35 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 graph TB
     %% Client Layer
     subgraph "Client Layer"
-        WEB[Flutter Web App<br/>Port: 3001]
-        MOBILE[Flutter Mobile App<br/>Future Extension]
+        WEB[Flutter Web App<br/>Nginx · Port: 3001]
     end
 
-    %% Reverse Proxy Layer
-    subgraph "API Gateway"
-        KONG[Kong Gateway<br/>Port: 8000<br/>API Management & Routing]
-    end
-
-    %% Application Services Layer
-    subgraph "Supabase Services"
-        AUTH[GoTrue Auth<br/>Port: 9999<br/>JWT Authentication]
-        REST[PostgREST API<br/>Port: 3000<br/>Auto-generated REST API]
-        REALTIME[Realtime<br/>Port: 4000<br/>WebSocket Updates]
-        STORAGE[Storage API<br/>Port: 5000<br/>File Management]
-        FUNCTIONS[Edge Functions<br/>Deno Runtime<br/>Serverless Logic]
-        STUDIO[Supabase Studio<br/>Database Admin UI]
+    %% Backend Layer
+    subgraph "Backend Services"
+        API[Spring Boot API<br/>Port: 8080<br/>REST API · Rate Limiting · Auth]
+        CLEANUP[Cleanup Service<br/>Integrierter Cron-Job<br/>Stündliche Bereinigung]
     end
 
     %% Data Layer
-    subgraph "Data & Storage Layer"
-        DB[(PostgreSQL Database<br/>Port: 5432<br/>Primary Data Store)]
-        POOLER[Supavisor<br/>Connection Pooler<br/>Ports: 6543/5432]
+    subgraph "Data Layer"
+        DB[(MongoDB 7<br/>Port: 27017<br/>NoSQL Document Store)]
         VOLUMES[Docker Volumes<br/>Persistent Storage]
     end
 
-    %% Support Services
-    subgraph "Infrastructure Services"
-        ANALYTICS[Logflare Analytics<br/>Port: 4000<br/>Logs & Metrics]
-        META[Postgres Meta<br/>Port: 8080<br/>DB Schema Management]
-        IMGPROXY[Image Proxy<br/>Port: 5001<br/>Image Processing]
-        VECTOR[Vector Logging<br/>Port: 9001<br/>Log Aggregation]
-        CLEANUP[Poll Cleanup Service<br/>Automated Cleanup<br/>15min Intervals]
-    end
-
     %% Data Flow Connections
-    WEB --> KONG
-    MOBILE -.-> KONG
-  
-    KONG --> AUTH
-    KONG --> REST
-    KONG --> REALTIME
-    KONG --> STORAGE
-    KONG --> FUNCTIONS
-    KONG --> STUDIO
+    WEB -->|REST API Calls| API
+    API --> DB
+    CLEANUP -.->|Scheduled| DB
+    DB --> VOLUMES
 
-    AUTH --> DB
-    REST --> DB
-    REALTIME --> DB
-    STORAGE --> DB
-    FUNCTIONS --> DB
-    STUDIO --> META
-    META --> DB
-
-    DB --> POOLER
-    POOLER --> DB
-
-    STORAGE --> IMGPROXY
-    IMGPROXY --> VOLUMES
-
-    %% Analytics & Monitoring
-    AUTH -.-> ANALYTICS
-    REST -.-> ANALYTICS
-    REALTIME -.-> ANALYTICS
-    FUNCTIONS -.-> ANALYTICS
-
-    VECTOR -.-> ANALYTICS
-  
-    %% Cleanup Service Connections
-    CLEANUP --> DB
-    CLEANUP -.-> ANALYTICS
-  
     %% Styling
     classDef frontend fill:#e1f5fe
-    classDef gateway fill:#f3e5f5
-    classDef service fill:#e8f5e8
+    classDef backend fill:#e8f5e8
     classDef database fill:#fff3e0
-    classDef infrastructure fill:#fce4ec
 
-    class WEB,MOBILE frontend
-    class KONG gateway
-    class AUTH,REST,REALTIME,STORAGE,FUNCTIONS,STUDIO service
-    class DB,POOLER,VOLUMES database
-    class ANALYTICS,META,IMGPROXY,VECTOR,CLEANUP infrastructure
+    class WEB frontend
+    class API,CLEANUP backend
+    class DB,VOLUMES database
 ```
 
 ## 📋 Voraussetzungen
@@ -171,6 +111,7 @@ graph TB
 - **Git** für Repository-Management
 - **Flutter SDK** 3.27.1+ (für lokale Entwicklung)
 - **Dart SDK** 3.6.0+
+- **Java 21** (für lokale Backend-Entwicklung)
 
 ## 🔧 Installation & Setup
 
@@ -188,66 +129,54 @@ cd Pollino
 cp .env.example .env
 
 # Wichtige Variablen anpassen:
-# POSTGRES_PASSWORD=your_secure_password
-# JWT_SECRET=your_jwt_secret
-# SUPABASE_PUBLIC_URL=http://localhost:8000
+# MONGODB_USER=pollino
+# MONGODB_PASSWORD=pollino_secret
+# API_KEY=your-secure-api-key
+# API_BASE_URL=http://localhost:8080
 ```
 
 ### 3. Services starten
 
 ```bash
-# Alle Services starten
+# Alle Services starten (Images von Docker Hub)
 docker compose up -d
 
-# Nur spezifische Services
-docker compose up -d db auth rest flutter-web
-
-# Mit Entwicklungstools
-docker compose -f docker-compose.yml -f ./dev/docker-compose.dev.yml up -d
+# Oder lokal bauen
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
-### 4. Datenbank initialisieren
+### 4. Upgrade von 1.x (Supabase) auf 2.0
+
+Falls du von einer älteren Supabase-basierten Version kommst:
+
+> ⚠️ **Breaking Change**: Die gesamte Backend-Architektur wurde migriert. Daten aus dem alten PostgreSQL/Supabase-Stack müssen manuell nach MongoDB überführt werden.
+
+1. Alte Supabase-Container stoppen und entfernen:
 
 ```bash
-# Die Datenbank wird automatisch mit Beispieldaten initialisiert
-# Schema: volumes/db/init/polls_schema.sql
-
+docker compose down -v --remove-orphans
 ```
 
-### 5. Upgrade auf 1.0.0
-
-Falls du von einer älteren Version kommst (z. B. 0.2.0):
-
-1. Datenbankmigration anwenden (neues Feld `option_order`):
+2. Neuen Stack starten:
 
 ```bash
-docker compose down
 docker compose up -d
 ```
 
-1. Frontend neu generieren (Freezed/Build Runner):
+3. Frontend neu generieren:
 
 ```bash
 cd frontend
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-1. Optional Caches leeren (empfohlen bei Schema-/Adapter-Updates):
-
-```bash
-cd frontend
-flutter clean
-flutter pub get
-```
-
 ## 🌐 Zugriff auf die Anwendung
 
-| Service                   | URL                    | Beschreibung       |
-| ------------------------- | ---------------------- | ------------------ |
-| **Flutter Web App** | [http://localhost:3001](http://localhost:3001)  | Hauptanwendung     |
-| **Supabase Studio** | [http://localhost:54323](http://localhost:54323) | Datenbank-Admin    |
-| **API Gateway**     | [http://localhost:8000](http://localhost:8000)  | REST API Endpoint  |
-| **Analytics**       | [http://localhost:4000](http://localhost:4000)  | Logflare Dashboard |
+| Service              | URL                                             | Beschreibung          |
+| -------------------- | ----------------------------------------------- | --------------------- |
+| **Flutter Web App**  | [http://localhost:3001](http://localhost:3001)   | Hauptanwendung        |
+| **Backend API**      | [http://localhost:8080](http://localhost:8080)   | REST API              |
+| **Health Check**     | [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health) | Backend Status |
 
 ## 🏃‍♂️ Entwicklung
 
@@ -259,6 +188,9 @@ cd frontend
 # Dependencies installieren
 flutter pub get
 
+# Code generieren (Freezed, JSON Serializable)
+dart run build_runner build --delete-conflicting-outputs
+
 # Development Server starten
 flutter run -d web-server --web-port 3000
 
@@ -266,17 +198,16 @@ flutter run -d web-server --web-port 3000
 flutter build web --release --web-renderer canvaskit
 ```
 
-### Datenbank-Migrationen
+### Backend lokal entwickeln
 
 ```bash
-# Schema ändern
-# 1. SQL in volumes/db/init/polls_schema.sql anpassen
-# 2. Services neu starten
-docker compose down
-docker compose up -d
+cd backend
 
-# Relevante Migrationen für 1.0.0:
-# volumes/db/migrations/004_add_poll_options_order.sql
+# Mit Maven Wrapper starten
+./mvnw spring-boot:run
+
+# Oder mit eigener Konfiguration
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--spring.data.mongodb.uri=mongodb://localhost:27017/pollino"
 ```
 
 ### Logs anzeigen
@@ -286,9 +217,9 @@ docker compose up -d
 docker compose logs -f
 
 # Spezifischer Service
-docker compose logs -f flutter-web
-docker compose logs -f db
-docker compose logs -f auth
+docker compose logs -f frontend
+docker compose logs -f backend
+docker compose logs -f mongodb
 ```
 
 ## 🧪 Testing
@@ -303,34 +234,43 @@ flutter test
 ### API Tests
 
 ```bash
-# Health Checks
-curl http://localhost:3001/health
-curl http://localhost:8000/health
+# Health Check
+curl http://localhost:8080/actuator/health
 
-# API Endpoints testen
-curl http://localhost:8000/rest/v1/polls
+# Polls abfragen
+curl http://localhost:8080/api/polls
+
+# Einzelne Umfrage
+curl http://localhost:8080/api/polls/{id}
 ```
 
 ## 📦 Deployment
 
-### Entwicklungsumgebung
+### Production Stack
 
 ```bash
-# Flutter Web optimiert bauen
-docker compose build flutter-web
+# Production mit Docker Hub Images
+docker compose up -d
 
-# Production Stack
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Oder lokal bauen
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
 ### Environment Konfiguration
 
-```bash
-# Produktive Umgebungsvariablen setzen
-export SUPABASE_PUBLIC_URL=https://your-domain.com
-export POSTGRES_PASSWORD=secure_production_password
-export JWT_SECRET=your_production_jwt_secret
-```
+| Variable                | Default                      | Beschreibung                  |
+| ----------------------- | ---------------------------- | ----------------------------- |
+| `MONGODB_USER`          | `pollino`                    | MongoDB Benutzername          |
+| `MONGODB_PASSWORD`      | `pollino_secret`             | MongoDB Passwort              |
+| `MONGODB_DATABASE`      | `pollino`                    | MongoDB Datenbankname         |
+| `API_KEY`               | `changeme-generate-...`      | API-Key für Backend-Auth      |
+| `CORS_ALLOWED_ORIGINS`  | `*`                          | Erlaubte CORS Origins         |
+| `CLEANUP_ENABLED`       | `true`                       | Automatischer Cleanup aktiv   |
+| `CLEANUP_CRON`          | `0 0 * * * *`                | Cleanup Cron-Ausdruck         |
+| `RATE_LIMIT_RPM`        | `60`                         | Allgemeines Rate Limit/min    |
+| `RATE_LIMIT_VOTE_RPM`   | `10`                         | Vote Rate Limit/min           |
+| `API_BASE_URL`          | `http://localhost:8080`      | Backend URL für Frontend      |
+| `WEB_APP_URL`           | `http://localhost:3001`      | Frontend URL                  |
 
 ## 📁 Projektstruktur
 
@@ -349,40 +289,59 @@ Pollino/
 │   │   │   └── polls/             # Poll Feature Module
 │   │   │       ├── data/          # Data Layer (Models, DataSources, Repositories)
 │   │   │       └── domain/        # Domain Layer (Entities, UseCases, Interfaces)
-│   │   ├── screens/               # UI Screens (Home, Poll Detail, Create, Edit, Admin)
-│   │   ├── services/              # Application Services (Supabase, Like System)
+│   │   ├── screens/               # UI Screens (Home, Poll Detail, Admin)
+│   │   ├── services/              # API, Comments, Like, PDF Services
 │   │   └── widgets/               # Reusable UI Components (PollForm, etc.)
 │   ├── assets/                    # Static Assets & Translations (6 Languages)
 │   ├── web/                       # Web-specific Files & PWA Configuration
-│   ├── test/                      # Unit & Widget Tests
-│   └── build/                     # Flutter Build Output
-├── 🗄️ volumes/                    # Persistent Data & Configuration
-│   ├── db/                        # Database Configuration
-│   │   ├── init/                  # Database Initialization Scripts
-│   │   ├── migrations/            # Database Schema Migrations (7+ Files)
-│   │   └── data/                  # PostgreSQL Data Directory
-│   ├── functions/                 # Supabase Edge Functions
-│   ├── api/                       # API Gateway Configuration
-│   ├── logs/                      # Logging Configuration
-│   ├── pooler/                    # Connection Pooling
-│   └── storage/                   # File Storage
-├── 🧹 poll-cleanup/               # Automated Poll Cleanup Service
-│   ├── cleanup-script.sh          # Cleanup Logic Script
-│   ├── start.sh                   # Service Startup Script
-│   └── Dockerfile                 # Cleanup Service Container
+│   └── test/                      # Unit & Widget Tests
+├── ☕ backend/                     # Spring Boot Backend
+│   ├── src/main/java/com/pollino/
+│   │   ├── config/                # Security, CORS, Rate Limiting, MongoDB Config
+│   │   ├── controller/            # REST Controllers (Poll, Comment)
+│   │   ├── dto/                   # Request/Response DTOs
+│   │   ├── exception/             # Global Exception Handling
+│   │   ├── model/                 # Domain Models (Poll, Vote, Comment)
+│   │   ├── repository/            # MongoDB Repositories
+│   │   └── service/               # Business Logic & Cleanup Service
+│   ├── src/main/resources/        # Application Configuration
+│   ├── Dockerfile                 # Multi-stage Build (JDK → JRE)
+│   └── pom.xml                    # Maven Dependencies
 ├── 🔧 dev/                        # Development Tools
 │   ├── docker-compose.dev.yml     # Development Override
 │   └── data.sql                   # Development Sample Data
-├── 🐳 docker-compose.s3.yml       # S3 Storage Extension
-├── 🐳 docker-compose.yml          # Main Services Definition
-├── 🔄 reset.sh                    # Database Reset Script
+├── 🐳 docker-compose.yml          # Production Stack (Docker Hub Images)
+├── 🐳 docker-compose.local.yml    # Local Development Build
 ├── 📋 README.md                   # This Documentation
 ├── 📝 CHANGELOG.md                # Version History & Changes
-├── 🔧 .env.example                # Environment Variables Template
-├── 🔧 .env.prod                   # Production Environment Configuration
-└── 📊 .vscode/                    # VS Code Configuration
-    └── launch.json                # Debug Configuration
+└── 📄 LICENSE                     # MIT License
 ```
+
+## 🔌 API-Übersicht
+
+### Polls (`/api/polls`)
+
+| Methode  | Pfad                                | Beschreibung                    |
+| -------- | ----------------------------------- | ------------------------------- |
+| `GET`    | `/api/polls?page=&limit=`           | Paginierte Liste öffentlicher Umfragen |
+| `GET`    | `/api/polls/{id}`                   | Einzelne Umfrage abrufen        |
+| `POST`   | `/api/polls`                        | Umfrage erstellen               |
+| `PUT`    | `/api/polls/{id}`                   | Umfrage bearbeiten (Admin-Token)|
+| `DELETE` | `/api/polls/{id}?adminToken=`       | Umfrage löschen (Admin-Token)   |
+| `POST`   | `/api/polls/{id}/vote`              | Abstimmen                       |
+| `GET`    | `/api/polls/{id}/votes`             | Alle Stimmen abrufen            |
+| `POST`   | `/api/polls/{id}/like`              | Like umschalten                 |
+| `POST`   | `/api/polls/{id}/validate-token`    | Admin-Token validieren          |
+
+### Kommentare (`/api/comments`)
+
+| Methode  | Pfad                                      | Beschreibung              |
+| -------- | ----------------------------------------- | ------------------------- |
+| `GET`    | `/api/comments/{pollId}`                  | Kommentare abrufen        |
+| `GET`    | `/api/comments/{pollId}/count`            | Kommentar-Anzahl          |
+| `POST`   | `/api/comments/{pollId}`                  | Kommentar hinzufügen      |
+| `PUT`    | `/api/comments/{pollId}/{commentId}`      | Kommentar bearbeiten      |
+| `DELETE` | `/api/comments/{pollId}/{commentId}`      | Kommentar löschen         |
 
 ## 🤝 Beitragen
 
@@ -402,19 +361,20 @@ Pollino/
 # Cache löschen und neu bauen
 docker compose down
 docker system prune -a
-docker compose build --no-cache
-docker compose up -d
+docker compose -f docker-compose.local.yml build --no-cache
+docker compose -f docker-compose.local.yml up -d
 ```
 
-**Datenbank-Verbindungsfehler:**
+**MongoDB Verbindungsfehler:**
 
 ```bash
 # Datenbank Status prüfen
 docker compose ps
-docker compose logs db
+docker compose logs mongodb
 
 # Reset der Datenbank
-./reset.sh
+docker compose down -v
+docker compose up -d
 ```
 
 **Flutter Dependencies:**
@@ -423,6 +383,16 @@ docker compose logs db
 cd frontend
 flutter clean
 flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+```
+
+**Windows CRLF-Probleme (Docker Build):**
+
+Die Dockerfiles enthalten automatische CRLF→LF-Konvertierung für Shell-Skripte. Falls dennoch Probleme auftreten:
+
+```bash
+# Git Konfiguration anpassen
+git config core.autocrlf input
 ```
 
 ## 📄 Lizenz
@@ -432,18 +402,18 @@ Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
 ## 👥 Team
 
 - **Entwicklung**: [Ahmadre](https://github.com/Ahmadre)
-- **Architektur**: Flutter + Supabase Stack
-- **DevOps**: Docker + Kong + Nginx
+- **Architektur**: Flutter + Spring Boot + MongoDB
+- **DevOps**: Docker + GitHub Actions + Nginx
 
 ## 📊 Tech Stack Übersicht
 
-| Kategorie             | Technologie | Version | Zweck                |
-| --------------------- | ----------- | ------- | -------------------- |
-| **Frontend**    | Flutter     | 3.27.1  | Web & Mobile UI      |
-| **Backend**     | Supabase    | 2.x     | Backend-as-a-Service |
-| **Datenbank**   | PostgreSQL  | 15.8    | Primary Data Store   |
-| **API Gateway** | Kong        | 2.8.1   | Routing & Security   |
-| **Web Server**  | Nginx       | 1.25    | Static File Serving  |
-| **Analytics**   | Logflare    | 1.14.2  | Logging & Monitoring |
-| **Container**   | Docker      | Latest  | Containerization     |
+| Kategorie         | Technologie   | Version | Zweck                     |
+| ----------------- | ------------- | ------- | ------------------------- |
+| **Frontend**      | Flutter       | 3.27.1  | Web UI                    |
+| **Backend**       | Spring Boot   | 3.3     | REST API                  |
+| **Runtime**       | Java          | 21      | Backend Runtime           |
+| **Datenbank**     | MongoDB       | 7       | NoSQL Document Store      |
+| **Web Server**    | Nginx         | stable  | Static File Serving       |
+| **Container**     | Docker        | Latest  | Containerization          |
+| **CI/CD**         | GitHub Actions| -       | Automated Builds          |
 

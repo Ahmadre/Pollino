@@ -16,6 +16,83 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Export-Funktion (CSV)
 - Umfrage-Templates
 
+## [2.0.0] - 2026-02-24 - Architecture Migration (Spring Boot + MongoDB)
+
+### 💥 Breaking Changes (2.0.0)
+
+- **Backend komplett neu**: Migration von Supabase (PostgreSQL, Kong, GoTrue, PostgREST, Realtime, Edge Functions) auf **Spring Boot 3.3 + MongoDB 7**
+- **Datenbank gewechselt**: Von PostgreSQL (relational, RLS) auf MongoDB (NoSQL, Document Store)
+- **Keine Rückwärtskompatibilität**: Daten aus dem alten Supabase-Stack müssen manuell migriert werden
+- **API-Endpunkte geändert**: Neue REST API unter `/api/polls` und `/api/comments` (statt PostgREST `/rest/v1/`)
+
+### 🚀 Added (2.0.0)
+
+- ☕ **Spring Boot 3.3 Backend** mit Java 21
+  - Eigene REST Controllers für Polls und Comments
+  - API-Key-Authentifizierung via `ApiKeyAuthFilter`
+  - Rate Limiting (60 req/min allgemein, 10 req/min für Votes)
+  - Spring Actuator für `/health` und `/info` Endpoints
+  - CORS konfigurierbar über Umgebungsvariablen
+- 🍃 **MongoDB 7** als Datenbank
+  - Flexible Document-basierte Datenstruktur
+  - Spring Data MongoDB Repositories
+  - Auto-Index-Erstellung
+- 🧹 **Integrierter Cleanup-Service** im Backend
+  - `@Scheduled` Cron-Job für automatische Bereinigung abgelaufener Umfragen
+  - Stündlich (konfigurierbar via `CLEANUP_CRON`)
+  - Ersetzt den separaten `pollino-cleanup` Docker Container
+- 🚀 **CI/CD für Backend**
+  - Neuer GitHub Actions Workflow `backend-docker-build.yml`
+  - Automatischer Docker-Image-Build und Push auf DockerHub (`ahmadre/pollino-backend`) bei Änderungen auf `main`
+- 🐳 **Neues `docker-compose.local.yml`** für lokale Entwicklung
+  - Baut alle Images lokal statt sie von Docker Hub zu pullen
+
+### 🎨 Changed (2.0.0)
+
+- **Vereinfachte Infrastruktur**: Nur noch 3 Container (MongoDB, Backend, Frontend) statt 15+ Supabase-Services
+- **Frontend Services**: API-Aufrufe gehen direkt an Spring Boot statt über Kong/PostgREST
+- **GitHub Actions aufgeräumt**:
+  - Frontend-Workflow: `develop`-Branch und PR-Trigger entfernt, nur `main` + `workflow_dispatch`
+  - `poll-cleanup-docker-build.yml` entfernt (nicht mehr benötigt)
+  - Alle Workflows: Tags vereinfacht (`sha-` + `latest`), Build-Step-IDs korrigiert
+- **Docker Compose**: Production-Stack (`docker-compose.yml`) zieht Images von DockerHub (`ahmadre/pollino-backend`, `ahmadre/pollino-frontend`)
+
+### 🐛 Fixed (2.0.0)
+
+- **TimePicker-Validierung**: „Geben Sie eine gültige Uhrzeit ein"-Fehler bei benutzerdefinierter Ablaufzeit behoben (Material 3 Input-Modus Bug)
+- **Docker CRLF-Fixes**: Windows-Zeilenenden (`\r\n`) in `mvnw`, `maven-wrapper.properties` und `entrypoint.sh` werden automatisch im Dockerfile bereinigt
+- **Frontend Compile-Fehler**: 5 Fehler in `poll_bloc.dart`, `admin_screen.dart`, `poll_screen.dart` und `timezone_demo.dart` behoben (fehlende Parameter, Typ-Mismatch)
+
+### 🗑️ Removed (2.0.0)
+
+- Supabase Stack (GoTrue Auth, PostgREST, Realtime, Storage, Edge Functions, Supabase Studio)
+- Kong API Gateway
+- Logflare Analytics
+- Supavisor Connection Pooler
+- Image Proxy
+- Vector Logging
+- Separater `pollino-cleanup` Docker Container
+- PostgreSQL und zugehörige SQL-Migrationen (werden als Legacy-Referenz im `volumes/` Ordner behalten)
+
+### 🔧 Upgrade Notes (2.0.0)
+
+> ⚠️ Dies ist ein Major Release mit Breaking Changes.
+
+1. **Alte Container stoppen und entfernen**:
+   ```bash
+   docker compose down -v --remove-orphans
+   ```
+2. **Neuen Stack starten**:
+   ```bash
+   docker compose up -d
+   ```
+3. **Frontend neu generieren**:
+   ```bash
+   cd frontend
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+4. **Daten-Migration**: Bestehende Umfragen aus PostgreSQL müssen manuell nach MongoDB überführt werden.
+
 ## [1.0.1] - 2025-10-13 - UI Polish & i18n
 
 ### 🚀 Added (1.0.1)
