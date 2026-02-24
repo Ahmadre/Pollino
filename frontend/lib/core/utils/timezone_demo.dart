@@ -27,7 +27,7 @@ void demonstrateTimezoneHandling() {
   // 3. Database → Display conversion
   print('3. Database Storage → User Display:');
   final dbUtcTime = DateTime.parse('2025-10-07T16:00:00Z'); // UTC from database
-  final userDisplayTime = TimezoneHelper.utcToLocal(dbUtcTime);
+  final _ = TimezoneHelper.utcToLocal(dbUtcTime);
   print('   Database UTC:  ${TimezoneHelper.toIso8601Utc(dbUtcTime)}');
   print('   User sees:     ${TimezoneHelper.formatForDisplay(dbUtcTime)}');
   print('');

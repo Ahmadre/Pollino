@@ -296,7 +296,7 @@ class ApiService {
 
   /// Deletes a poll.
   static Future<void> deletePoll(String pollId,
-      {required String adminToken}) async {
+      {String adminToken = ''}) async {
     try {
       final uri = Uri.parse(
           '$_baseUrl/api/polls/$pollId?adminToken=${Uri.encodeComponent(adminToken)}');

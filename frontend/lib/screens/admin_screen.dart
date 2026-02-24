@@ -98,7 +98,8 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (confirmed == true) {
       try {
-        await ApiService.deletePoll(widget.pollId);
+        await ApiService.deletePoll(widget.pollId,
+            adminToken: widget.adminToken);
 
         if (mounted) {
           context.read<PollBloc>().add(const PollEvent.refreshPolls());
