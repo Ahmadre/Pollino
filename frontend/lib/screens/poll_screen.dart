@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
 import 'package:pollino/core/widgets/responsive_wrapper.dart';
@@ -33,6 +34,50 @@ class _PollScreenState extends State<PollScreen> {
   bool _isNavigatingAway = false; // Flag um doppelte Navigation zu verhindern
   bool _showChart = true; // Chart Sichtbarkeit
   final _voterNameController = TextEditingController();
+
+  // Cached vote data to avoid repeated API calls (429)
+  List<Map<String, dynamic>> _cachedVotesData = [];
+  bool _votesLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVoteData();
+  }
+
+  Future<void> _loadVoteData() async {
+    try {
+      final data = await ApiService.getVotesForPoll(widget.pollId);
+      if (mounted) {
+        setState(() {
+          _cachedVotesData = data;
+          _votesLoaded = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading vote data: $e');
+      if (mounted) {
+        setState(() {
+          _votesLoaded = true;
+        });
+      }
+    }
+  }
+
+  /// Extract voter names per option from cached vote data
+  Map<String, List<String>> _getVoterNamesByOption() {
+    final Map<String, List<String>> result = {};
+    for (final row in _cachedVotesData) {
+      final optId = row['optionId']?.toString();
+      if (optId == null) continue;
+      final isAnon = row['anonymous'] == true;
+      final voterName = row['voterName'];
+      if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+        result.putIfAbsent(optId, () => []).add(voterName.trim());
+      }
+    }
+    return result;
+  }
 
   void _sharePoll(dynamic poll) {
     try {
@@ -146,25 +191,28 @@ class _PollScreenState extends State<PollScreen> {
     );
 
     try {
+      // Await the API call directly so we know the vote was accepted
       if (_selectedOptionIds.length == 1) {
-        // Single vote
-        context.read<PollBloc>().add(PollEvent.voteWithName(
-              widget.pollId,
-              _selectedOptionIds.first,
-              isAnonymous: _isAnonymousVote,
-              voterName:
-                  _isAnonymousVote ? null : _voterNameController.text.trim(),
-            ));
+        await ApiService.sendVote(
+          widget.pollId,
+          _selectedOptionIds.first,
+          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+          isAnonymous: _isAnonymousVote,
+        );
       } else {
-        // Multiple votes
-        context.read<PollBloc>().add(PollEvent.voteMultiple(
-              widget.pollId,
-              _selectedOptionIds,
-              isAnonymous: _isAnonymousVote,
-              voterName:
-                  _isAnonymousVote ? null : _voterNameController.text.trim(),
-            ));
+        await ApiService.sendMultipleVotes(
+          widget.pollId,
+          _selectedOptionIds,
+          voterName: _isAnonymousVote ? null : _voterNameController.text.trim(),
+          isAnonymous: _isAnonymousVote,
+        );
       }
+
+      // Reload the specific poll to get updated vote counts
+      context.read<PollBloc>().add(PollEvent.loadPoll(widget.pollId));
+
+      // Refresh cached vote data (single API call, no FutureBuilder cascade)
+      await _loadVoteData();
 
       setState(() {
         _hasVoted = true;
@@ -173,28 +221,33 @@ class _PollScreenState extends State<PollScreen> {
       // Verstecke Loading Indicator
       if (mounted) Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _selectedOptionIds.length == 1
-                ? I18nService.instance.translate('poll.voting.successSingle')
-                : I18nService.instance.translate('poll.voting.successMultiple',
-                    params: {'count': '${_selectedOptionIds.length}'}),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _selectedOptionIds.length == 1
+                  ? I18nService.instance.translate('poll.voting.successSingle')
+                  : I18nService.instance.translate(
+                      'poll.voting.successMultiple',
+                      params: {'count': '${_selectedOptionIds.length}'}),
+            ),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      }
     } catch (e) {
       // Verstecke Loading Indicator
       if (mounted) Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-              '${I18nService.instance.translate('poll.voting.error')}: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                '${I18nService.instance.translate('poll.voting.error')}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -348,33 +401,34 @@ class _PollScreenState extends State<PollScreen> {
 
                       final poll = state.polls.first;
                       // Use vote counts from poll options (returned by backend)
-                      final List<dynamic> liveOptions = List.from(poll.options);
+                      final List<Option> liveOptions =
+                          List<Option>.from(poll.options);
                       final Map<String, int> voteCountsByOption = {};
                       int totalVotes = 0;
 
                       for (final option in liveOptions) {
-                        final optionId = option.id?.toString() ?? '';
-                        final votes = option.votes ?? 0;
+                        final optionId = option.id;
+                        final votes = option.votes;
                         voteCountsByOption[optionId] = votes;
-                        totalVotes += (votes as int);
+                        totalVotes += votes;
                       }
 
                       // Sort options: By votes (if any) or by order
                       liveOptions.sort((a, b) {
-                        final aId = a.id?.toString() ?? '';
-                        final bId = b.id?.toString() ?? '';
+                        final aId = a.id;
+                        final bId = b.id;
                         final aVotes = voteCountsByOption[aId] ?? 0;
                         final bVotes = voteCountsByOption[bId] ?? 0;
 
                         if (totalVotes > 0) {
                           final voteComparison = bVotes.compareTo(aVotes);
                           if (voteComparison != 0) return voteComparison;
-                          final aText = a.text ?? '';
-                          final bText = b.text ?? '';
-                          return aText.toString().compareTo(bText.toString());
+                          final aText = a.text;
+                          final bText = b.text;
+                          return aText.compareTo(bText);
                         } else {
-                          final aOrder = a.order ?? 0;
-                          final bOrder = b.order ?? 0;
+                          final aOrder = a.order;
+                          final bOrder = b.order;
                           final orderComparison = aOrder.compareTo(bOrder);
                           if (orderComparison != 0) return orderComparison;
                           return aId.compareTo(bId);
@@ -626,12 +680,8 @@ class _PollScreenState extends State<PollScreen> {
                                       ...List.generate(liveOptions.length,
                                           (index) {
                                         final option = liveOptions[index];
-                                        final optionId =
-                                            option.id?.toString() ??
-                                                option['id']?.toString() ??
-                                                '';
-                                        final optionText =
-                                            option.text ?? option['text'] ?? '';
+                                        final optionId = option.id;
+                                        final optionText = option.text;
                                         final optionVotes =
                                             voteCountsByOption[optionId] ?? 0;
                                         final percentage = totalVotes > 0
@@ -639,6 +689,8 @@ class _PollScreenState extends State<PollScreen> {
                                             : 0.0;
                                         final isSelected = _selectedOptionIds
                                             .contains(optionId);
+                                        final voterNamesByOpt =
+                                            _getVoterNamesByOption();
 
                                         return Padding(
                                           padding:
@@ -656,6 +708,9 @@ class _PollScreenState extends State<PollScreen> {
                                             allowsMultiple:
                                                 poll.allowsMultipleVotes,
                                             isAnonymousPoll: poll.isAnonymous,
+                                            voterNames:
+                                                voterNamesByOpt[optionId] ??
+                                                    const [],
                                             onTap: (_hasVoted ||
                                                     _isPollExpired(poll))
                                                 ? null
@@ -762,98 +817,83 @@ class _PollScreenState extends State<PollScreen> {
                               rightChild: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Poll Results Chart (using vote data from backend)
-                                  if (liveOptions.isNotEmpty)
-                                    FutureBuilder<List<Map<String, dynamic>>>(
-                                      future: ApiService.getVotesForPoll(
-                                          widget.pollId),
-                                      builder: (context, votesSnapshot) {
-                                        // Aggregate vote counts per option
-                                        final Map<String, int> counts = {};
-                                        final Map<String, Set<String>>
-                                            namesByOption = {};
-                                        if (votesSnapshot.hasData &&
-                                            votesSnapshot.data != null) {
-                                          for (final row
-                                              in votesSnapshot.data!) {
-                                            final optId =
-                                                row['optionId']?.toString();
-                                            if (optId == null) continue;
-                                            counts.update(optId, (v) => v + 1,
-                                                ifAbsent: () => 1);
-                                            final isAnon =
-                                                row['anonymous'] == true;
-                                            final voterName = row['voterName'];
-                                            if (!isAnon &&
-                                                voterName is String &&
-                                                voterName.trim().isNotEmpty) {
-                                              namesByOption
-                                                  .putIfAbsent(
-                                                      optId, () => <String>{})
-                                                  .add(voterName.trim());
-                                            }
-                                          }
+                                  // Poll Results Chart (using cached vote data)
+                                  if (liveOptions.isNotEmpty && _votesLoaded)
+                                    Builder(builder: (context) {
+                                      // Aggregate vote counts per option from cached data
+                                      final Map<String, int> counts = {};
+                                      final Map<String, Set<String>>
+                                          namesByOption = {};
+                                      for (final row in _cachedVotesData) {
+                                        final optId =
+                                            row['optionId']?.toString();
+                                        if (optId == null) continue;
+                                        counts.update(optId, (v) => v + 1,
+                                            ifAbsent: () => 1);
+                                        final isAnon = row['anonymous'] == true;
+                                        final voterName = row['voterName'];
+                                        if (!isAnon &&
+                                            voterName is String &&
+                                            voterName.trim().isNotEmpty) {
+                                          namesByOption
+                                              .putIfAbsent(
+                                                  optId, () => <String>{})
+                                              .add(voterName.trim());
                                         }
+                                      }
 
-                                        final chartOptions = liveOptions
-                                            .asMap()
-                                            .entries
-                                            .map((entry) {
-                                          final index = entry.key;
-                                          final option = entry.value;
-                                          final optionIdStr =
-                                              option.id?.toString() ?? '';
-                                          final optionVotes = counts[
-                                                  optionIdStr] ??
-                                              voteCountsByOption[optionIdStr] ??
-                                              0;
-                                          return PollOptionData(
-                                            text: option.text ?? '',
-                                            votes: optionVotes,
-                                            color: _optionColors[
-                                                index % _optionColors.length],
-                                            // Show names of non-anonymous voters (if available)
-                                            namedVoters:
-                                                namesByOption[optionIdStr]
-                                                        ?.toList() ??
-                                                    const [],
-                                          );
-                                        }).toList()
-                                          ..sort((a, b) {
-                                            // Primäre Sortierung: Nach Votes absteigend
-                                            final voteComparison =
-                                                b.votes.compareTo(a.votes);
-                                            if (voteComparison != 0)
-                                              return voteComparison;
-                                            // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
-                                            return a.text.compareTo(b.text);
-                                          });
-
-                                        final totalFromCounts =
-                                            chartOptions.fold<int>(
-                                                0, (s, o) => s + o.votes);
-                                        if (totalFromCounts == 0) {
-                                          // Wenn immer noch 0, Chart ausblenden (keine Stimmen)
-                                          return const SizedBox.shrink();
-                                        }
-
-                                        return Container(
-                                          margin:
-                                              const EdgeInsets.only(bottom: 20),
-                                          child: ResponsiveChartContainer(
-                                            child: PollResultsChart(
-                                              options: chartOptions,
-                                              isVisible: _showChart,
-                                              onToggleVisibility: () {
-                                                setState(() {
-                                                  _showChart = !_showChart;
-                                                });
-                                              },
-                                            ),
-                                          ),
+                                      final chartOptions = liveOptions
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final index = entry.key;
+                                        final option = entry.value;
+                                        final optionIdStr = option.id;
+                                        final optionVotes = counts[
+                                                optionIdStr] ??
+                                            voteCountsByOption[optionIdStr] ??
+                                            0;
+                                        return PollOptionData(
+                                          text: option.text,
+                                          votes: optionVotes,
+                                          color: _optionColors[
+                                              index % _optionColors.length],
+                                          namedVoters:
+                                              namesByOption[optionIdStr]
+                                                      ?.toList() ??
+                                                  const [],
                                         );
-                                      },
-                                    ),
+                                      }).toList()
+                                        ..sort((a, b) {
+                                          final voteComparison =
+                                              b.votes.compareTo(a.votes);
+                                          if (voteComparison != 0)
+                                            return voteComparison;
+                                          return a.text.compareTo(b.text);
+                                        });
+
+                                      final totalFromCounts = chartOptions
+                                          .fold<int>(0, (s, o) => s + o.votes);
+                                      if (totalFromCounts == 0) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return Container(
+                                        margin:
+                                            const EdgeInsets.only(bottom: 20),
+                                        child: ResponsiveChartContainer(
+                                          child: PollResultsChart(
+                                            options: chartOptions,
+                                            isVisible: _showChart,
+                                            onToggleVisibility: () {
+                                              setState(() {
+                                                _showChart = !_showChart;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    }),
 
                                   // Kommentare Sektion
                                   _CommentsSection(pollId: poll.id),
@@ -906,6 +946,7 @@ class _PollOptionWithVoters extends StatelessWidget {
   final bool isSelected;
   final bool allowsMultiple;
   final bool isAnonymousPoll;
+  final List<String> voterNames;
   final VoidCallback? onTap;
 
   const _PollOptionWithVoters({
@@ -919,41 +960,22 @@ class _PollOptionWithVoters extends StatelessWidget {
     required this.isSelected,
     required this.allowsMultiple,
     required this.isAnonymousPoll,
+    this.voterNames = const [],
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: isAnonymousPoll
-          ? Future.value([])
-          : ApiService.getVotersForOption(pollId, optionId),
-      builder: (context, snapshot) {
-        final List<String> voterNames = [];
-
-        // Only collect names for non-anonymous polls
-        if (!isAnonymousPoll && snapshot.hasData && snapshot.data != null) {
-          for (final vote in snapshot.data!) {
-            final isAnon = vote['anonymous'] == true;
-            final voterName = vote['voterName'];
-            if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
-              voterNames.add(voterName.trim());
-            }
-          }
-        }
-
-        return _PollOption(
-          text: text,
-          votes: votes,
-          percentage: percentage,
-          color: color,
-          voters: voterNames,
-          hasVoted: hasVoted,
-          isSelected: isSelected,
-          allowsMultiple: allowsMultiple,
-          onTap: onTap,
-        );
-      },
+    return _PollOption(
+      text: text,
+      votes: votes,
+      percentage: percentage,
+      color: color,
+      voters: voterNames,
+      hasVoted: hasVoted,
+      isSelected: isSelected,
+      allowsMultiple: allowsMultiple,
+      onTap: onTap,
     );
   }
 }

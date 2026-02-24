@@ -291,6 +291,33 @@ class _PollCard extends StatefulWidget {
 
 class _PollCardState extends State<_PollCard> {
   bool _showChart = true;
+  List<Map<String, dynamic>> _cachedVotesData = [];
+  bool _votesLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVoteData();
+  }
+
+  Future<void> _loadVoteData() async {
+    try {
+      final data = await ApiService.getVotesForPoll(widget.poll.id.toString());
+      if (mounted) {
+        setState(() {
+          _cachedVotesData = data;
+          _votesLoaded = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading vote data for poll card: $e');
+      if (mounted) {
+        setState(() {
+          _votesLoaded = true;
+        });
+      }
+    }
+  }
 
   void _sharePoll() {
     try {
@@ -426,52 +453,45 @@ class _PollCardState extends State<_PollCard> {
 
             const SizedBox(height: 16),
 
-            // Poll Results Chart (use poll options data directly)
-            FutureBuilder<List<Map<String, dynamic>>>(
-              future: ApiService.getVotesForPoll(widget.poll.id.toString()),
-              builder: (context, votesSnapshot) {
+            // Poll Results Chart (use cached vote data)
+            if (_votesLoaded)
+              Builder(builder: (context) {
                 final List<Option> liveOptions = widget.poll.options;
                 final Map<String, int> counts = {};
                 final Map<String, Set<String>> namesByOption = {};
-                if (votesSnapshot.hasData && votesSnapshot.data != null) {
-                  for (final row in votesSnapshot.data!) {
-                    final optId = row['optionId']?.toString();
-                    if (optId == null) continue;
-                    counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
-                    final isAnon = row['anonymous'] == true;
-                    final voterName = row['voterName'];
-                    if (!isAnon &&
-                        voterName is String &&
-                        voterName.trim().isNotEmpty) {
-                      namesByOption
-                          .putIfAbsent(optId, () => <String>{})
-                          .add(voterName.trim());
-                    }
+                for (final row in _cachedVotesData) {
+                  final optId = row['optionId']?.toString();
+                  if (optId == null) continue;
+                  counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
+                  final isAnon = row['anonymous'] == true;
+                  final voterName = row['voterName'];
+                  if (!isAnon &&
+                      voterName is String &&
+                      voterName.trim().isNotEmpty) {
+                    namesByOption
+                        .putIfAbsent(optId, () => <String>{})
+                        .add(voterName.trim());
                   }
                 }
 
-                // Create chart options and sort by votes descending
                 final chartOptions = liveOptions.asMap().entries.map((entry) {
                   final index = entry.key;
                   final option = entry.value;
                   final optionIdStr = option.id.toString();
-                  final votes = counts[optionIdStr] ?? (option.votes as int);
+                  final votes = counts[optionIdStr] ?? option.votes;
                   final text = option.text;
                   return PollOptionData(
                     text: text,
                     votes: votes,
                     color:
                         widget.optionColors[index % widget.optionColors.length],
-                    // Immer Namen der nicht-anonymen Stimmen anzeigen (sofern vorhanden)
                     namedVoters:
                         namesByOption[optionIdStr]?.toList() ?? const [],
                   );
                 }).toList()
                   ..sort((a, b) {
-                    // Primäre Sortierung: Nach Votes absteigend (für Charts sinnvoll)
                     final voteComparison = b.votes.compareTo(a.votes);
                     if (voteComparison != 0) return voteComparison;
-                    // Sekundäre Sortierung: Alphabetisch nach Text falls Votes gleich sind
                     return a.text.compareTo(b.text);
                   });
 
@@ -490,8 +510,7 @@ class _PollCardState extends State<_PollCard> {
                     },
                   ),
                 );
-              },
-            ),
+              }),
 
             const SizedBox(height: 16),
 

@@ -10,10 +10,12 @@ part 'poll_bloc.freezed.dart';
 
 @freezed
 class PollEvent with _$PollEvent {
-  const factory PollEvent.loadPolls({required int page, required int limit}) = LoadPolls;
+  const factory PollEvent.loadPolls({required int page, required int limit}) =
+      LoadPolls;
   const factory PollEvent.refreshPolls() = RefreshPolls;
   const factory PollEvent.loadPoll(String pollId) = LoadPoll;
-  const factory PollEvent.loadMore({required int page, required int limit}) = LoadMore;
+  const factory PollEvent.loadMore({required int page, required int limit}) =
+      LoadMore;
   const factory PollEvent.vote(String pollId, String optionId) = Vote;
   const factory PollEvent.voteWithName(String pollId, String optionId,
       {@Default(true) bool isAnonymous, String? voterName}) = VoteWithName;
@@ -60,7 +62,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           debugPrint('Using cached polls: ${cachedPolls.length} polls');
           emit(PollState.loaded(cachedPolls, false));
         } else {
-          emit(PollState.error('Fehler beim Laden der Umfragen. Bitte überprüfen Sie Ihre Internetverbindung.'));
+          emit(PollState.error(
+              'Fehler beim Laden der Umfragen. Bitte überprüfen Sie Ihre Internetverbindung.'));
         }
       }
     });
@@ -94,7 +97,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           final response = await ApiService.fetchPolls(event.page, event.limit);
           final newPolls = response['polls'] as List<Poll>;
           final total = response['total'];
-          emit(PollState.loaded(currentState.polls + newPolls, currentState.polls.length + newPolls.length < total));
+          emit(PollState.loaded(currentState.polls + newPolls,
+              currentState.polls.length + newPolls.length < total));
         } catch (e) {
           emit(PollState.error(e.toString()));
         }
@@ -120,7 +124,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
         final errorMsg = e.toString().toLowerCase();
-        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
+        if (errorMsg.contains('already voted') ||
+            errorMsg.contains('bereits')) {
           // Duplicate vote - keep current state
           debugPrint('Duplicate vote detected, ignoring: ${e.toString()}');
           if (state is Loaded) emit(state);
@@ -142,21 +147,13 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
         debugPrint('Vote submitted successfully for poll ${event.pollId}');
 
-        // Reload all polls to get updated vote counts
+        // Reload the specific poll to get updated vote counts
         try {
-          final response = await ApiService.fetchPolls(1, 20);
-          final polls = response['polls'] as List<Poll>;
-          final total = response['total'];
-
-          // Update cache
-          await hiveBox.clear();
-          for (var poll in polls) {
-            hiveBox.put(poll.id, poll);
-          }
-
-          emit(PollState.loaded(polls, polls.length < total));
+          final updatedPoll = await ApiService.fetchPoll(event.pollId);
+          hiveBox.put(updatedPoll.id, updatedPoll);
+          emit(PollState.loaded([updatedPoll], false));
         } catch (reloadError) {
-          debugPrint('Error reloading polls after vote: $reloadError');
+          debugPrint('Error reloading poll after vote: $reloadError');
 
           // Fallback: Update only the specific poll locally
           final poll = hiveBox.get(event.pollId);
@@ -169,16 +166,14 @@ class PollBloc extends Bloc<PollEvent, PollState> {
             }).toList();
             final updatedPoll = poll.copyWith(options: updatedOptions);
             hiveBox.put(event.pollId, updatedPoll);
-
-            // Emit all cached polls
-            final allPolls = hiveBox.values.toList();
-            emit(PollState.loaded(allPolls, false));
+            emit(PollState.loaded([updatedPoll], false));
           }
         }
       } catch (e) {
         debugPrint('Error submitting vote: $e');
         final errorMsg = e.toString().toLowerCase();
-        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
+        if (errorMsg.contains('already voted') ||
+            errorMsg.contains('bereits')) {
           debugPrint('Duplicate vote (single) ignored to avoid error state');
           if (state is Loaded) emit(state);
         } else {
@@ -197,23 +192,16 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           isAnonymous: event.isAnonymous,
         );
 
-        debugPrint('Multiple votes submitted successfully for poll ${event.pollId}, options: ${event.optionIds}');
+        debugPrint(
+            'Multiple votes submitted successfully for poll ${event.pollId}, options: ${event.optionIds}');
 
-        // Reload all polls to get updated vote counts
+        // Reload the specific poll to get updated vote counts
         try {
-          final response = await ApiService.fetchPolls(1, 20);
-          final polls = response['polls'] as List<Poll>;
-          final total = response['total'];
-
-          // Update cache
-          await hiveBox.clear();
-          for (var poll in polls) {
-            hiveBox.put(poll.id, poll);
-          }
-
-          emit(PollState.loaded(polls, polls.length < total));
+          final updatedPoll = await ApiService.fetchPoll(event.pollId);
+          hiveBox.put(updatedPoll.id, updatedPoll);
+          emit(PollState.loaded([updatedPoll], false));
         } catch (reloadError) {
-          debugPrint('Error reloading polls after multiple votes: $reloadError');
+          debugPrint('Error reloading poll after multiple votes: $reloadError');
 
           // Fallback: Update the specific poll locally
           final poll = hiveBox.get(event.pollId);
@@ -226,16 +214,14 @@ class PollBloc extends Bloc<PollEvent, PollState> {
             }).toList();
             final updatedPoll = poll.copyWith(options: updatedOptions);
             hiveBox.put(event.pollId, updatedPoll);
-
-            // Emit all cached polls
-            final allPolls = hiveBox.values.toList();
-            emit(PollState.loaded(allPolls, false));
+            emit(PollState.loaded([updatedPoll], false));
           }
         }
       } catch (e) {
         debugPrint('Error submitting multiple votes: $e');
         final errorMsg = e.toString().toLowerCase();
-        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
+        if (errorMsg.contains('already voted') ||
+            errorMsg.contains('bereits')) {
           debugPrint('Duplicate vote (multiple) ignored to avoid error state');
           if (state is Loaded) emit(state);
         } else {
@@ -255,7 +241,9 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         // Update state - remove poll from current list
         if (state is Loaded) {
           final currentState = state as Loaded;
-          final updatedPolls = currentState.polls.where((poll) => poll.id != event.pollId).toList();
+          final updatedPolls = currentState.polls
+              .where((poll) => poll.id != event.pollId)
+              .toList();
           emit(PollState.loaded(updatedPolls, currentState.hasMore));
         }
       } catch (e) {
@@ -280,14 +268,16 @@ class PollBloc extends Bloc<PollEvent, PollState> {
           final updatedPolls = currentState.polls.map((poll) {
             if (poll.id == event.pollId) {
               return poll.copyWith(
-                likesCount: isNowLiked ? poll.likesCount + 1 : poll.likesCount - 1,
+                likesCount:
+                    isNowLiked ? poll.likesCount + 1 : poll.likesCount - 1,
               );
             }
             return poll;
           }).toList();
 
           // Update cache
-          final updatedPoll = updatedPolls.firstWhere((poll) => poll.id == event.pollId);
+          final updatedPoll =
+              updatedPolls.firstWhere((poll) => poll.id == event.pollId);
           await hiveBox.put(event.pollId, updatedPoll);
 
           emit(PollState.loaded(updatedPolls, currentState.hasMore));
