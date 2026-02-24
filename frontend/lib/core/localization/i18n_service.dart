@@ -23,7 +23,14 @@ class I18nService {
   static const String _localePreferenceKey = 'selected_locale';
 
   /// Verfügbare Sprachen
-  static const List<String> supportedLocales = ['de_DE', 'en_GB', 'fr_FR', 'es_ES', 'ja_JP', 'ar_SA'];
+  static const List<String> supportedLocales = [
+    'de_DE',
+    'en_GB',
+    'fr_FR',
+    'es_ES',
+    'ja_JP',
+    'ar_SA'
+  ];
 
   /// Standard-Locale (Fallback)
   static const String defaultLocale = 'en_GB';
@@ -35,7 +42,8 @@ class I18nService {
   bool get isRTL => _currentLocale.startsWith('ar');
 
   /// Gibt die Textrichtung für die aktuelle Sprache zurück
-  TextDirection get textDirection => isRTL ? TextDirection.rtl : TextDirection.ltr;
+  TextDirection get textDirection =>
+      isRTL ? TextDirection.rtl : TextDirection.ltr;
 
   /// Ermittelt die beste unterstützte Sprache basierend auf der System-Locale
   static String getSystemLocale() {
@@ -46,7 +54,8 @@ class I18nService {
       if (systemLocales.isNotEmpty) {
         for (final systemLocale in systemLocales) {
           // Konvertiere Flutter Locale zu unserem Format
-          final localeString = '${systemLocale.languageCode}_${systemLocale.countryCode?.toUpperCase() ?? ''}';
+          final localeString =
+              '${systemLocale.languageCode}_${systemLocale.countryCode?.toUpperCase() ?? ''}';
 
           // Prüfe exakte Übereinstimmung
           if (supportedLocales.contains(localeString)) {
@@ -78,10 +87,12 @@ class I18nService {
         }
       }
 
-      print('Keine unterstützte System-Locale gefunden, verwende Fallback: $defaultLocale');
+      print(
+          'Keine unterstützte System-Locale gefunden, verwende Fallback: $defaultLocale');
       return defaultLocale;
     } catch (e) {
-      print('Fehler beim Ermitteln der System-Locale: $e, verwende Fallback: $defaultLocale');
+      print(
+          'Fehler beim Ermitteln der System-Locale: $e, verwende Fallback: $defaultLocale');
       return defaultLocale;
     }
   }
@@ -153,7 +164,8 @@ class I18nService {
     if (supportedLocales.contains(locale) && locale != _currentLocale) {
       await init(locale);
       await _saveLocale(locale); // Speichere die neue Sprache
-      _localeController.add(locale); // Benachrichtige Listener über die Änderung
+      _localeController
+          .add(locale); // Benachrichtige Listener über die Änderung
     }
   }
 
@@ -194,7 +206,8 @@ class I18nService {
   }
 
   /// Übersetze mit Pluralisierung
-  String translatePlural(String key, int count, {Map<String, dynamic>? params}) {
+  String translatePlural(String key, int count,
+      {Map<String, dynamic>? params}) {
     String pluralKey;
 
     switch (_currentLocale.substring(0, 2)) {
@@ -234,7 +247,9 @@ class I18nService {
     final translation = translate(pluralKey, params: params);
 
     // Fallback-Hierarchie für Arabisch
-    if (translation == pluralKey && pluralKey != key && _currentLocale.startsWith('ar')) {
+    if (translation == pluralKey &&
+        pluralKey != key &&
+        _currentLocale.startsWith('ar')) {
       // Versuche andere arabische Pluralformen als Fallback
       final fallbacks = ['${key}_plural', '${key}_many', '${key}_few', key];
       for (final fallback in fallbacks) {
@@ -326,9 +341,9 @@ class TranslationBuilder extends StatefulWidget {
   final Widget Function(BuildContext context) builder;
 
   const TranslationBuilder({
-    Key? key,
+    super.key,
     required this.builder,
-  }) : super(key: key);
+  });
 
   @override
   State<TranslationBuilder> createState() => _TranslationBuilderState();

@@ -497,7 +497,7 @@ class _PollScreenState extends State<PollScreen> {
                                               _isAnonymousVote = !value;
                                             });
                                           },
-                                          activeColor: const Color(0xFF4F46E5),
+                                          activeTrackColor: const Color(0xFF4F46E5),
                                         ),
                                       ],
                                     ),
@@ -1445,7 +1445,7 @@ class _CommentsSectionState extends State<_CommentsSection> {
                           CupertinoSwitch(
                             value: !_isAnonymous,
                             onChanged: (v) => setState(() => _isAnonymous = !v),
-                            activeColor: const Color(0xFF4F46E5),
+                            activeTrackColor: const Color(0xFF4F46E5),
                           ),
                           const SizedBox(width: 6),
                           Expanded(

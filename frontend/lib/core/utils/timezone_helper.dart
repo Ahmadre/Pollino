@@ -55,7 +55,7 @@ class TimezoneHelper {
     final isToday = localDateTime.year == now.year && localDateTime.month == now.month && localDateTime.day == now.day;
 
     if (isToday) {
-      return i18n.translate('time.relative.today') + ' $timeString';
+      return '${i18n.translate('time.relative.today')} $timeString';
     } else {
       return i18n.translate('time.format.dateTime', params: {
         'day': day,

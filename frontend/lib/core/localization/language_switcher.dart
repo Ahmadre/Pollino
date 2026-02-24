@@ -3,7 +3,7 @@ import 'package:pollino/core/localization/i18n_service.dart';
 
 /// Widget für die Sprachwahl
 class LanguageSwitcher extends StatelessWidget {
-  const LanguageSwitcher({Key? key}) : super(key: key);
+  const LanguageSwitcher({super.key});
 
   Future<void> _changeLanguage(String locale) async {
     final currentLocale = I18nService.instance.currentLocale;
@@ -19,7 +19,8 @@ class LanguageSwitcher extends StatelessWidget {
       stream: I18nService.instance.localeStream,
       initialData: I18nService.instance.currentLocale,
       builder: (context, snapshot) {
-        final currentLocale = snapshot.data ?? I18nService.instance.currentLocale;
+        final currentLocale =
+            snapshot.data ?? I18nService.instance.currentLocale;
 
         return PopupMenuButton<String>(
           onSelected: _changeLanguage,
@@ -51,7 +52,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('Deutsch'),
                   const Spacer(),
-                  if (currentLocale == 'de_DE') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'de_DE')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),
@@ -63,7 +65,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('English'),
                   const Spacer(),
-                  if (currentLocale == 'en_GB') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'en_GB')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),
@@ -75,7 +78,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('Français'),
                   const Spacer(),
-                  if (currentLocale == 'fr_FR') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'fr_FR')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),
@@ -87,7 +91,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('Español'),
                   const Spacer(),
-                  if (currentLocale == 'es_ES') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'es_ES')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),
@@ -99,7 +104,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('日本語'),
                   const Spacer(),
-                  if (currentLocale == 'ja_JP') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'ja_JP')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),
@@ -111,7 +117,8 @@ class LanguageSwitcher extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Text('العربية'),
                   const Spacer(),
-                  if (currentLocale == 'ar_SA') Icon(Icons.check, color: Colors.green[600], size: 16),
+                  if (currentLocale == 'ar_SA')
+                    Icon(Icons.check, color: Colors.green[600], size: 16),
                 ],
               ),
             ),

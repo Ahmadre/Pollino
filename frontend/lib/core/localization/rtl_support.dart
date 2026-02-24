@@ -6,9 +6,9 @@ class RTLDirectionalityWrapper extends StatelessWidget {
   final Widget child;
 
   const RTLDirectionalityWrapper({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +72,8 @@ mixin RTLAware {
   }
 
   /// Cross-Axis Alignment für RTL
-  CrossAxisAlignment rtlAwareCrossAxisAlignment(CrossAxisAlignment ltrAlignment) {
+  CrossAxisAlignment rtlAwareCrossAxisAlignment(
+      CrossAxisAlignment ltrAlignment) {
     if (isRTL) {
       if (ltrAlignment == CrossAxisAlignment.start) {
         return CrossAxisAlignment.end;
@@ -102,10 +103,10 @@ class RTLPadding extends StatelessWidget with RTLAware {
   final Widget child;
 
   const RTLPadding({
-    Key? key,
+    super.key,
     required this.padding,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -135,11 +136,11 @@ class RTLRow extends StatelessWidget with RTLAware {
   final CrossAxisAlignment crossAxisAlignment;
 
   const RTLRow({
-    Key? key,
+    super.key,
     required this.children,
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.crossAxisAlignment = CrossAxisAlignment.center,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

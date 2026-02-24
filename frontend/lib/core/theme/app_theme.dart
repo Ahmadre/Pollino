@@ -63,7 +63,8 @@ class AppTheme {
       // Popup Menus: abgerundete Ecken und weißer Hintergrund
       popupMenuTheme: PopupMenuThemeData(
         color: Colors.white,
-        surfaceTintColor: Colors.transparent, // verhindert lila/tonale Überlagerung in M3
+        surfaceTintColor:
+            Colors.transparent, // verhindert lila/tonale Überlagerung in M3
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -153,14 +154,14 @@ class AppTheme {
 
       // Switch Theme (using Cupertino style)
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return Colors.white;
           }
           return Colors.white;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primary;
           }
           return AppColors.textTertiary;

@@ -1,6 +1,7 @@
 /// Test script to verify timezone handling functionality
 ///
 /// This demonstrates how the new timezone system works correctly
+library;
 
 import 'timezone_helper.dart';
 
@@ -15,9 +16,11 @@ void demonstrateTimezoneHandling() {
 
   // 2. User input conversion
   print('2. User Input → Database Storage:');
-  final userInputDateTime = DateTime(2025, 10, 7, 18, 0); // User selects 18:00 local time
+  final userInputDateTime =
+      DateTime(2025, 10, 7, 18, 0); // User selects 18:00 local time
   final utcForDatabase = TimezoneHelper.localToUtc(userInputDateTime);
-  print('   User selects: ${TimezoneHelper.formatForDisplay(userInputDateTime)}');
+  print(
+      '   User selects: ${TimezoneHelper.formatForDisplay(userInputDateTime)}');
   print('   Stored as UTC: ${TimezoneHelper.toIso8601Utc(utcForDatabase)}');
   print('');
 

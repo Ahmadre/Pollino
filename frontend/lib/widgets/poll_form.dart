@@ -37,7 +37,9 @@ class PollFormData {
       allowMultipleOptions: poll.allowsMultipleVotes,
       enableAnonymousVoting: poll.isAnonymous,
       hasExpirationDate: poll.expiresAt != null,
-      selectedExpirationDate: poll.expiresAt != null ? TimezoneHelper.utcToLocal(poll.expiresAt!) : null,
+      selectedExpirationDate: poll.expiresAt != null
+          ? TimezoneHelper.utcToLocal(poll.expiresAt!)
+          : null,
       autoDeleteAfterExpiry: poll.autoDeleteAfterExpiry,
     );
   }
@@ -153,7 +155,8 @@ class _PollFormState extends State<PollForm> {
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
-      final TextEditingController controller = _optionControllers.removeAt(oldIndex);
+      final TextEditingController controller =
+          _optionControllers.removeAt(oldIndex);
       _optionControllers.insert(newIndex, controller);
     });
   }
@@ -205,7 +208,8 @@ class _PollFormState extends State<PollForm> {
         'minute': dateTime.minute.toString().padLeft(2, '0')
       });
     } else {
-      final timeStr = I18nService.instance.translate('time.format.timeOnly', params: {
+      final timeStr =
+          I18nService.instance.translate('time.format.timeOnly', params: {
         'hour': dateTime.hour.toString().padLeft(2, '0'),
         'minute': dateTime.minute.toString().padLeft(2, '0')
       });
@@ -217,13 +221,16 @@ class _PollFormState extends State<PollForm> {
     if (!_formKey.currentState!.validate()) return null;
 
     final question = _questionController.text.trim();
-    final options =
-        _optionControllers.map((controller) => controller.text.trim()).where((text) => text.isNotEmpty).toList();
+    final options = _optionControllers
+        .map((controller) => controller.text.trim())
+        .where((text) => text.isNotEmpty)
+        .toList();
 
     if (options.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(I18nService.instance.translate('create.validation.optionsMinimum')),
+          content: Text(I18nService.instance
+              .translate('create.validation.optionsMinimum')),
           backgroundColor: Colors.red,
         ),
       );
@@ -232,14 +239,18 @@ class _PollFormState extends State<PollForm> {
 
     return PollFormData(
       question: question,
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       options: options,
-      creatorName: _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
+      creatorName:
+          _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
       allowMultipleOptions: _allowMultipleOptions,
       enableAnonymousVoting: _enableAnonymousVoting,
       hasExpirationDate: _hasExpirationDate,
       selectedExpirationDate: _selectedExpirationDate,
-      autoDeleteAfterExpiry: _hasExpirationDate ? _autoDeleteAfterExpiry : false,
+      autoDeleteAfterExpiry:
+          _hasExpirationDate ? _autoDeleteAfterExpiry : false,
     );
   }
 
@@ -263,7 +274,7 @@ class _PollFormState extends State<PollForm> {
             children: [
               // Ask a Question
               Text(
-                I18nService.instance.translate('create.question.label') + '*',
+                '${I18nService.instance.translate('create.question.label')}*',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -281,7 +292,8 @@ class _PollFormState extends State<PollForm> {
                 child: TextFormField(
                   controller: _questionController,
                   decoration: InputDecoration(
-                    hintText: I18nService.instance.translate('create.question.placeholder'),
+                    hintText: I18nService.instance
+                        .translate('create.question.placeholder'),
                     hintStyle: const TextStyle(
                       color: Color(0xFFADB5BD),
                       fontSize: 16,
@@ -295,7 +307,8 @@ class _PollFormState extends State<PollForm> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return I18nService.instance.translate('create.validation.questionRequired');
+                      return I18nService.instance
+                          .translate('create.validation.questionRequired');
                     }
                     return null;
                   },
@@ -325,7 +338,8 @@ class _PollFormState extends State<PollForm> {
                   controller: _descriptionController,
                   maxLines: 3,
                   decoration: InputDecoration(
-                    hintText: I18nService.instance.translate('create.description.placeholder'),
+                    hintText: I18nService.instance
+                        .translate('create.description.placeholder'),
                     hintStyle: const TextStyle(
                       color: Color(0xFFADB5BD),
                       fontSize: 16,
@@ -359,7 +373,8 @@ class _PollFormState extends State<PollForm> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _optionControllers.length,
                 onReorder: _reorderOptions,
-                buildDefaultDragHandles: false, // Deaktiviert automatische Drag-Handles
+                buildDefaultDragHandles:
+                    false, // Deaktiviert automatische Drag-Handles
                 itemBuilder: (context, index) {
                   return Padding(
                     key: ValueKey('option_$index'),
@@ -391,15 +406,18 @@ class _PollFormState extends State<PollForm> {
                                 color: _optionControllers[index].text.isNotEmpty
                                     ? const Color(0xFF4F46E5)
                                     : const Color(0xFFE9ECEF),
-                                width: _optionControllers[index].text.isNotEmpty ? 2 : 1,
+                                width: _optionControllers[index].text.isNotEmpty
+                                    ? 2
+                                    : 1,
                               ),
                             ),
                             child: TextFormField(
                               controller: _optionControllers[index],
                               onChanged: (value) => setState(() {}),
                               decoration: InputDecoration(
-                                hintText: I18nService.instance
-                                    .translate('create.options.placeholder', params: {'number': '${index + 1}'}),
+                                hintText: I18nService.instance.translate(
+                                    'create.options.placeholder',
+                                    params: {'number': '${index + 1}'}),
                                 hintStyle: const TextStyle(
                                   color: Color(0xFFADB5BD),
                                   fontSize: 16,
@@ -413,7 +431,8 @@ class _PollFormState extends State<PollForm> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return I18nService.instance.translate('create.validation.optionEmpty');
+                                  return I18nService.instance.translate(
+                                      'create.validation.optionEmpty');
                                 }
                                 return null;
                               },
@@ -491,7 +510,9 @@ class _PollFormState extends State<PollForm> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _allowMultipleOptions ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                    color: _allowMultipleOptions
+                        ? const Color(0xFF4F46E5)
+                        : const Color(0xFFE9ECEF),
                     width: _allowMultipleOptions ? 2 : 1,
                   ),
                 ),
@@ -502,7 +523,8 @@ class _PollFormState extends State<PollForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            I18nService.instance.translate('create.settings.multiple.title'),
+                            I18nService.instance
+                                .translate('create.settings.multiple.title'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -511,7 +533,8 @@ class _PollFormState extends State<PollForm> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            I18nService.instance.translate('create.settings.multiple.description'),
+                            I18nService.instance.translate(
+                                'create.settings.multiple.description'),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -527,7 +550,7 @@ class _PollFormState extends State<PollForm> {
                           _allowMultipleOptions = value;
                         });
                       },
-                      activeColor: const Color(0xFF4F46E5),
+                      activeTrackColor: const Color(0xFF4F46E5),
                     ),
                   ],
                 ),
@@ -542,7 +565,9 @@ class _PollFormState extends State<PollForm> {
                   color: const Color(0xFFF8F9FA),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _enableAnonymousVoting ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                    color: _enableAnonymousVoting
+                        ? const Color(0xFF4F46E5)
+                        : const Color(0xFFE9ECEF),
                     width: _enableAnonymousVoting ? 2 : 1,
                   ),
                 ),
@@ -553,7 +578,8 @@ class _PollFormState extends State<PollForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            I18nService.instance.translate('create.settings.anonymous.title'),
+                            I18nService.instance
+                                .translate('create.settings.anonymous.title'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -562,7 +588,8 @@ class _PollFormState extends State<PollForm> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            I18nService.instance.translate('create.settings.anonymous.description'),
+                            I18nService.instance.translate(
+                                'create.settings.anonymous.description'),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -578,7 +605,7 @@ class _PollFormState extends State<PollForm> {
                           _enableAnonymousVoting = value;
                         });
                       },
-                      activeColor: const Color(0xFF4F46E5),
+                      activeTrackColor: const Color(0xFF4F46E5),
                     ),
                   ],
                 ),
@@ -588,7 +615,7 @@ class _PollFormState extends State<PollForm> {
               if (!_enableAnonymousVoting) ...[
                 const SizedBox(height: 20),
                 Text(
-                  I18nService.instance.translate('create.settings.creator.label') + '*',
+                  '${I18nService.instance.translate('create.settings.creator.label')}*',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -605,7 +632,8 @@ class _PollFormState extends State<PollForm> {
                   child: TextFormField(
                     controller: _creatorNameController,
                     decoration: InputDecoration(
-                      hintText: I18nService.instance.translate('create.settings.creator.placeholder'),
+                      hintText: I18nService.instance
+                          .translate('create.settings.creator.placeholder'),
                       hintStyle: const TextStyle(
                         color: Color(0xFFADB5BD),
                         fontSize: 16,
@@ -622,8 +650,10 @@ class _PollFormState extends State<PollForm> {
                       color: Colors.black,
                     ),
                     validator: (value) {
-                      if (!_enableAnonymousVoting && (value == null || value.trim().isEmpty)) {
-                        return I18nService.instance.translate('validation.required');
+                      if (!_enableAnonymousVoting &&
+                          (value == null || value.trim().isEmpty)) {
+                        return I18nService.instance
+                            .translate('validation.required');
                       }
                       return null;
                     },
@@ -640,7 +670,9 @@ class _PollFormState extends State<PollForm> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _hasExpirationDate ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+                    color: _hasExpirationDate
+                        ? const Color(0xFF4F46E5)
+                        : const Color(0xFFE9ECEF),
                     width: _hasExpirationDate ? 2 : 1,
                   ),
                 ),
@@ -651,7 +683,8 @@ class _PollFormState extends State<PollForm> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            I18nService.instance.translate('create.expiration.title'),
+                            I18nService.instance
+                                .translate('create.expiration.title'),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -660,7 +693,8 @@ class _PollFormState extends State<PollForm> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            I18nService.instance.translate('create.expiration.description'),
+                            I18nService.instance
+                                .translate('create.expiration.description'),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -680,7 +714,7 @@ class _PollFormState extends State<PollForm> {
                           }
                         });
                       },
-                      activeColor: const Color(0xFF4F46E5),
+                      activeTrackColor: const Color(0xFF4F46E5),
                     ),
                   ],
                 ),
@@ -702,7 +736,8 @@ class _PollFormState extends State<PollForm> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        I18nService.instance.translate('create.expiration.customDate'),
+                        I18nService.instance
+                            .translate('create.expiration.customDate'),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -717,25 +752,41 @@ class _PollFormState extends State<PollForm> {
                         runSpacing: 8,
                         children: [
                           _ExpirationChip(
-                            label: I18nService.instance.translate('create.expiration.presets.1hour'),
-                            onTap: () => _setExpirationTime(const Duration(hours: 1)),
+                            label: I18nService.instance
+                                .translate('create.expiration.presets.1hour'),
+                            onTap: () =>
+                                _setExpirationTime(const Duration(hours: 1)),
                             isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!.difference(DateTime.now()).inHours == 1,
+                                _selectedExpirationDate!
+                                        .difference(DateTime.now())
+                                        .inHours ==
+                                    1,
                           ),
                           _ExpirationChip(
-                            label: I18nService.instance.translate('create.expiration.presets.1day'),
-                            onTap: () => _setExpirationTime(const Duration(days: 1)),
+                            label: I18nService.instance
+                                .translate('create.expiration.presets.1day'),
+                            onTap: () =>
+                                _setExpirationTime(const Duration(days: 1)),
                             isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!.difference(DateTime.now()).inDays == 1,
+                                _selectedExpirationDate!
+                                        .difference(DateTime.now())
+                                        .inDays ==
+                                    1,
                           ),
                           _ExpirationChip(
-                            label: I18nService.instance.translate('create.expiration.presets.1week'),
-                            onTap: () => _setExpirationTime(const Duration(days: 7)),
+                            label: I18nService.instance
+                                .translate('create.expiration.presets.1week'),
+                            onTap: () =>
+                                _setExpirationTime(const Duration(days: 7)),
                             isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!.difference(DateTime.now()).inDays == 7,
+                                _selectedExpirationDate!
+                                        .difference(DateTime.now())
+                                        .inDays ==
+                                    7,
                           ),
                           _ExpirationChip(
-                            label: I18nService.instance.translate('create.expiration.presets.custom'),
+                            label: I18nService.instance
+                                .translate('create.expiration.presets.custom'),
                             onTap: _selectCustomDateTime,
                             isSelected: false,
                           ),
@@ -753,7 +804,8 @@ class _PollFormState extends State<PollForm> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.schedule, color: Colors.blue[700], size: 20),
+                              Icon(Icons.schedule,
+                                  color: Colors.blue[700], size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -766,8 +818,10 @@ class _PollFormState extends State<PollForm> {
                                 ),
                               ),
                               IconButton(
-                                onPressed: () => setState(() => _selectedExpirationDate = null),
-                                icon: Icon(Icons.close, color: Colors.blue[700], size: 18),
+                                onPressed: () => setState(
+                                    () => _selectedExpirationDate = null),
+                                icon: Icon(Icons.close,
+                                    color: Colors.blue[700], size: 18),
                               ),
                             ],
                           ),
@@ -794,7 +848,8 @@ class _PollFormState extends State<PollForm> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              I18nService.instance.translate('create.expiration.autoDelete.title'),
+                              I18nService.instance.translate(
+                                  'create.expiration.autoDelete.title'),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
@@ -803,7 +858,8 @@ class _PollFormState extends State<PollForm> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              I18nService.instance.translate('create.expiration.autoDelete.description'),
+                              I18nService.instance.translate(
+                                  'create.expiration.autoDelete.description'),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.orange[800],
@@ -819,7 +875,7 @@ class _PollFormState extends State<PollForm> {
                             _autoDeleteAfterExpiry = value;
                           });
                         },
-                        activeColor: const Color(0xFFFFC107),
+                        activeTrackColor: const Color(0xFFFFC107),
                       ),
                     ],
                   ),
@@ -856,7 +912,8 @@ class _ExpirationChip extends StatelessWidget {
           color: isSelected ? const Color(0xFF4F46E5) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
+            color:
+                isSelected ? const Color(0xFF4F46E5) : const Color(0xFFE9ECEF),
           ),
         ),
         child: Text(
