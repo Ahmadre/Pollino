@@ -37,7 +37,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy and make entrypoint executable
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

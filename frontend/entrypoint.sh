@@ -1,4 +1,5 @@
-﻿#!/bin/bash -eu
+﻿#!/bin/sh
+set -eu
 
 echo "Building Flutter app with runtime environment variables..."
 echo "API_BASE_URL: ${API_BASE_URL}"
