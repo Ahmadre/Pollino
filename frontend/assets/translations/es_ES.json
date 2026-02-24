@@ -152,7 +152,8 @@
       "title": "¡Encuesta creada exitosamente!",
       "description": "Tu encuesta ha sido creada y está lista para recibir votos.",
       "createdPoll": "Encuesta Creada",
-      "viewPoll": "Ver Encuesta"
+      "viewPoll": "Ver Encuesta",
+      "withAdmin": "¡Encuesta creada! Enlace de administración copiado al portapapeles."
     },
     "error": "Error al crear la encuesta",
     "admin": {

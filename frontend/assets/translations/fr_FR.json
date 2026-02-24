@@ -152,7 +152,8 @@
       "title": "Sondage créé avec succès !",
       "description": "Votre sondage a été créé et est prêt à recevoir des votes.",
       "createdPoll": "Sondage Créé",
-      "viewPoll": "Voir le Sondage"
+      "viewPoll": "Voir le Sondage",
+      "withAdmin": "Sondage créé ! Lien admin copié dans le presse-papiers."
     },
     "error": "Erreur lors de la création du sondage",
     "admin": {

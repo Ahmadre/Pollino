@@ -152,7 +152,8 @@
       "title": "Umfrage erfolgreich erstellt!",
       "description": "Deine Umfrage wurde erstellt und ist bereit, Stimmen zu erhalten.",
       "createdPoll": "Erstellte Umfrage",
-      "viewPoll": "Umfrage ansehen"
+      "viewPoll": "Umfrage ansehen",
+      "withAdmin": "Umfrage erstellt! Admin-Link in die Zwischenablage kopiert."
     },
     "error": "Fehler beim Erstellen der Umfrage",
     "admin": {

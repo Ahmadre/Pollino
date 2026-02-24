@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/language_switcher.dart';
@@ -273,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _PollCard extends StatefulWidget {
-  final dynamic poll;
+  final Poll poll;
   final int colorIndex;
   final List<Color> optionColors;
   final List<List<String>> demoVoters;
@@ -429,7 +430,7 @@ class _PollCardState extends State<_PollCard> {
             FutureBuilder<List<Map<String, dynamic>>>(
               future: ApiService.getVotesForPoll(widget.poll.id.toString()),
               builder: (context, votesSnapshot) {
-                final List<dynamic> liveOptions = widget.poll.options;
+                final List<Option> liveOptions = widget.poll.options;
                 final Map<String, int> counts = {};
                 final Map<String, Set<String>> namesByOption = {};
                 if (votesSnapshot.hasData && votesSnapshot.data != null) {
@@ -563,7 +564,7 @@ class _PollCardState extends State<_PollCard> {
 }
 
 class _ExpirationIndicator extends StatefulWidget {
-  final dynamic poll;
+  final Poll poll;
 
   const _ExpirationIndicator({required this.poll});
 

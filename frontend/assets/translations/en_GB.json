@@ -152,7 +152,8 @@
       "title": "Poll created successfully!",
       "description": "Your poll has been created and is ready to receive votes.",
       "createdPoll": "Created Poll",
-      "viewPoll": "View Poll"
+      "viewPoll": "View Poll",
+      "withAdmin": "Poll created! Admin link copied to clipboard."
     },
     "error": "Error creating poll",
     "admin": {
