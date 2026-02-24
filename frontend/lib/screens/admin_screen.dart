@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pollino/bloc/poll.dart';
 import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/env.dart' show Environment;
-import 'package:pollino/services/supabase_service.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/edit_poll_modal_sheet.dart';
@@ -40,10 +40,11 @@ class _AdminScreenState extends State<AdminScreen> {
   Future<void> _validateAndLoadPoll() async {
     try {
       // Erstmal die Poll laden
-      final poll = await SupabaseService.fetchPoll(widget.pollId);
+      final poll = await ApiService.fetchPoll(widget.pollId);
 
-      // Admin-Token validieren (über eine neue Supabase-Funktion)
-      final isValid = await SupabaseService.validateAdminToken(widget.pollId, widget.adminToken);
+      // Admin-Token validieren
+      final isValid =
+          await ApiService.validateAdminToken(widget.pollId, widget.adminToken);
 
       if (isValid) {
         setState(() {
@@ -53,7 +54,8 @@ class _AdminScreenState extends State<AdminScreen> {
         });
       } else {
         setState(() {
-          _errorMessage = I18nService.instance.translate('admin.error.invalidToken');
+          _errorMessage =
+              I18nService.instance.translate('admin.error.invalidToken');
           _isLoading = false;
         });
       }
@@ -96,14 +98,15 @@ class _AdminScreenState extends State<AdminScreen> {
 
     if (confirmed == true) {
       try {
-        await SupabaseService.deletePoll(widget.pollId);
+        await ApiService.deletePoll(widget.pollId);
 
         if (mounted) {
           context.read<PollBloc>().add(const PollEvent.refreshPolls());
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(I18nService.instance.translate('admin.delete.success')),
+              content:
+                  Text(I18nService.instance.translate('admin.delete.success')),
               backgroundColor: Colors.green,
             ),
           );
@@ -114,7 +117,8 @@ class _AdminScreenState extends State<AdminScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(I18nService.instance.translate('admin.delete.error')),
+              content:
+                  Text(I18nService.instance.translate('admin.delete.error')),
               backgroundColor: Colors.red,
             ),
           );
@@ -125,7 +129,9 @@ class _AdminScreenState extends State<AdminScreen> {
 
   void _copyAdminUrl() {
     final path = '/admin/${widget.pollId}/${widget.adminToken}';
-    final adminUrl = Uri.base.origin.isNotEmpty ? '${Uri.base.origin}$path' : '${Environment.webAppUrl}$path';
+    final adminUrl = Uri.base.origin.isNotEmpty
+        ? '${Uri.base.origin}$path'
+        : '${Environment.webAppUrl}$path';
 
     Clipboard.setData(ClipboardData(text: adminUrl));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -138,7 +144,9 @@ class _AdminScreenState extends State<AdminScreen> {
 
   void _sharePollUrl() {
     final path = '/poll/${widget.pollId}';
-    final pollUrl = Uri.base.origin.isNotEmpty ? '${Uri.base.origin}$path' : '${Environment.webAppUrl}$path';
+    final pollUrl = Uri.base.origin.isNotEmpty
+        ? '${Uri.base.origin}$path'
+        : '${Environment.webAppUrl}$path';
 
     Clipboard.setData(ClipboardData(text: pollUrl));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -206,7 +214,8 @@ class _AdminScreenState extends State<AdminScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _errorMessage ?? I18nService.instance.translate('admin.error.generic'),
+            _errorMessage ??
+                I18nService.instance.translate('admin.error.generic'),
             style: const TextStyle(
               fontSize: 16,
               color: Colors.grey,
@@ -258,7 +267,8 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                   ],
                 ),
-                if (poll.description != null && poll.description!.isNotEmpty) ...[
+                if (poll.description != null &&
+                    poll.description!.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
                     poll.description!,
@@ -280,12 +290,14 @@ class _AdminScreenState extends State<AdminScreen> {
                     ),
                     _InfoChip(
                       icon: Icons.list,
-                      label: '${poll.options.length} ${I18nService.instance.translate('poll.options')}',
+                      label:
+                          '${poll.options.length} ${I18nService.instance.translate('poll.options')}',
                     ),
                     if (poll.allowsMultipleVotes)
                       _InfoChip(
                         icon: Icons.checklist,
-                        label: I18nService.instance.translate('poll.multipleChoice'),
+                        label: I18nService.instance
+                            .translate('poll.multipleChoice'),
                       ),
                   ],
                 ),
@@ -309,7 +321,8 @@ class _AdminScreenState extends State<AdminScreen> {
           _AdminActionCard(
             icon: Icons.share,
             title: I18nService.instance.translate('admin.actions.sharePoll'),
-            subtitle: I18nService.instance.translate('admin.actions.sharePollDesc'),
+            subtitle:
+                I18nService.instance.translate('admin.actions.sharePollDesc'),
             color: Colors.blue,
             onTap: _sharePollUrl,
           ),
@@ -320,7 +333,8 @@ class _AdminScreenState extends State<AdminScreen> {
           _AdminActionCard(
             icon: Icons.link,
             title: I18nService.instance.translate('admin.actions.copyAdminUrl'),
-            subtitle: I18nService.instance.translate('admin.actions.copyAdminUrlDesc'),
+            subtitle: I18nService.instance
+                .translate('admin.actions.copyAdminUrlDesc'),
             color: const Color(0xFF4F46E5),
             onTap: _copyAdminUrl,
           ),
@@ -331,7 +345,8 @@ class _AdminScreenState extends State<AdminScreen> {
           _AdminActionCard(
             icon: Icons.edit,
             title: I18nService.instance.translate('admin.actions.editPoll'),
-            subtitle: I18nService.instance.translate('admin.actions.editPollDesc'),
+            subtitle:
+                I18nService.instance.translate('admin.actions.editPollDesc'),
             color: Colors.orange,
             onTap: () {
               EditPollModalSheet.show(
@@ -357,7 +372,8 @@ class _AdminScreenState extends State<AdminScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.warning, color: Color(0xFFEF4444), size: 20),
+                    const Icon(Icons.warning,
+                        color: Color(0xFFEF4444), size: 20),
                     const SizedBox(width: 8),
                     Text(
                       I18nService.instance.translate('admin.danger.title'),
@@ -383,9 +399,11 @@ class _AdminScreenState extends State<AdminScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEF4444),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 20),
                   ),
-                  child: Text(I18nService.instance.translate('admin.actions.deletePoll')),
+                  child: Text(I18nService.instance
+                      .translate('admin.actions.deletePoll')),
                 ),
               ],
             ),

@@ -1,4 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+﻿import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:pollino/env.dart';
 import 'package:pollino/features/polls/data/models/poll_model.dart';
 import 'package:pollino/features/polls/data/models/poll_option_model.dart';
 import 'package:pollino/core/error/failures.dart';
@@ -45,64 +47,69 @@ abstract class PollRemoteDataSource {
     bool isAnonymous = true,
   });
 
-  /// Clean up expired polls
+  /// Clean up expired polls (handled by backend scheduler now)
   Future<int> cleanupExpiredPolls();
 
   /// Get poll status
   Future<Map<String, dynamic>> getPollStatus(String pollId);
 }
 
-/// Implementation of remote data source using Supabase
+/// Implementation of remote data source using Spring Boot REST API
 class PollRemoteDataSourceImpl implements PollRemoteDataSource {
-  final SupabaseClient client;
+  final http.Client client;
+  String get _baseUrl => Environment.apiBaseUrl;
 
   PollRemoteDataSourceImpl({required this.client});
+
+  Map<String, String> get _headers => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
+
+  PollModel _parsePoll(Map<String, dynamic> data) {
+    final optionsData = data['options'] as List<dynamic>? ?? [];
+    final options = optionsData.asMap().entries.map((entry) {
+      final opt = entry.value as Map<String, dynamic>;
+      return PollOptionModel(
+        id: opt['id']?.toString() ?? '',
+        text: opt['text'] ?? '',
+        votes: opt['votes'] ?? 0,
+        order: opt['order'] ?? entry.key,
+      );
+    }).toList();
+
+    return PollModel(
+      id: data['id']?.toString() ?? '',
+      title: data['title'] ?? '',
+      description: data['description'],
+      options: options,
+      isAnonymous: data['anonymous'] ?? true,
+      allowsMultipleVotes: data['allowsMultipleVotes'] ?? false,
+      createdByName: data['createdByName'],
+      createdBy: data['createdBy'],
+      createdAt: data['createdAt'] != null ? DateTime.parse(data['createdAt']) : DateTime.now(),
+      expiresAt: data['expiresAt'] != null ? DateTime.parse(data['expiresAt']) : null,
+      autoDeleteAfterExpiry: data['autoDeleteAfterExpiry'] ?? false,
+    );
+  }
 
   @override
   Future<List<PollModel>> getPolls({int page = 1, int limit = 20}) async {
     try {
-      final offset = (page - 1) * limit;
+      final response = await client.get(
+        Uri.parse('$_baseUrl/api/polls?page=$page&size=$limit'),
+        headers: _headers,
+      );
 
-      final pollsResponse = await client
-          .from('polls')
-          .select('*')
-          .eq('is_active', true)
-          .range(offset, offset + limit - 1)
-          .order('created_at', ascending: false);
-
-      final List<PollModel> polls = [];
-
-      for (final pollData in pollsResponse) {
-        // Fetch options for each poll
-        final optionsResponse =
-            await client.from('poll_options').select('*').eq('poll_id', pollData['id']).order('option_order, id');
-
-        final options = (optionsResponse as List).map((optionData) {
-          return PollOptionModel(
-            id: optionData['id'].toString(),
-            text: optionData['text'] ?? '',
-            votes: optionData['votes'] ?? 0,
-            order: optionData['option_order'] ?? 0,
-          );
-        }).toList();
-
-        polls.add(PollModel(
-          id: pollData['id'].toString(),
-          title: pollData['title'] ?? '',
-          description: pollData['description'],
-          options: options,
-          isAnonymous: pollData['is_anonymous'] ?? true,
-          allowsMultipleVotes: pollData['allows_multiple_votes'] ?? false,
-          createdByName: pollData['created_by_name'],
-          createdBy: pollData['created_by'],
-          createdAt: DateTime.parse(pollData['created_at']),
-          expiresAt: pollData['expires_at'] != null ? DateTime.parse(pollData['expires_at']) : null,
-          autoDeleteAfterExpiry: pollData['auto_delete_after_expiry'] ?? false,
-        ));
+      if (response.statusCode != 200) {
+        throw ServerFailure(message: 'Failed to fetch polls: ${response.statusCode}');
       }
 
-      return polls;
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final pollsData = data['polls'] as List<dynamic>? ?? [];
+      return pollsData.map((p) => _parsePoll(p as Map<String, dynamic>)).toList();
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to fetch polls: $e');
     }
   }
@@ -110,34 +117,19 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
   @override
   Future<PollModel> getPoll(String pollId) async {
     try {
-      final pollResponse = await client.from('polls').select('*').eq('id', pollId).single();
-
-      final optionsResponse =
-          await client.from('poll_options').select('*').eq('poll_id', pollId).order('option_order, id');
-
-      final options = (optionsResponse as List).map((optionData) {
-        return PollOptionModel(
-          id: optionData['id'].toString(),
-          text: optionData['text'] ?? '',
-          votes: optionData['votes'] ?? 0,
-          order: optionData['option_order'] ?? 0,
-        );
-      }).toList();
-
-      return PollModel(
-        id: pollResponse['id'].toString(),
-        title: pollResponse['title'] ?? '',
-        description: pollResponse['description'],
-        options: options,
-        isAnonymous: pollResponse['is_anonymous'] ?? true,
-        allowsMultipleVotes: pollResponse['allows_multiple_votes'] ?? false,
-        createdByName: pollResponse['created_by_name'],
-        createdBy: pollResponse['created_by'],
-        createdAt: DateTime.parse(pollResponse['created_at']),
-        expiresAt: pollResponse['expires_at'] != null ? DateTime.parse(pollResponse['expires_at']) : null,
-        autoDeleteAfterExpiry: pollResponse['auto_delete_after_expiry'] ?? false,
+      final response = await client.get(
+        Uri.parse('$_baseUrl/api/polls/$pollId'),
+        headers: _headers,
       );
+
+      if (response.statusCode != 200) {
+        throw ServerFailure(message: 'Failed to fetch poll: ${response.statusCode}');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return _parsePoll(data);
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to fetch poll: $e');
     }
   }
@@ -154,71 +146,31 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
     bool autoDeleteAfterExpiry = false,
   }) async {
     try {
-      String? createdBy;
+      final body = {
+        'title': title,
+        'description': description ?? '',
+        'options': optionTexts,
+        'anonymous': isAnonymous,
+        'allowsMultipleVotes': allowsMultipleVotes,
+        'createdByName': creatorName,
+        if (expiresAt != null) 'expiresAt': expiresAt.toIso8601String(),
+        'autoDeleteAfterExpiry': autoDeleteAfterExpiry,
+      };
 
-      // Create or find user if not anonymous
-      if (!isAnonymous && creatorName != null && creatorName.isNotEmpty) {
-        final userResult = await client.rpc('create_or_get_user', params: {
-          'user_name': creatorName,
-        });
-        createdBy = userResult.toString();
+      final response = await client.post(
+        Uri.parse('$_baseUrl/api/polls'),
+        headers: _headers,
+        body: json.encode(body),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw ServerFailure(message: 'Failed to create poll: ${response.statusCode}');
       }
 
-      // Create poll
-      final pollResponse = await client
-          .from('polls')
-          .insert({
-            'title': title,
-            'description': description ?? '',
-            'is_anonymous': isAnonymous,
-            'allows_multiple_votes': allowsMultipleVotes,
-            'expires_at': expiresAt?.toIso8601String(),
-            'auto_delete_after_expiry': autoDeleteAfterExpiry,
-            'created_by': createdBy,
-            'created_by_name': creatorName,
-          })
-          .select()
-          .single();
-
-      final pollId = pollResponse['id'];
-
-      // Create options
-      final optionsData = optionTexts
-          .asMap()
-          .entries
-          .map((entry) => {
-                'poll_id': pollId,
-                'text': entry.value,
-                'votes': 0,
-                'option_order': entry.key + 1,
-              })
-          .toList();
-
-      final optionsResponse = await client.from('poll_options').insert(optionsData).select();
-
-      final options = (optionsResponse as List).map((optionData) {
-        return PollOptionModel(
-          id: optionData['id'].toString(),
-          text: optionData['text'] ?? '',
-          votes: optionData['votes'] ?? 0,
-          order: optionData['option_order'] ?? 0,
-        );
-      }).toList();
-
-      return PollModel(
-        id: pollId.toString(),
-        title: title,
-        description: description,
-        options: options,
-        isAnonymous: isAnonymous,
-        allowsMultipleVotes: allowsMultipleVotes,
-        createdByName: creatorName,
-        createdBy: createdBy,
-        createdAt: DateTime.parse(pollResponse['created_at']),
-        expiresAt: expiresAt,
-        autoDeleteAfterExpiry: autoDeleteAfterExpiry,
-      );
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return _parsePoll(data);
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to create poll: $e');
     }
   }
@@ -226,30 +178,30 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
   @override
   Future<PollModel> updatePoll(PollModel poll) async {
     try {
-      final pollResponse = await client
-          .from('polls')
-          .update({
-            'title': poll.title,
-            'description': poll.description,
-            'is_anonymous': poll.isAnonymous,
-            'allows_multiple_votes': poll.allowsMultipleVotes,
-            'expires_at': poll.expiresAt?.toIso8601String(),
-            'auto_delete_after_expiry': poll.autoDeleteAfterExpiry,
-          })
-          .eq('id', poll.id)
-          .select()
-          .single();
+      final body = {
+        'title': poll.title,
+        'description': poll.description,
+        'options': poll.options.map((o) => o.text).toList(),
+        'anonymous': poll.isAnonymous,
+        'allowsMultipleVotes': poll.allowsMultipleVotes,
+        if (poll.expiresAt != null) 'expiresAt': poll.expiresAt!.toIso8601String(),
+        'autoDeleteAfterExpiry': poll.autoDeleteAfterExpiry,
+      };
 
-      // Update options if needed
-      for (final option in poll.options) {
-        await client.from('poll_options').update({
-          'text': option.text,
-          'votes': option.votes,
-        }).eq('id', option.id);
+      final response = await client.put(
+        Uri.parse('$_baseUrl/api/polls/${poll.id}'),
+        headers: _headers,
+        body: json.encode(body),
+      );
+
+      if (response.statusCode != 200) {
+        throw ServerFailure(message: 'Failed to update poll: ${response.statusCode}');
       }
 
-      return await getPoll(poll.id);
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return _parsePoll(data);
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to update poll: $e');
     }
   }
@@ -257,8 +209,16 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
   @override
   Future<void> deletePoll(String pollId) async {
     try {
-      await client.from('polls').delete().eq('id', pollId);
+      final response = await client.delete(
+        Uri.parse('$_baseUrl/api/polls/$pollId'),
+        headers: _headers,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw ServerFailure(message: 'Failed to delete poll: ${response.statusCode}');
+      }
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to delete poll: $e');
     }
   }
@@ -271,13 +231,23 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
     bool isAnonymous = true,
   }) async {
     try {
-      await client.rpc('cast_vote', params: {
-        'p_poll_id': int.parse(pollId),
-        'p_option_id': int.parse(optionId),
-        'p_user_name': voterName,
-        'p_is_anonymous': isAnonymous,
-      });
+      final body = {
+        'optionId': optionId,
+        'voterName': voterName,
+        'anonymous': isAnonymous,
+      };
+
+      final response = await client.post(
+        Uri.parse('$_baseUrl/api/polls/$pollId/vote'),
+        headers: _headers,
+        body: json.encode(body),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw ServerFailure(message: 'Failed to cast vote: ${response.statusCode}');
+      }
     } catch (e) {
+      if (e is ServerFailure) rethrow;
       throw ServerFailure(message: 'Failed to cast vote: $e');
     }
   }
@@ -289,37 +259,33 @@ class PollRemoteDataSourceImpl implements PollRemoteDataSource {
     String? voterName,
     bool isAnonymous = true,
   }) async {
-    try {
-      for (final optionId in optionIds) {
-        await castVote(
-          pollId: pollId,
-          optionId: optionId,
-          voterName: voterName,
-          isAnonymous: isAnonymous,
-        );
-      }
-    } catch (e) {
-      throw ServerFailure(message: 'Failed to cast multiple votes: $e');
+    for (final optionId in optionIds) {
+      await castVote(
+        pollId: pollId,
+        optionId: optionId,
+        voterName: voterName,
+        isAnonymous: isAnonymous,
+      );
     }
   }
 
   @override
   Future<int> cleanupExpiredPolls() async {
-    try {
-      final result = await client.rpc('cleanup_expired_polls');
-      return result as int;
-    } catch (e) {
-      throw ServerFailure(message: 'Failed to cleanup expired polls: $e');
-    }
+    // Cleanup is now handled by the Spring Boot backend scheduler
+    return 0;
   }
 
   @override
   Future<Map<String, dynamic>> getPollStatus(String pollId) async {
     try {
-      final result = await client.rpc('get_poll_status', params: {
-        'poll_id': pollId,
-      });
-      return Map<String, dynamic>.from(result);
+      final poll = await getPoll(pollId);
+      return {
+        'id': poll.id,
+        'title': poll.title,
+        'isActive': true,
+        'totalVotes': poll.options.fold<int>(0, (sum, opt) => sum + opt.votes),
+        'optionsCount': poll.options.length,
+      };
     } catch (e) {
       throw ServerFailure(message: 'Failed to get poll status: $e');
     }

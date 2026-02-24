@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive/hive.dart';
 import 'package:pollino/bloc/poll.dart';
-import 'package:pollino/services/supabase_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/services/like_service.dart';
 
 part 'poll_bloc.freezed.dart';
@@ -38,8 +37,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<LoadPolls>((event, emit) async {
       emit(const PollState.loading());
       try {
-        // Try fetching from Supabase database
-        final response = await SupabaseService.fetchPolls(event.page, event.limit);
+        // Try fetching from Spring Boot backend
+        final response = await ApiService.fetchPolls(event.page, event.limit);
         final polls = response['polls'] as List<Poll>;
         final total = response['total'];
 
@@ -69,7 +68,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<RefreshPolls>((event, emit) async {
       emit(const PollState.loading());
       try {
-        final response = await SupabaseService.fetchPolls(1, 10);
+        final response = await ApiService.fetchPolls(1, 10);
         final polls = response['polls'] as List<Poll>;
         final total = response['total'];
         emit(PollState.loaded(polls, polls.length < total));
@@ -81,7 +80,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
     on<LoadPoll>((event, emit) async {
       emit(const PollState.loading());
       try {
-        final poll = await SupabaseService.fetchPoll(event.pollId);
+        final poll = await ApiService.fetchPoll(event.pollId);
         emit(PollState.loaded([poll], false));
       } catch (e) {
         emit(PollState.error(e.toString()));
@@ -92,7 +91,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
       if (state is Loaded) {
         final currentState = state as Loaded;
         try {
-          final response = await SupabaseService.fetchPolls(event.page, event.limit);
+          final response = await ApiService.fetchPolls(event.page, event.limit);
           final newPolls = response['polls'] as List<Poll>;
           final total = response['total'];
           emit(PollState.loaded(currentState.polls + newPolls, currentState.polls.length + newPolls.length < total));
@@ -104,11 +103,11 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<Vote>((event, emit) async {
       try {
-        // Send vote to Supabase database
-        await SupabaseService.sendVote(event.pollId, event.optionId);
+        // Send vote to Spring Boot backend
+        await ApiService.sendVote(event.pollId, event.optionId);
 
         // Reload all polls to get updated vote counts
-        final response = await SupabaseService.fetchPolls(1, 20);
+        final response = await ApiService.fetchPolls(1, 20);
         final polls = response['polls'] as List<Poll>;
         final total = response['total'];
 
@@ -120,11 +119,9 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
         emit(PollState.loaded(polls, polls.length < total));
       } catch (e) {
-        // Handle duplicate vote gracefully (unique constraint violation)
-        final isDuplicate =
-            e is PostgrestException && e.code == '23505' && e.message.contains('user_votes_poll_id_user_id_key');
-        if (isDuplicate) {
-          // Ignore as "already voted"; keep current state
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
+          // Duplicate vote - keep current state
           debugPrint('Duplicate vote detected, ignoring: ${e.toString()}');
           if (state is Loaded) emit(state);
         } else {
@@ -135,8 +132,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<VoteWithName>((event, emit) async {
       try {
-        // Send vote to Supabase database with name info
-        await SupabaseService.sendVote(
+        // Send vote to Spring Boot backend with name info
+        await ApiService.sendVote(
           event.pollId,
           event.optionId,
           voterName: event.voterName,
@@ -147,7 +144,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
         // Reload all polls to get updated vote counts
         try {
-          final response = await SupabaseService.fetchPolls(1, 20);
+          final response = await ApiService.fetchPolls(1, 20);
           final polls = response['polls'] as List<Poll>;
           final total = response['total'];
 
@@ -180,10 +177,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         }
       } catch (e) {
         debugPrint('Error submitting vote: $e');
-        final isDuplicate =
-            e is PostgrestException && e.code == '23505' && e.message.contains('user_votes_poll_id_user_id_key');
-        if (isDuplicate) {
-          // Bereits abgestimmt -> keinen Error-State zeigen
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
           debugPrint('Duplicate vote (single) ignored to avoid error state');
           if (state is Loaded) emit(state);
         } else {
@@ -194,8 +189,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<VoteMultiple>((event, emit) async {
       try {
-        // Send multiple votes to Supabase database
-        await SupabaseService.sendMultipleVotes(
+        // Send multiple votes to Spring Boot backend
+        await ApiService.sendMultipleVotes(
           event.pollId,
           event.optionIds,
           voterName: event.voterName,
@@ -206,7 +201,7 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
         // Reload all polls to get updated vote counts
         try {
-          final response = await SupabaseService.fetchPolls(1, 20);
+          final response = await ApiService.fetchPolls(1, 20);
           final polls = response['polls'] as List<Poll>;
           final total = response['total'];
 
@@ -239,10 +234,8 @@ class PollBloc extends Bloc<PollEvent, PollState> {
         }
       } catch (e) {
         debugPrint('Error submitting multiple votes: $e');
-        final isDuplicate =
-            e is PostgrestException && e.code == '23505' && e.message.contains('user_votes_poll_id_user_id_key');
-        if (isDuplicate) {
-          // Doppeltes Voten bei MC: Ignorieren oder ggf. einzelne bereits vorhandene Optionen überspringen
+        final errorMsg = e.toString().toLowerCase();
+        if (errorMsg.contains('already voted') || errorMsg.contains('bereits')) {
           debugPrint('Duplicate vote (multiple) ignored to avoid error state');
           if (state is Loaded) emit(state);
         } else {
@@ -253,13 +246,13 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<DeletePoll>((event, emit) async {
       try {
-        // Lösche Poll in Supabase (CASCADE löscht automatisch Options und Votes)
-        await SupabaseService.deletePoll(event.pollId);
+        // Delete poll via Spring Boot backend
+        await ApiService.deletePoll(event.pollId);
 
-        // Entferne Poll aus lokalem Cache
+        // Remove poll from local cache
         await hiveBox.delete(event.pollId);
 
-        // Aktualisiere State - entferne Poll aus der aktuellen Liste
+        // Update state - remove poll from current list
         if (state is Loaded) {
           final currentState = state as Loaded;
           final updatedPolls = currentState.polls.where((poll) => poll.id != event.pollId).toList();
@@ -272,16 +265,16 @@ class PollBloc extends Bloc<PollEvent, PollState> {
 
     on<ToggleLike>((event, emit) async {
       try {
-        // Hole den aktuellen Like-Status
+        // Get current like status
         final wasLiked = await LikeService.hasUserMadeLike(event.pollId);
 
-        // Toggle den lokalen Like-Status
+        // Toggle local like status
         final isNowLiked = await LikeService.toggleLike(event.pollId);
 
-        // Sende Like-Toggle zur Datenbank
-        await SupabaseService.toggleLike(event.pollId, wasLiked);
+        // Send like toggle to backend
+        await ApiService.toggleLike(event.pollId, wasLiked);
 
-        // Aktualisiere den lokalen State optimistically
+        // Update local state optimistically
         if (state is Loaded) {
           final currentState = state as Loaded;
           final updatedPolls = currentState.polls.map((poll) {
@@ -293,14 +286,14 @@ class PollBloc extends Bloc<PollEvent, PollState> {
             return poll;
           }).toList();
 
-          // Aktualisiere auch den Cache
+          // Update cache
           final updatedPoll = updatedPolls.firstWhere((poll) => poll.id == event.pollId);
           await hiveBox.put(event.pollId, updatedPoll);
 
           emit(PollState.loaded(updatedPolls, currentState.hasMore));
         }
       } catch (e) {
-        // Bei Fehler: Reverseiere den lokalen Like-Status
+        // On error: reverse the local like status
         await LikeService.toggleLike(event.pollId);
         emit(PollState.error('Failed to toggle like: ${e.toString()}'));
       }

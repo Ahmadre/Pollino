@@ -2,16 +2,13 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:pollino/services/supabase_service.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/bloc/poll.dart';
 
 class PdfService {
-  static final SupabaseClient _client = Supabase.instance.client;
-
-  // Öffentlicher Export: begrenzte Informationen ohne personenbezogene Daten
+  // Public export: limited information without personal data
   static Future<void> exportPublicPoll(String pollId) async {
-    final poll = await SupabaseService.fetchPoll(pollId);
+    final poll = await ApiService.fetchPoll(pollId);
     final data = await _loadAggregates(pollId);
     final doc = await _buildPublicDocument(poll, data);
     await Printing.layoutPdf(
@@ -20,9 +17,9 @@ class PdfService {
     );
   }
 
-  // Admin-Export: vollständige Informationen inkl. namensbasierter Stimmen
+  // Admin export: full information including name-based votes
   static Future<void> exportAdminPoll(String pollId) async {
-    final poll = await SupabaseService.fetchPoll(pollId);
+    final poll = await ApiService.fetchPoll(pollId);
     final data = await _loadAggregates(pollId, includeNames: true);
     final doc = await _buildAdminDocument(poll, data);
     await Printing.layoutPdf(
@@ -35,32 +32,28 @@ class PdfService {
     return name.replaceAll(RegExp(r"[^a-zA-Z0-9._-]+"), '_');
   }
 
-  // Aggregierte Daten aus user_votes und poll_options
-  static Future<_PollAggregates> _loadAggregates(String pollId, {bool includeNames = false}) async {
-    // Optionen laden (id, text)
-    final optionsResp =
-        await _client.from('poll_options').select('id, text').eq('poll_id', pollId).order('option_order, id');
-
+  // Aggregated data from API
+  static Future<_PollAggregates> _loadAggregates(String pollId,
+      {bool includeNames = false}) async {
+    // Load poll to get options
+    final poll = await ApiService.fetchPoll(pollId);
     final options = <String, String>{};
-    for (final row in (optionsResp as List)) {
-      options[row['id'].toString()] = (row['text'] ?? '').toString();
+    for (final option in poll.options) {
+      options[option.id] = option.text;
     }
 
-    // Alle user_votes zu dieser Umfrage laden
-    final votesResp = await _client
-        .from('user_votes')
-        .select('option_id, is_anonymous, voter_name, created_at')
-        .eq('poll_id', pollId);
+    // Load all votes for this poll
+    final votesResp = await ApiService.getVotesForPoll(pollId);
 
     final counts = <String, int>{};
     final namesByOption = <String, List<String>>{};
-    for (final row in (votesResp as List)) {
-      final optId = row['option_id']?.toString();
+    for (final row in votesResp) {
+      final optId = row['optionId']?.toString();
       if (optId == null) continue;
       counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
       if (includeNames) {
-        final isAnon = row['is_anonymous'] == true;
-        final voterName = (row['voter_name'] ?? '').toString().trim();
+        final isAnon = row['anonymous'] == true;
+        final voterName = (row['voterName'] ?? '').toString().trim();
         if (!isAnon && voterName.isNotEmpty) {
           namesByOption.putIfAbsent(optId, () => <String>[]).add(voterName);
         }
@@ -68,10 +61,15 @@ class PdfService {
     }
 
     final total = counts.values.fold<int>(0, (s, v) => s + v);
-    return _PollAggregates(options: options, counts: counts, total: total, namesByOption: namesByOption);
+    return _PollAggregates(
+        options: options,
+        counts: counts,
+        total: total,
+        namesByOption: namesByOption);
   }
 
-  static Future<pw.Document> _buildPublicDocument(Poll poll, _PollAggregates data) async {
+  static Future<pw.Document> _buildPublicDocument(
+      Poll poll, _PollAggregates data) async {
     final doc = pw.Document();
     final now = DateTime.now();
     final df = DateFormat('dd.MM.yyyy HH:mm');
@@ -96,7 +94,8 @@ class PdfService {
     return doc;
   }
 
-  static Future<pw.Document> _buildAdminDocument(Poll poll, _PollAggregates data) async {
+  static Future<pw.Document> _buildAdminDocument(
+      Poll poll, _PollAggregates data) async {
     final doc = pw.Document();
     final now = DateTime.now();
     final df = DateFormat('dd.MM.yyyy HH:mm');
@@ -125,7 +124,8 @@ class PdfService {
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
       children: [
-        pw.Text('Pollino', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+        pw.Text('Pollino',
+            style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
         pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
           pw.Text(title, style: const pw.TextStyle(fontSize: 12)),
           pw.Text(date, style: const pw.TextStyle(fontSize: 10))
@@ -136,11 +136,13 @@ class PdfService {
 
   static pw.Widget _pollMeta(Poll poll, {required bool public}) {
     final meta = <pw.Widget>[
-      pw.Text(poll.title, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+      pw.Text(poll.title,
+          style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
     ];
     if ((poll.description ?? '').isNotEmpty) {
       meta.add(pw.SizedBox(height: 4));
-      meta.add(pw.Text(poll.description!, style: const pw.TextStyle(fontSize: 11)));
+      meta.add(
+          pw.Text(poll.description!, style: const pw.TextStyle(fontSize: 11)));
     }
     if (!public) {
       meta.add(pw.SizedBox(height: 6));
@@ -149,13 +151,16 @@ class PdfService {
           _chip('Anonym: ${poll.isAnonymous ? 'Ja' : 'Nein'}'),
           _chip('Mehrfachauswahl: ${poll.allowsMultipleVotes ? 'Ja' : 'Nein'}'),
           if (poll.expiresAt != null)
-            _chip('Ablauf: ${DateFormat('dd.MM.yyyy HH:mm').format(poll.expiresAt!.toLocal())}'),
+            _chip(
+                'Ablauf: ${DateFormat('dd.MM.yyyy HH:mm').format(poll.expiresAt!.toLocal())}'),
           if (poll.autoDeleteAfterExpiry) _chip('Auto-Löschung nach Ablauf'),
-          if ((poll.createdByName ?? '').isNotEmpty) _chip('Erstellt von: ${poll.createdByName}')
+          if ((poll.createdByName ?? '').isNotEmpty)
+            _chip('Erstellt von: ${poll.createdByName}')
         ]),
       );
     }
-    return pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: meta);
+    return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start, children: meta);
   }
 
   static pw.Widget _chip(String text) {
@@ -169,14 +174,17 @@ class PdfService {
     );
   }
 
-  static pw.Widget _resultsTable(_PollAggregates data, {required bool showNames}) {
+  static pw.Widget _resultsTable(_PollAggregates data,
+      {required bool showNames}) {
     // Sort by votes desc, then text
     final entries = data.options.entries.map((e) {
       final id = e.key;
       final text = e.value;
       final v = data.counts[id] ?? 0;
       final pct = data.total > 0 ? (v * 100 / data.total) : 0.0;
-      final names = showNames ? (data.namesByOption[id] ?? const <String>[]) : const <String>[];
+      final names = showNames
+          ? (data.namesByOption[id] ?? const <String>[])
+          : const <String>[];
       return _RowData(text: text, votes: v, percent: pct, names: names);
     }).toList()
       ..sort((a, b) {
@@ -196,16 +204,26 @@ class PdfService {
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
           pw.Expanded(
-              flex: 6, child: pw.Text('Option', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+              flex: 6,
+              child: pw.Text('Option',
+                  style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold, fontSize: 10))),
           pw.Expanded(
-              flex: 2, child: pw.Text('Stimmen', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+              flex: 2,
+              child: pw.Text('Stimmen',
+                  style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold, fontSize: 10))),
           pw.Expanded(
-              flex: 2, child: pw.Text('Anteil', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+              flex: 2,
+              child: pw.Text('Anteil',
+                  style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold, fontSize: 10))),
           if (showNames)
             pw.Expanded(
                 flex: 5,
                 child: pw.Text('Teilnehmende (nicht anonym)',
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10))),
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold, fontSize: 10))),
         ],
       ),
     );
@@ -238,7 +256,9 @@ class PdfService {
         children: [
           // Background bar
           pw.Row(children: [
-            pw.Expanded(flex: pctFlex > 0 ? pctFlex : 0, child: pw.Container(color: barColor)),
+            pw.Expanded(
+                flex: pctFlex > 0 ? pctFlex : 0,
+                child: pw.Container(color: barColor)),
             if (restFlex > 0) pw.Expanded(flex: restFlex, child: pw.SizedBox()),
           ]),
           // Foreground content
@@ -249,26 +269,30 @@ class PdfService {
               children: [
                 pw.Expanded(
                   flex: 6,
-                  child: pw.Text(r.text, style: const pw.TextStyle(fontSize: 10)),
+                  child:
+                      pw.Text(r.text, style: const pw.TextStyle(fontSize: 10)),
                 ),
                 pw.Expanded(
                   flex: 2,
                   child: pw.Align(
                     alignment: pw.Alignment.centerLeft,
-                    child: pw.Text('${r.votes}', style: const pw.TextStyle(fontSize: 10)),
+                    child: pw.Text('${r.votes}',
+                        style: const pw.TextStyle(fontSize: 10)),
                   ),
                 ),
                 pw.Expanded(
                   flex: 2,
                   child: pw.Align(
                     alignment: pw.Alignment.centerLeft,
-                    child: pw.Text('${r.percent.toStringAsFixed(1)}%', style: const pw.TextStyle(fontSize: 10)),
+                    child: pw.Text('${r.percent.toStringAsFixed(1)}%',
+                        style: const pw.TextStyle(fontSize: 10)),
                   ),
                 ),
                 if (showNames)
                   pw.Expanded(
                     flex: 5,
-                    child: pw.Text(_formatNames(r.names), style: const pw.TextStyle(fontSize: 9)),
+                    child: pw.Text(_formatNames(r.names),
+                        style: const pw.TextStyle(fontSize: 9)),
                   ),
               ],
             ),
@@ -288,7 +312,8 @@ class PdfService {
   static pw.Widget _footer() {
     return pw.Align(
       alignment: pw.Alignment.centerRight,
-      child: pw.Text('Generiert mit Pollino', style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
+      child: pw.Text('Generiert mit Pollino',
+          style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600)),
     );
   }
 }
@@ -312,5 +337,9 @@ class _RowData {
   final int votes;
   final double percent;
   final List<String> names;
-  _RowData({required this.text, required this.votes, required this.percent, required this.names});
+  _RowData(
+      {required this.text,
+      required this.votes,
+      required this.percent,
+      required this.names});
 }

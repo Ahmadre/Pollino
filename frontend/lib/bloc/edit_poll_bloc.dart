@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pollino/bloc/poll.dart';
-import 'package:pollino/services/supabase_service.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/widgets/poll_form.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
 
@@ -39,17 +39,19 @@ class EditPollBloc extends Bloc<EditPollEvent, EditPollState> {
       emit(const EditPollState.loading());
       try {
         // Erst das Admin-Token validieren
-        final isValidToken = await SupabaseService.validateAdminToken(pollId, adminToken);
+        final isValidToken =
+            await ApiService.validateAdminToken(pollId, adminToken);
         if (!isValidToken) {
           emit(const EditPollState.error('Ungültiges Admin-Token'));
           return;
         }
 
         // Dann die Umfrage laden
-        final poll = await SupabaseService.fetchPoll(pollId);
+        final poll = await ApiService.fetchPoll(pollId);
         emit(EditPollState.loaded(poll));
       } catch (e) {
-        emit(EditPollState.error('Fehler beim Laden der Umfrage: ${e.toString()}'));
+        emit(EditPollState.error(
+            'Fehler beim Laden der Umfrage: ${e.toString()}'));
       }
     });
 
@@ -65,11 +67,13 @@ class EditPollBloc extends Bloc<EditPollEvent, EditPollState> {
 
         // Konvertiere lokale Expiration-Zeit zu UTC für Database-Speicherung
         DateTime? expiresAtUtc;
-        if (formData.hasExpirationDate && formData.selectedExpirationDate != null) {
-          expiresAtUtc = TimezoneHelper.localToUtc(formData.selectedExpirationDate!);
+        if (formData.hasExpirationDate &&
+            formData.selectedExpirationDate != null) {
+          expiresAtUtc =
+              TimezoneHelper.localToUtc(formData.selectedExpirationDate!);
         }
 
-        final updatedPoll = await SupabaseService.updatePoll(
+        final updatedPoll = await ApiService.updatePoll(
           pollId: pollId,
           adminToken: adminToken,
           title: formData.question,
@@ -78,13 +82,17 @@ class EditPollBloc extends Bloc<EditPollEvent, EditPollState> {
           isAnonymous: formData.enableAnonymousVoting,
           allowsMultipleVotes: formData.allowMultipleOptions,
           expiresAt: expiresAtUtc,
-          autoDeleteAfterExpiry: formData.hasExpirationDate ? formData.autoDeleteAfterExpiry : false,
-          creatorName: formData.enableAnonymousVoting ? null : formData.creatorName,
+          autoDeleteAfterExpiry: formData.hasExpirationDate
+              ? formData.autoDeleteAfterExpiry
+              : false,
+          creatorName:
+              formData.enableAnonymousVoting ? null : formData.creatorName,
         );
 
         emit(EditPollState.updated(updatedPoll));
       } catch (e) {
-        emit(EditPollState.error('Fehler beim Aktualisieren der Umfrage: ${e.toString()}'));
+        emit(EditPollState.error(
+            'Fehler beim Aktualisieren der Umfrage: ${e.toString()}'));
       }
     });
 

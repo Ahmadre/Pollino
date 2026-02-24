@@ -8,11 +8,9 @@ import 'package:pollino/bloc/poll_bloc.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/core/localization/rtl_support.dart';
 import 'package:pollino/core/theme/app_theme.dart';
-import 'package:pollino/env.dart';
 import 'package:pollino/services/like_service.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'routes.dart';
 
@@ -29,14 +27,12 @@ Future<void> main() async {
   // Initialize i18n Service with automatic system locale detection (uses Hive)
   await I18nService.instance.initWithSystemLocale();
   Hive.registerAdapter<Poll>(PollAdapter());
-  Hive.registerAdapter<Option>(SafeOptionAdapter()); // Sicherer Adapter für order-Feld
+  Hive.registerAdapter<Option>(
+      SafeOptionAdapter()); // Sicherer Adapter für order-Feld
   final hiveBox = await Hive.openBox<Poll>('polls');
 
   // Initialize LikeService for local like storage
   await LikeService.init();
-
-  // Initialize Supabase connection
-  await Supabase.initialize(url: Environment.supabaseUrl, anonKey: Environment.supabaseAnonKey);
 
   // Initialize BLoC with local storage
   final pollBloc = PollBloc(hiveBox);
@@ -88,14 +84,16 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => PollBloc(widget.pollBloc.hiveBox)..add(const PollEvent.loadPolls(page: 1, limit: 20)),
+      create: (_) => PollBloc(widget.pollBloc.hiveBox)
+        ..add(const PollEvent.loadPolls(page: 1, limit: 20)),
       child: RTLDirectionalityWrapper(
         child: MaterialApp.router(
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.system,
           debugShowCheckedModeBanner: false,
-          routerDelegate: RoutemasterDelegate(routesBuilder: (context) => routes),
+          routerDelegate:
+              RoutemasterDelegate(routesBuilder: (context) => routes),
           routeInformationParser: const RoutemasterParser(),
           supportedLocales: const [
             Locale('de', 'DE'),

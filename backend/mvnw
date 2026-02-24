@@ -1,0 +1,36 @@
+#!/bin/sh
+# Maven Wrapper script
+# Adapted from https://github.com/apache/maven-wrapper
+
+set -e
+
+MAVEN_WRAPPER_JAR=".mvn/wrapper/maven-wrapper.jar"
+MAVEN_WRAPPER_PROPERTIES=".mvn/wrapper/maven-wrapper.properties"
+
+if [ -f "$MAVEN_WRAPPER_PROPERTIES" ]; then
+    MAVEN_URL=$(grep 'distributionUrl' "$MAVEN_WRAPPER_PROPERTIES" | cut -d'=' -f2-)
+fi
+
+if [ -z "$MAVEN_URL" ]; then
+    MAVEN_URL="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip"
+fi
+
+MAVEN_HOME="${HOME}/.m2/wrapper/dists/$(basename "$MAVEN_URL" .zip)"
+
+if [ ! -d "$MAVEN_HOME" ]; then
+    echo "Downloading Maven..."
+    mkdir -p "$MAVEN_HOME"
+    TMP_FILE=$(mktemp)
+    wget -q -O "$TMP_FILE" "$MAVEN_URL" || curl -sSf -o "$TMP_FILE" "$MAVEN_URL"
+    unzip -q -o "$TMP_FILE" -d "$MAVEN_HOME"
+    rm -f "$TMP_FILE"
+fi
+
+MAVEN_BIN=$(find "$MAVEN_HOME" -name "mvn" -path "*/bin/mvn" | head -1)
+
+if [ -z "$MAVEN_BIN" ]; then
+    echo "Error: Maven binary not found" >&2
+    exit 1
+fi
+
+exec "$MAVEN_BIN" "$@"

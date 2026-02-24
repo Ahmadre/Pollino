@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:pollino/services/supabase_service.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/widgets/poll_form.dart';
 import 'package:pollino/core/utils/timezone_helper.dart';
 
@@ -17,7 +17,8 @@ class CreatePollEvent with _$CreatePollEvent {
 class CreatePollState with _$CreatePollState {
   const factory CreatePollState.initial() = CreatePollInitial;
   const factory CreatePollState.creating() = CreatePollCreating;
-  const factory CreatePollState.created(Map<String, dynamic> pollResult) = CreatePollCreated;
+  const factory CreatePollState.created(Map<String, dynamic> pollResult) =
+      CreatePollCreated;
   const factory CreatePollState.error(String message) = CreatePollError;
 }
 
@@ -37,24 +38,30 @@ class CreatePollBloc extends Bloc<CreatePollEvent, CreatePollState> {
 
         // Konvertiere lokale Expiration-Zeit zu UTC für Database-Speicherung
         DateTime? expiresAtUtc;
-        if (formData.hasExpirationDate && formData.selectedExpirationDate != null) {
-          expiresAtUtc = TimezoneHelper.localToUtc(formData.selectedExpirationDate!);
+        if (formData.hasExpirationDate &&
+            formData.selectedExpirationDate != null) {
+          expiresAtUtc =
+              TimezoneHelper.localToUtc(formData.selectedExpirationDate!);
         }
 
-        final result = await SupabaseService.createPoll(
+        final result = await ApiService.createPoll(
           title: formData.question,
           description: formData.description,
           optionTexts: formData.options,
           isAnonymous: formData.enableAnonymousVoting,
           allowsMultipleVotes: formData.allowMultipleOptions,
           expiresAt: expiresAtUtc,
-          autoDeleteAfterExpiry: formData.hasExpirationDate ? formData.autoDeleteAfterExpiry : false,
-          creatorName: formData.enableAnonymousVoting ? null : formData.creatorName,
+          autoDeleteAfterExpiry: formData.hasExpirationDate
+              ? formData.autoDeleteAfterExpiry
+              : false,
+          creatorName:
+              formData.enableAnonymousVoting ? null : formData.creatorName,
         );
 
         emit(CreatePollState.created(result));
       } catch (e) {
-        emit(CreatePollState.error('Fehler beim Erstellen der Umfrage: ${e.toString()}'));
+        emit(CreatePollState.error(
+            'Fehler beim Erstellen der Umfrage: ${e.toString()}'));
       }
     });
 

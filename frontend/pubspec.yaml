@@ -25,7 +25,6 @@ dependencies:
   json_serializable: ^6.8.0
   path_provider: ^2.1.0
   routemaster: ^1.0.1
-  supabase_flutter: ^2.10.2
   fl_chart: ^0.68.0
   uuid: ^4.4.2
   # Clean Architecture Dependencies

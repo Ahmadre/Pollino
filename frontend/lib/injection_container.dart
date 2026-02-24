@@ -1,7 +1,6 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
+﻿import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Core
 import 'core/network/network_info.dart';
@@ -53,9 +52,6 @@ Future<void> init() async {
   );
 
   //! External
-
-  // Supabase
-  sl.registerLazySingleton(() => Supabase.instance.client);
 
   // Connectivity
   sl.registerLazySingleton(() => Connectivity());

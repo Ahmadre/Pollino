@@ -9,7 +9,7 @@ import 'package:pollino/core/utils/timezone_helper.dart';
 import 'package:pollino/core/widgets/responsive_wrapper.dart';
 import 'package:pollino/env.dart' show Environment;
 import 'package:pollino/services/like_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pollino/services/api_service.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/poll_results_chart.dart';
 import 'package:pollino/widgets/poll_not_found_widget.dart';
@@ -317,57 +317,41 @@ class _PollScreenState extends State<PollScreen> {
                       }
 
                       final poll = state.polls.first;
-                      return StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: Supabase.instance.client
-                            .from('user_votes')
-                            .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
-                        builder: (context, votesSnapshot) {
-                          // Erstelle eine veränderbare Kopie der Optionen
-                          List<dynamic> liveOptions = List.from(poll.options);
+                      // Use vote counts from poll options (returned by backend)
+                      final List<dynamic> liveOptions = List.from(poll.options);
+                      final Map<String, int> voteCountsByOption = {};
+                      int totalVotes = 0;
 
-                          // Zähle echte Stimmen aus user_votes
-                          final Map<String, int> voteCountsByOption = {};
-                          int totalVotes = 0;
+                      for (final option in liveOptions) {
+                        final optionId = option.id?.toString() ?? '';
+                        final votes = option.votes ?? 0;
+                        voteCountsByOption[optionId] = votes;
+                        totalVotes += votes;
+                      }
 
-                          if (votesSnapshot.hasData && votesSnapshot.data != null) {
-                            for (final vote in votesSnapshot.data!) {
-                              final optionId = vote['option_id']?.toString();
-                              if (optionId != null) {
-                                voteCountsByOption.update(optionId, (count) => count + 1, ifAbsent: () => 1);
-                                totalVotes++;
-                              }
-                            }
-                          }
+                      // Sort options: By votes (if any) or by order
+                      liveOptions.sort((a, b) {
+                        final aId = a.id?.toString() ?? '';
+                        final bId = b.id?.toString() ?? '';
+                        final aVotes = voteCountsByOption[aId] ?? 0;
+                        final bVotes = voteCountsByOption[bId] ?? 0;
 
-                          // Sortiere Optionen: Nach Votes (falls vorhanden) oder nach Order
-                          liveOptions.sort((a, b) {
-                            final aId = a.id?.toString() ?? a['id']?.toString() ?? '';
-                            final bId = b.id?.toString() ?? b['id']?.toString() ?? '';
-                            final aVotes = voteCountsByOption[aId] ?? 0;
-                            final bVotes = voteCountsByOption[bId] ?? 0;
+                        if (totalVotes > 0) {
+                          final voteComparison = bVotes.compareTo(aVotes);
+                          if (voteComparison != 0) return voteComparison;
+                          final aText = a.text ?? '';
+                          final bText = b.text ?? '';
+                          return aText.toString().compareTo(bText.toString());
+                        } else {
+                          final aOrder = a.order ?? 0;
+                          final bOrder = b.order ?? 0;
+                          final orderComparison = aOrder.compareTo(bOrder);
+                          if (orderComparison != 0) return orderComparison;
+                          return aId.compareTo(bId);
+                        }
+                      });
 
-                            // Wenn es Votes gibt, sortiere nach Votes absteigend
-                            if (totalVotes > 0) {
-                              final voteComparison = bVotes.compareTo(aVotes);
-                              if (voteComparison != 0) return voteComparison;
-
-                              // Sekundäre Sortierung: Nach Text alphabetisch falls Votes gleich sind
-                              final aText = a.text ?? a['text'] ?? '';
-                              final bText = b.text ?? b['text'] ?? '';
-                              return aText.toString().compareTo(bText.toString());
-                            } else {
-                              // Keine Votes vorhanden: Sortiere nach Order aufsteigend
-                              final aOrder = a.order ?? 0;
-                              final bOrder = b.order ?? 0;
-                              final orderComparison = aOrder.compareTo(bOrder);
-                              if (orderComparison != 0) return orderComparison;
-
-                              // Fallback: Nach ID falls Order gleich ist
-                              return aId.compareTo(bId);
-                            }
-                          });
-
-                          return ResponsiveContainer(
+                      return ResponsiveContainer(
                             type: ResponsiveContainerType.reading,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,30 +425,20 @@ class _PollScreenState extends State<PollScreen> {
 
                                 const SizedBox(height: 16),
 
-                                // Vote count and expiration info (Votes via user_votes gezählt)
-                                StreamBuilder<List<Map<String, dynamic>>>(
-                                  stream: Supabase.instance.client
-                                      .from('user_votes')
-                                      .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
-                                  builder: (context, votesSnapshot) {
-                                    final voteCount = votesSnapshot.hasData && votesSnapshot.data != null
-                                        ? votesSnapshot.data!.length
-                                        : totalVotes; // Fallback auf zuvor berechnete Summe
-                                    return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          I18nService.instance
-                                              .translate('poll.voting.votesSummary', params: {'votes': '$voteCount'}),
-                                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                                        ),
-                                        if (poll.expiresAt != null) ...[
-                                          const SizedBox(height: 4),
-                                          _ExpirationIndicator(poll: poll),
-                                        ],
-                                      ],
-                                    );
-                                  },
+                                // Vote count and expiration info
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      I18nService.instance
+                                          .translate('poll.voting.votesSummary', params: {'votes': '$totalVotes'}),
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                                    ),
+                                    if (poll.expiresAt != null) ...[
+                                      const SizedBox(height: 4),
+                                      _ExpirationIndicator(poll: poll),
+                                    ],
+                                  ],
                                 ),
 
                                 const SizedBox(height: 20),
@@ -681,23 +655,21 @@ class _PollScreenState extends State<PollScreen> {
                                   rightChild: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Poll Results Chart (Stimmen aus user_votes aggregiert)
+                                      // Poll Results Chart (using vote data from backend)
                                       if (liveOptions.isNotEmpty)
-                                        StreamBuilder<List<Map<String, dynamic>>>(
-                                          stream: Supabase.instance.client
-                                              .from('user_votes')
-                                              .stream(primaryKey: ['id']).eq('poll_id', widget.pollId),
+                                        FutureBuilder<List<Map<String, dynamic>>>(
+                                          future: ApiService.getVotesForPoll(widget.pollId),
                                           builder: (context, votesSnapshot) {
-                                            // Aggregiere Stimmenanzahl pro Option aus user_votes
+                                            // Aggregate vote counts per option
                                             final Map<String, int> counts = {};
                                             final Map<String, Set<String>> namesByOption = {};
                                             if (votesSnapshot.hasData && votesSnapshot.data != null) {
                                               for (final row in votesSnapshot.data!) {
-                                                final optId = row['option_id']?.toString();
+                                                final optId = row['optionId']?.toString();
                                                 if (optId == null) continue;
                                                 counts.update(optId, (v) => v + 1, ifAbsent: () => 1);
-                                                final isAnon = row['is_anonymous'] == true;
-                                                final voterName = row['voter_name'];
+                                                final isAnon = row['anonymous'] == true;
+                                                final voterName = row['voterName'];
                                                 if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
                                                   namesByOption
                                                       .putIfAbsent(optId, () => <String>{})
@@ -710,14 +682,14 @@ class _PollScreenState extends State<PollScreen> {
                                               final index = entry.key;
                                               final option = entry.value;
                                               final optionIdStr =
-                                                  option.id?.toString() ?? option['id']?.toString() ?? '';
+                                                  option.id?.toString() ?? '';
                                               final optionVotes =
                                                   counts[optionIdStr] ?? voteCountsByOption[optionIdStr] ?? 0;
                                               return PollOptionData(
-                                                text: option.text ?? option['text'] ?? '',
+                                                text: option.text ?? '',
                                                 votes: optionVotes,
                                                 color: _optionColors[index % _optionColors.length],
-                                                // Immer Namen der nicht-anonymen Stimmen anzeigen (sofern vorhanden)
+                                                // Show names of non-anonymous voters (if available)
                                                 namedVoters: namesByOption[optionIdStr]?.toList() ?? const [],
                                               );
                                             }).toList()
@@ -766,12 +738,10 @@ class _PollScreenState extends State<PollScreen> {
                               ],
                             ),
                           );
-                        },
-                      );
                     } else if (state is Error) {
                       final msg = state.message.toLowerCase();
-                      // supabase/postgrest returns PGRST116 when no rows returned for single-row request
-                      if (msg.contains('pgrst116') || msg.contains('result contains 0 rows') || msg.contains('0 rows') || msg.contains('no rows')) {
+                      // Check for not-found errors from REST API
+                      if (msg.contains('not found') || msg.contains('404') || msg.contains('0 rows') || msg.contains('no rows')) {
                         return const PollNotFoundWidget();
                       }
 
@@ -818,21 +788,18 @@ class _PollOptionWithVoters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Map<String, dynamic>>>(
-      stream: Supabase.instance.client.from('user_votes').stream(primaryKey: ['id']).eq('poll_id', pollId),
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: isAnonymousPoll ? Future.value([]) : ApiService.getVotersForOption(pollId, optionId),
       builder: (context, snapshot) {
         final List<String> voterNames = [];
 
-        // Nur für nicht-anonyme Umfragen Namen sammeln
+        // Only collect names for non-anonymous polls
         if (!isAnonymousPoll && snapshot.hasData && snapshot.data != null) {
           for (final vote in snapshot.data!) {
-            // Nur Votes für diese Option berücksichtigen
-            if (vote['option_id']?.toString() == optionId) {
-              final isAnon = vote['is_anonymous'] == true;
-              final voterName = vote['voter_name'];
-              if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
-                voterNames.add(voterName.trim());
-              }
+            final isAnon = vote['anonymous'] == true;
+            final voterName = vote['voterName'];
+            if (!isAnon && voterName is String && voterName.trim().isNotEmpty) {
+              voterNames.add(voterName.trim());
             }
           }
         }
