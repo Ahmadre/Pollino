@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     libglu1-mesa \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Flutter SDK - pinned to stable 3.27.1 (Dart 3.6.0)
-RUN git clone -b 3.27.1 --depth 1 https://github.com/flutter/flutter.git /flutter
+# Install Flutter SDK - pinned to stable 3.41.2 (Dart 3.6.0)
+RUN git clone -b 3.41.2 --depth 1 https://github.com/flutter/flutter.git /flutter
 ENV PATH="/flutter/bin:${PATH}"
 
 # Pre-download Flutter web tools and enable web
