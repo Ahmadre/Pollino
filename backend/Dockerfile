@@ -1,6 +1,8 @@
 # Build stage
 FROM eclipse-temurin:21-jdk-alpine AS build
 
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Copy Maven wrapper and pom.xml (leverage Docker layer caching)
