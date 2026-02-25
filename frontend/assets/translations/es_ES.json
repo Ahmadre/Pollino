@@ -164,6 +164,19 @@
       "copied": "¡Enlace copiado!",
       "warning": "⚠️ ¡Guarda este enlace de forma segura - es la única manera de gestionar tu encuesta!",
       "copyAndClose": "Copiar Enlace y Cerrar"
+    },
+    "email": {
+      "label": "Correo electrónico (opcional)",
+      "description": "Recibe el enlace de administración y el enlace de la encuesta por correo electrónico para no perderlos.",
+      "placeholder": "tu@email.com",
+      "invalid": "Por favor, introduce una dirección de correo electrónico válida",
+      "confirm": {
+        "title": "¿Continuar sin correo electrónico?",
+        "message": "No has introducido una dirección de correo electrónico. El enlace de administración solo se mostrará una vez después de la creación y no se podrá recuperar posteriormente.",
+        "warning": "Sin una dirección de correo electrónico, no podrás recuperar el enlace de administración si lo pierdes.",
+        "goBack": "Volver",
+        "continue": "Continuar de todos modos"
+      }
     }
   },
   "time": {

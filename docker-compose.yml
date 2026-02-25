@@ -51,6 +51,12 @@ services:
       CLEANUP_CRON: ${CLEANUP_CRON:-0 0 * * * *}
       RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
       RATE_LIMIT_VOTE_RPM: ${RATE_LIMIT_VOTE_RPM:-10}
+      SMTP_HOST: ${SMTP_HOST:-smtp.ionos.de}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USERNAME: ${SMTP_USERNAME:-mail@ahmadre.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_SENDER: ${SMTP_SENDER:-Pollino <poll@ahmadre.com>}
+      MAIL_ENABLED: ${MAIL_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       JAVA_OPTS: -Xmx512m -Xms256m
     healthcheck:

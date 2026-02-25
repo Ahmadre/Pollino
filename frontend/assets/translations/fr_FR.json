@@ -164,6 +164,19 @@
       "copied": "Lien copié !",
       "warning": "⚠️ Gardez ce lien en sécurité - c'est le seul moyen de gérer votre sondage !",
       "copyAndClose": "Copier le Lien et Fermer"
+    },
+    "email": {
+      "label": "Adresse e-mail (optionnel)",
+      "description": "Recevez le lien d'administration et le lien du sondage par e-mail pour ne pas les perdre.",
+      "placeholder": "votre@email.com",
+      "invalid": "Veuillez entrer une adresse e-mail valide",
+      "confirm": {
+        "title": "Continuer sans e-mail ?",
+        "message": "Vous n'avez pas saisi d'adresse e-mail. Le lien d'administration ne sera affiché qu'une seule fois après la création et ne pourra pas être récupéré ultérieurement.",
+        "warning": "Sans adresse e-mail, vous ne pourrez pas récupérer le lien d'administration si vous le perdez.",
+        "goBack": "Retour",
+        "continue": "Continuer quand même"
+      }
     }
   },
   "time": {

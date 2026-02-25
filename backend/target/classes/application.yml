@@ -9,6 +9,25 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017/pollino}
       database: ${MONGODB_DATABASE:pollino}
       auto-index-creation: true
+  mail:
+    host: ${SMTP_HOST:smtp.ionos.de}
+    port: ${SMTP_PORT:465}
+    username: ${SMTP_USERNAME:mail@ahmadre.com}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          starttls:
+            enable: false
+        transport:
+          protocol: smtps
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
 
 # Pollino application configuration
 pollino:
@@ -21,6 +40,9 @@ pollino:
     enabled: ${CLEANUP_ENABLED:true}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  mail:
+    sender-address: ${SMTP_SENDER:Pollino <poll@ahmadre.com>}
+    enabled: ${MAIL_ENABLED:true}
 
 # Rate limiting
 rate-limit:

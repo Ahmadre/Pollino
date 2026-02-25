@@ -3,6 +3,7 @@ package com.pollino.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,4 +41,7 @@ public class CreatePollRequest {
     private boolean autoDeleteAfterExpiry = false;
 
     private String creatorName;
+
+    @Email(message = "Invalid email address")
+    private String creatorEmail;
 }

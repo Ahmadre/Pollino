@@ -30,6 +30,7 @@ public class PollService {
     private final PollRepository pollRepository;
     private final VoteRepository voteRepository;
     private final CommentRepository commentRepository;
+    private final EmailService emailService;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final String TOKEN_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -97,6 +98,17 @@ public class PollService {
         Poll savedPoll = pollRepository.save(poll);
 
         String adminUrl = webAppUrl + "/admin/" + savedPoll.getId() + "/" + adminToken;
+        String pollUrl = webAppUrl + "/poll/" + savedPoll.getId();
+
+        // Send email if creator provided an email address
+        if (request.getCreatorEmail() != null && !request.getCreatorEmail().isBlank()) {
+            emailService.sendPollCreatedEmail(
+                    request.getCreatorEmail().trim(),
+                    savedPoll.getTitle(),
+                    pollUrl,
+                    adminUrl
+            );
+        }
 
         return CreatePollResponse.builder()
                 .poll(PollResponse.fromPoll(savedPoll))

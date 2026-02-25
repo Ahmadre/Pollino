@@ -35,7 +35,8 @@ class CreatePollModalSheet {
     );
   }
 
-  static WoltModalSheetPage _buildCreatePollPage(BuildContext context, CreatePollBloc bloc) {
+  static WoltModalSheetPage _buildCreatePollPage(
+      BuildContext context, CreatePollBloc bloc) {
     return WoltModalSheetPage(
       hasSabGradient: false,
       topBarTitle: Text(
@@ -75,7 +76,8 @@ class CreatePollModalSheet {
     );
   }
 
-  static WoltModalSheetPage _buildSuccessPage(BuildContext context, CreatePollBloc bloc) {
+  static WoltModalSheetPage _buildSuccessPage(
+      BuildContext context, CreatePollBloc bloc) {
     return WoltModalSheetPage(
       hasSabGradient: false,
       topBarTitle: Text(
@@ -222,14 +224,16 @@ class _SuccessContent extends StatelessWidget {
                         Clipboard.setData(ClipboardData(text: adminUrl));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(I18nService.instance.translate('create.admin.copied')),
+                            content: Text(I18nService.instance
+                                .translate('create.admin.copied')),
                             backgroundColor: Colors.green,
                             duration: const Duration(seconds: 2),
                           ),
                         );
                       },
                       icon: const Icon(Icons.copy, size: 18),
-                      tooltip: I18nService.instance.translate('create.admin.copy'),
+                      tooltip:
+                          I18nService.instance.translate('create.admin.copy'),
                     ),
                   ],
                 ),
@@ -246,7 +250,8 @@ class _SuccessContent extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.warning_amber, color: Color(0xFFD97706), size: 20),
+                const Icon(Icons.warning_amber,
+                    color: Color(0xFFD97706), size: 20),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -269,7 +274,8 @@ class _SuccessContent extends StatelessWidget {
                     Navigator.of(context).pop();
                     Routemaster.of(context).replace('/poll/${poll.id}');
                   },
-                  child: Text(I18nService.instance.translate('create.success.viewPoll')),
+                  child: Text(I18nService.instance
+                      .translate('create.success.viewPoll')),
                 ),
               ),
               const SizedBox(width: 12),
@@ -284,7 +290,8 @@ class _SuccessContent extends StatelessWidget {
                           children: [
                             const Icon(Icons.check_circle, color: Colors.white),
                             const SizedBox(width: 8),
-                            Text(I18nService.instance.translate('create.success.withAdmin')),
+                            Text(I18nService.instance
+                                .translate('create.success.withAdmin')),
                           ],
                         ),
                         backgroundColor: Colors.green,
@@ -295,7 +302,8 @@ class _SuccessContent extends StatelessWidget {
                     backgroundColor: const Color(0xFF4F46E5),
                     foregroundColor: Colors.white,
                   ),
-                  child: Text(I18nService.instance.translate('create.admin.copyAndClose')),
+                  child: Text(I18nService.instance
+                      .translate('create.admin.copyAndClose')),
                 ),
               ),
             ],
@@ -314,6 +322,9 @@ class _CreatePollContentState extends State<_CreatePollContent> {
         state.when(
           initial: () {},
           creating: () {},
+          confirmNoEmail: () {
+            _showEmailConfirmationDialog(context);
+          },
           created: (pollResult) {
             // Aktualisiere den PollBloc
             context.read<PollBloc>().add(const PollEvent.refreshPolls());
@@ -337,6 +348,93 @@ class _CreatePollContentState extends State<_CreatePollContent> {
           child: PollForm(
             controller: context.read<CreatePollBloc>().formController,
           ),
+        );
+      },
+    );
+  }
+
+  void _showEmailConfirmationDialog(BuildContext context) {
+    final bloc = context.read<CreatePollBloc>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          icon: const Icon(Icons.email_outlined,
+              size: 48, color: Color(0xFFD97706)),
+          title: Text(
+            I18nService.instance.translate('create.email.confirm.title'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                I18nService.instance.translate('create.email.confirm.message'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 15, color: Color(0xFF6B7280), height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFD97706)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning_amber_rounded,
+                        color: Color(0xFFD97706), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        I18nService.instance
+                            .translate('create.email.confirm.warning'),
+                        style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF92400E),
+                            height: 1.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                // Zurück zum Formular, State auf initial zurücksetzen
+                bloc.add(const CreatePollEvent.reset());
+              },
+              child: Text(
+                I18nService.instance.translate('create.email.confirm.goBack'),
+                style: const TextStyle(
+                    color: Color(0xFF4F46E5), fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                bloc.add(const CreatePollEvent.confirmCreateWithoutEmail());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD97706),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text(
+                I18nService.instance.translate('create.email.confirm.continue'),
+              ),
+            ),
+          ],
         );
       },
     );

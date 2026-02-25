@@ -68,6 +68,7 @@ class ApiService {
     DateTime? expiresAt,
     bool autoDeleteAfterExpiry = false,
     String? creatorName,
+    String? creatorEmail,
   }) async {
     try {
       final uri = Uri.parse('$_baseUrl/api/polls');
@@ -80,6 +81,7 @@ class ApiService {
         'expiresAt': expiresAt?.toUtc().toIso8601String(),
         'autoDeleteAfterExpiry': autoDeleteAfterExpiry,
         'creatorName': creatorName,
+        'creatorEmail': creatorEmail,
       };
 
       final headers = Map<String, String>.from(_headers);

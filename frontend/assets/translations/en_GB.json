@@ -164,6 +164,19 @@
       "copied": "Link copied!",
       "warning": "⚠️ Keep this link safe - it's the only way to manage your poll!",
       "copyAndClose": "Copy Link & Close"
+    },
+    "email": {
+      "label": "E-Mail Address (optional)",
+      "description": "Receive the admin link and poll link via email so you don't lose them.",
+      "placeholder": "your@email.com",
+      "invalid": "Please enter a valid email address",
+      "confirm": {
+        "title": "Continue without email?",
+        "message": "You have not entered an email address. The admin link will only be shown once after creation and cannot be retrieved afterwards.",
+        "warning": "Without an email address, you cannot recover the admin link if you lose it.",
+        "goBack": "Go back",
+        "continue": "Continue anyway"
+      }
     }
   },
   "time": {

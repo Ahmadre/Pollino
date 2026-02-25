@@ -10,6 +10,7 @@ class PollFormData {
   String? description;
   List<String> options;
   String? creatorName;
+  String? creatorEmail;
   bool allowMultipleOptions;
   bool enableAnonymousVoting;
   bool hasExpirationDate;
@@ -21,6 +22,7 @@ class PollFormData {
     this.description,
     this.options = const [],
     this.creatorName,
+    this.creatorEmail,
     this.allowMultipleOptions = false,
     this.enableAnonymousVoting = true,
     this.hasExpirationDate = false,
@@ -80,6 +82,7 @@ class _PollFormState extends State<PollForm> {
   final _questionController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _creatorNameController = TextEditingController();
+  final _creatorEmailController = TextEditingController();
   final List<TextEditingController> _optionControllers = [];
   bool _allowMultipleOptions = false;
   bool _enableAnonymousVoting = true;
@@ -129,6 +132,7 @@ class _PollFormState extends State<PollForm> {
     _questionController.dispose();
     _descriptionController.dispose();
     _creatorNameController.dispose();
+    _creatorEmailController.dispose();
     for (final controller in _optionControllers) {
       controller.dispose();
     }
@@ -252,6 +256,9 @@ class _PollFormState extends State<PollForm> {
       options: options,
       creatorName:
           _enableAnonymousVoting ? null : _creatorNameController.text.trim(),
+      creatorEmail: _creatorEmailController.text.trim().isEmpty
+          ? null
+          : _creatorEmailController.text.trim(),
       allowMultipleOptions: _allowMultipleOptions,
       enableAnonymousVoting: _enableAnonymousVoting,
       hasExpirationDate: _hasExpirationDate,
@@ -667,6 +674,67 @@ class _PollFormState extends State<PollForm> {
                   ),
                 ),
               ],
+
+              const SizedBox(height: 20),
+
+              // E-Mail Adresse (optional)
+              Text(
+                I18nService.instance.translate('create.email.label'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                I18nService.instance.translate('create.email.description'),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE9ECEF)),
+                ),
+                child: TextFormField(
+                  controller: _creatorEmailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    hintText: I18nService.instance
+                        .translate('create.email.placeholder'),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFFADB5BD),
+                      fontSize: 16,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Color(0xFFADB5BD),
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                  ),
+                  validator: (value) {
+                    if (value != null && value.trim().isNotEmpty) {
+                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                      if (!emailRegex.hasMatch(value.trim())) {
+                        return I18nService.instance
+                            .translate('create.email.invalid');
+                      }
+                    }
+                    return null;
+                  },
+                ),
+              ),
 
               const SizedBox(height: 20),
 

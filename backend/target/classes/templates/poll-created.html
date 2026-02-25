@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="color-scheme" content="light"/>
+    <meta name="supported-color-schemes" content="light"/>
+    <title>Deine Umfrage wurde erstellt</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Reset */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+        body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+        a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+
+        /* Base */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f5f7;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container { width: 100% !important; padding: 12px !important; }
+            .content-cell { padding: 24px 20px !important; }
+            .url-box { word-break: break-all !important; }
+            .btn { display: block !important; width: 100% !important; text-align: center !important; }
+            .btn-table { width: 100% !important; }
+            .header-cell { padding: 28px 20px 20px !important; }
+            .footer-cell { padding: 20px !important; }
+            h1 { font-size: 22px !important; }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body { background-color: #1a1a2e !important; }
+            .email-card { background-color: #16213e !important; }
+            .content-cell { color: #e0e0e0 !important; }
+            h1, h2, .section-title { color: #ffffff !important; }
+            .url-box { background-color: #0f3460 !important; border-color: #4F46E5 !important; }
+            .url-text { color: #a5b4fc !important; }
+            .info-box { background-color: #1a1a3e !important; border-color: #3730a3 !important; }
+            .info-text { color: #c7d2fe !important; }
+            .warning-box { background-color: #3d2e00 !important; border-color: #d97706 !important; }
+            .warning-text { color: #fcd34d !important; }
+            .footer-cell { color: #9ca3af !important; }
+            .divider { border-color: #2d3748 !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f5f7;">
+    <!-- Preview text (hidden) -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;" aria-hidden="true">
+        Deine Umfrage wurde erfolgreich erstellt. Hier findest du deinen Admin-Link und den Umfrage-Link.
+        &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847; &#847;
+    </div>
+
+    <!-- Outer wrapper -->
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f5f7;">
+        <tr>
+            <td align="center" style="padding: 24px 16px;">
+
+                <!-- Email container -->
+                <table role="presentation" class="email-container" cellpadding="0" cellspacing="0" border="0" width="580" style="max-width: 580px; width: 100%;">
+
+                    <!-- Header with Logo -->
+                    <tr>
+                        <td class="header-cell" align="center" style="padding: 32px 24px 24px; background: linear-gradient(135deg, #4F46E5 0%, #6366F1 50%, #818CF8 100%); border-radius: 16px 16px 0 0;">
+                            <!-- Pollino Logo (SVG inline for email compatibility) -->
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 8px;">
+                                        <div style="width: 56px; height: 56px; background-color: rgba(255,255,255,0.2); border-radius: 14px; display: inline-block; text-align: center; line-height: 56px;">
+                                            <span style="font-size: 28px; color: #ffffff;" role="img" aria-label="Pollino">&#x1F4CA;</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center">
+                                        <h1 style="margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Pollino</h1>
+                                        <p style="margin: 4px 0 0; font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 400;">Deine Umfrage-App</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Main Content Card -->
+                    <tr>
+                        <td class="email-card" style="background-color: #ffffff;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td class="content-cell" style="padding: 32px 32px 24px; color: #1a1a2e;">
+
+                                        <!-- Success Icon -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td align="center" style="padding-bottom: 20px;">
+                                                    <div style="width: 64px; height: 64px; background-color: #ecfdf5; border-radius: 50%; display: inline-block; text-align: center; line-height: 64px;">
+                                                        <span style="font-size: 32px;" role="img" aria-label="Erfolg">&#x2705;</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #1a1a2e; text-align: center;">Umfrage erfolgreich erstellt!</h2>
+                                        <p style="margin: 0 0 24px; font-size: 15px; color: #6b7280; text-align: center; line-height: 1.5;">
+                                            Deine Umfrage <strong style="color: #1a1a2e;" th:text="${pollTitle}">Umfragetitel</strong> ist jetzt live und kann geteilt werden.
+                                        </p>
+
+                                        <!-- Divider -->
+                                        <hr class="divider" style="border: none; border-top: 1px solid #e5e7eb; margin: 0 0 24px;"/>
+
+                                        <!-- Poll URL Section -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                                            <tr>
+                                                <td>
+                                                    <p class="section-title" style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #4F46E5; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        &#x1F517; Umfrage-Link
+                                                    </p>
+                                                    <p style="margin: 0 0 12px; font-size: 14px; color: #6b7280; line-height: 1.4;">
+                                                        Teile diesen Link mit den Teilnehmern deiner Umfrage:
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="url-box" style="background-color: #f0f0ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 14px 16px; word-break: break-all;">
+                                                        <a class="url-text" th:href="${pollUrl}" th:text="${pollUrl}" style="color: #4F46E5; font-size: 14px; text-decoration: none; font-family: 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace; line-height: 1.4;">
+                                                            https://pollino.app/poll/123
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" style="padding-top: 14px;">
+                                                    <table role="presentation" class="btn-table" cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td align="center" style="border-radius: 10px; background-color: #4F46E5;">
+                                                                <a class="btn" th:href="${pollUrl}" style="display: inline-block; padding: 12px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 10px; line-height: 1.2;">
+                                                                    Umfrage öffnen &#x2192;
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Divider -->
+                                        <hr class="divider" style="border: none; border-top: 1px solid #e5e7eb; margin: 0 0 20px;"/>
+
+                                        <!-- Admin URL Section -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                                            <tr>
+                                                <td>
+                                                    <p class="section-title" style="margin: 0 0 8px; font-size: 13px; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        &#x1F511; Admin-Link (wichtig!)
+                                                    </p>
+                                                    <p style="margin: 0 0 12px; font-size: 14px; color: #6b7280; line-height: 1.4;">
+                                                        Mit diesem Link kannst du deine Umfrage bearbeiten oder löschen. <strong style="color: #1a1a2e;">Bewahre ihn sicher auf!</strong>
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="url-box" style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 16px; word-break: break-all;">
+                                                        <a class="url-text" th:href="${adminUrl}" th:text="${adminUrl}" style="color: #dc2626; font-size: 14px; text-decoration: none; font-family: 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace; line-height: 1.4;">
+                                                            https://pollino.app/admin/123/token
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" style="padding-top: 14px;">
+                                                    <table role="presentation" class="btn-table" cellpadding="0" cellspacing="0" border="0">
+                                                        <tr>
+                                                            <td align="center" style="border-radius: 10px; background-color: #dc2626;">
+                                                                <a class="btn" th:href="${adminUrl}" style="display: inline-block; padding: 12px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 10px; line-height: 1.2;">
+                                                                    Admin-Bereich öffnen &#x1F512;
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Warning Box -->
+                                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td class="warning-box" style="background-color: #fffbeb; border: 1px solid #f59e0b; border-radius: 10px; padding: 14px 16px;">
+                                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                        <tr>
+                                                            <td style="width: 28px; vertical-align: top; padding-right: 10px;">
+                                                                <span style="font-size: 18px;" role="img" aria-label="Warnung">&#x26A0;&#xFE0F;</span>
+                                                            </td>
+                                                            <td>
+                                                                <p class="warning-text" style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+                                                                    <strong>Wichtig:</strong> Der Admin-Link ist der einzige Zugang zur Verwaltung deiner Umfrage. Wenn du ihn verlierst, kann die Umfrage nicht mehr bearbeitet oder gelöscht werden.
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td class="footer-cell" align="center" style="padding: 24px 32px 32px; background-color: #f9fafb; border-radius: 0 0 16px 16px; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 4px; font-size: 13px; color: #9ca3af; line-height: 1.4;">
+                                Diese E-Mail wurde automatisch von <strong style="color: #6b7280;">Pollino</strong> versendet, weil du eine Umfrage erstellt hast.
+                            </p>
+                            <p style="margin: 8px 0 0; font-size: 12px; color: #d1d5db;">
+                                &copy; <span th:text="${year}">2026</span> Pollino &mdash; Deine Umfrage-App
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                <!-- /Email container -->
+
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -164,6 +164,19 @@
       "copied": "Link kopiert!",
       "warning": "⚠️ Bewahre diesen Link sicher auf - er ist der einzige Weg, deine Umfrage zu verwalten!",
       "copyAndClose": "Link kopieren & schließen"
+    },
+    "email": {
+      "label": "E-Mail Adresse (optional)",
+      "description": "Erhalte den Admin-Link und Umfrage-Link per E-Mail, damit sie nicht verloren gehen.",
+      "placeholder": "deine@email.de",
+      "invalid": "Bitte gib eine gültige E-Mail Adresse ein",
+      "confirm": {
+        "title": "Ohne E-Mail fortfahren?",
+        "message": "Du hast keine E-Mail Adresse angegeben. Der Admin-Link wird nur einmalig nach dem Erstellen angezeigt und kann danach nicht mehr abgerufen werden.",
+        "warning": "Ohne E-Mail Adresse kannst du den Admin-Link nicht wiederherstellen, falls du ihn verlierst.",
+        "goBack": "Zurück",
+        "continue": "Trotzdem fortfahren"
+      }
     }
   },
   "time": {
