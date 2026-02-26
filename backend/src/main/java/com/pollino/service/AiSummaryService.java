@@ -86,56 +86,65 @@ public class AiSummaryService {
 
     /**
      * Build a structured prompt from poll data and feedback responses.
+     * Anonymised: no names, no participant count, no per-person listing.
      */
     private String buildPrompt(String pollTitle, List<FeedbackQuestion> questions, List<FeedbackResponse> responses) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Du bist ein hilfreicher Assistent, der Feedback-Umfragen analysiert und zusammenfasst.\n\n");
-        sb.append("Analysiere die folgenden Feedback-Antworten und erstelle eine übersichtliche, semantische Zusammenfassung auf Deutsch.\n");
-        sb.append("Verwende passende Emojis, um die Zusammenfassung ansprechend zu gestalten.\n");
-        sb.append("Gruppiere die Ergebnisse nach Fragen und hebe wichtige Trends, häufige Meinungen und Ausreißer hervor.\n");
-        sb.append("Formatiere die Zusammenfassung mit Markdown.\n\n");
-
-        sb.append("## Umfrage: ").append(pollTitle).append("\n\n");
-        sb.append("### Fragen:\n");
-
+        // Build a map: questionId -> list of answers (text or selected options)
         Map<String, FeedbackQuestion> questionMap = new LinkedHashMap<>();
         for (FeedbackQuestion q : questions) {
             questionMap.put(q.getId(), q);
-            sb.append("- **").append(q.getQuestionText()).append("** (")
-                    .append(q.getQuestionType().name()).append(")\n");
-            if (q.getOptions() != null && !q.getOptions().isEmpty()) {
-                sb.append("  Optionen: ").append(String.join(", ", q.getOptions())).append("\n");
+        }
+
+        // Aggregate all answers grouped by question
+        Map<String, List<String>> answersByQuestion = new LinkedHashMap<>();
+        for (FeedbackQuestion q : questions) {
+            answersByQuestion.put(q.getId(), new ArrayList<>());
+        }
+        for (FeedbackResponse resp : responses) {
+            for (FeedbackAnswer answer : resp.getAnswers()) {
+                List<String> bucket = answersByQuestion.get(answer.getQuestionId());
+                if (bucket == null) continue;
+                if (answer.getTextAnswer() != null && !answer.getTextAnswer().isBlank()) {
+                    bucket.add(answer.getTextAnswer().trim());
+                }
+                if (answer.getSelectedOptions() != null && !answer.getSelectedOptions().isEmpty()) {
+                    bucket.add(String.join(", ", answer.getSelectedOptions()));
+                }
             }
         }
 
-        sb.append("\n### Antworten (").append(responses.size()).append(" Teilnehmer):\n\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append("Du bist ein hilfreicher Assistent, der Feedback-Umfragen analysiert.\n\n");
+        sb.append("Erstelle eine prägnante, semantische Zusammenfassung der folgenden Feedback-Antworten auf Deutsch.\n\n");
+        sb.append("WICHTIGE REGELN:\n");
+        sb.append("- Nenne KEINE Namen von Personen\n");
+        sb.append("- Erwähne NICHT die Anzahl der Teilnehmenden\n");
+        sb.append("- Liste die einzelnen Antworten NICHT wörtlich auf\n");
+        sb.append("- Fasse stattdessen Themen, Trends und Meinungen zusammen\n");
+        sb.append("- Hebe Gemeinsamkeiten und Unterschiede in den Meinungen hervor\n");
+        sb.append("- Verwende Markdown zur Formatierung (Überschriften, Fettdruck, Listen)\n");
+        sb.append("- Verwende passende Emojis sparsam\n");
+        sb.append("- Schreibe fließend und professionell\n\n");
 
-        for (int i = 0; i < responses.size(); i++) {
-            FeedbackResponse resp = responses.get(i);
-            sb.append("**Teilnehmer ").append(i + 1);
-            if (resp.getRespondentName() != null && !resp.getRespondentName().isBlank()) {
-                sb.append(" (").append(resp.getRespondentName()).append(")");
-            }
-            sb.append(":**\n");
+        sb.append("## Umfrage: ").append(pollTitle).append("\n\n");
 
-            for (FeedbackAnswer answer : resp.getAnswers()) {
-                FeedbackQuestion q = questionMap.get(answer.getQuestionId());
-                if (q != null) {
-                    sb.append("- ").append(q.getQuestionText()).append(": ");
-                    if (answer.getTextAnswer() != null && !answer.getTextAnswer().isBlank()) {
-                        sb.append(answer.getTextAnswer());
-                    }
-                    if (answer.getSelectedOptions() != null && !answer.getSelectedOptions().isEmpty()) {
-                        sb.append(String.join(", ", answer.getSelectedOptions()));
-                    }
-                    sb.append("\n");
-                }
+        for (FeedbackQuestion q : questions) {
+            List<String> answers = answersByQuestion.getOrDefault(q.getId(), Collections.emptyList())
+                    .stream().filter(a -> !a.isBlank()).collect(Collectors.toList());
+            if (answers.isEmpty()) continue;
+
+            sb.append("### Frage: ").append(q.getQuestionText()).append("\n");
+            sb.append("Gesammelte Antworten:\n");
+            for (String a : answers) {
+                sb.append("- ").append(a).append("\n");
             }
             sb.append("\n");
         }
 
-        sb.append("\nErstelle jetzt eine strukturierte Zusammenfassung mit Emojis. ");
-        sb.append("Beginne mit einem kurzen Überblick, dann analysiere jede Frage einzeln.");
+        sb.append("---\n\n");
+        sb.append("Erstelle nun die Zusammenfassung. ");
+        sb.append("Beginne direkt mit der inhaltlichen Zusammenfassung — ohne Einleitung wie \"Hier ist die Zusammenfassung\" o.ä. ");
+        sb.append("Gliedere nach inhaltlichen Themen. Benenne keine Personen und keine Teilnehmerzahl.");
 
         return sb.toString();
     }

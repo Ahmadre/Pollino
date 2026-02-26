@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'package:pollino/services/api_service.dart';
 import 'package:pollino/core/localization/i18n_service.dart';
 
@@ -284,12 +286,59 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE9ECEF)),
               ),
-              child: SelectableText(
-                summaryText,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.7,
-                  color: Color(0xFF374151),
+              child: MarkdownBody(
+                data: summaryText,
+                selectable: true,
+                extensionSet: md.ExtensionSet(
+                  md.ExtensionSet.gitHubFlavored.blockSyntaxes,
+                  <md.InlineSyntax>[
+                    md.EmojiSyntax(),
+                    ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes,
+                  ],
+                ),
+                styleSheet: MarkdownStyleSheet(
+                  p: const TextStyle(
+                    fontSize: 14,
+                    height: 1.7,
+                    color: Color(0xFF374151),
+                  ),
+                  h2: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E1B4B),
+                  ),
+                  h3: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E1B4B),
+                  ),
+                  h4: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF374151),
+                  ),
+                  strong: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF111827),
+                  ),
+                  em: const TextStyle(
+                    fontStyle: FontStyle.italic,
+                    color: Color(0xFF374151),
+                  ),
+                  listBullet: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF4F46E5),
+                  ),
+                  blockSpacing: 8,
+                  listIndent: 20,
+                  horizontalRuleDecoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: Color(0xFFE9ECEF),
+                        width: 1,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             )
