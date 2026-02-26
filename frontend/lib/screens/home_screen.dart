@@ -297,7 +297,10 @@ class _PollCardState extends State<_PollCard> {
   @override
   void initState() {
     super.initState();
-    _loadVoteData();
+    // Only load vote data for STANDARD polls
+    if (widget.poll.pollType != 'FEEDBACK') {
+      _loadVoteData();
+    }
   }
 
   Future<void> _loadVoteData() async {
@@ -429,17 +432,26 @@ class _PollCardState extends State<_PollCard> {
 
             const SizedBox(height: 8),
 
-            // Vote count and expiration info (use vote counts from poll options)
+// Vote / response count and expiration info
             Builder(
               builder: (context) {
-                final votes = widget.poll.options
-                    .fold<int>(0, (sum, opt) => sum + opt.votes);
+                final isFeedback = widget.poll.pollType == 'FEEDBACK';
+                final countText = isFeedback
+                    ? I18nService.instance.translate(
+                        'feedback.results.responseCount',
+                        params: {
+                          'count': '${widget.poll.feedbackResponseCount}'
+                        })
+                    : I18nService.instance.translate(
+                        'poll.voting.votesSummary',
+                        params: {
+                          'votes': '${widget.poll.options.fold<int>(0, (sum, opt) => sum + opt.votes)}'
+                        });
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      I18nService.instance.translate('poll.voting.votesSummary',
-                          params: {'votes': '$votes'}),
+                      countText,
                       style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                     if (widget.poll.expiresAt != null) ...[
@@ -453,8 +465,8 @@ class _PollCardState extends State<_PollCard> {
 
             const SizedBox(height: 16),
 
-            // Poll Results Chart (use cached vote data)
-            if (_votesLoaded)
+            // Poll Results Chart (only for STANDARD polls)
+            if (widget.poll.pollType != 'FEEDBACK' && _votesLoaded)
               Builder(builder: (context) {
                 final List<Option> liveOptions = widget.poll.options;
                 final Map<String, int> counts = {};
