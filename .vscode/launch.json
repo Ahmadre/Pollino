@@ -5,6 +5,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Spring Boot Backend",
+      "type": "java",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "mainClass": "com.pollino.PollinoApplication",
+      "projectName": "pollino-backend",
+      "envFile": "${workspaceFolder}/.env.local",
+    },
+    {
       "name": "Flutter Web (Mac, Linux)",
       "cwd": "${workspaceFolder}/frontend",
       "request": "launch",
@@ -13,7 +22,7 @@
         "-d",
         "chrome",
         "--web-port",
-        "8080",
+        "3001",
       ]
     },
     {
@@ -25,8 +34,7 @@
         "-d",
         "web-server",
         "--web-port",
-        "8080",
-        "--dart-define=SUPABASE_URL=https://localhost:8443",
+        "3001"
       ]
     }
   ]
