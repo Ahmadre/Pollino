@@ -16,6 +16,90 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Export-Funktion (CSV)
 - Umfrage-Templates
 
+## [2.1.0] - 2026-02-26 - Poll Types, AI Summary & Email Notifications
+
+### 🚀 Added (2.1.0)
+
+- 🗳️ **Poll-Typen (STANDARD & FEEDBACK)**
+  - Neues Modell `PollType` mit den Typen `STANDARD` und `FEEDBACK`
+  - STANDARD-Polls: Klassische Abstimmung mit Antwortoptionen
+  - FEEDBACK-Polls: Freitext-basierte Umfragen mit konfigurierbaren Fragen
+  - Typen bei Erstellung wählbar, separate UI-Flows je Typ
+  - I18n-Übersetzungen für Poll-Typen in allen 6 Sprachen
+- ❓ **Feedback-Fragen (Feedback Polls)**
+  - Neues Modell `FeedbackQuestion` mit `QuestionType` (Text, Skala, Mehrfachauswahl etc.)
+  - `FeedbackQuestionRequest` / `FeedbackQuestionResponse` DTOs
+  - Fragen beim Erstellen und Bearbeiten einer Umfrage konfigurierbar
+  - IDs bestehender Fragen werden bei Updates erhalten (`fccf96a`)
+  - `FeedbackResultsWidget` für strukturierte Ergebnisdarstellung
+  - `FeedbackPublicSummaryWidget` für öffentliche Zusammenfassungen
+  - `FeedbackAnswerWidget` für die Antwort-Eingabe in der Poll-Ansicht
+- 🤖 **KI-Zusammenfassung (AI Summary)**
+  - Neuer `AiSummaryService` und `AiSummaryRepository` im Backend
+  - Automatische KI-generierte Zusammenfassung für FEEDBACK-Polls
+  - Asynchrones Generieren mit `generating`-Status und Polling für Updates
+  - AI-Summary-Vorschau in der `PollCard` auf der Startseite
+  - Öffentliche AI-Summary in der Detail-Ansicht (nach Ablauf / Admin-Ansicht)
+  - Prompt begrenzt auf max. 1000 Zeichen
+  - Markdown-Rendering der KI-Zusammenfassungen (`flutter_markdown`)
+  - CommandLineRunner zeigt beim Start Verbindungsstatus zum AI-Server
+- 📧 **E-Mail-Benachrichtigungen bei Poll-Erstellung**
+  - Neuer `EmailService` im Backend mit SMTP-Unterstützung
+  - HTML-E-Mail-Template `poll-created.html` via Thymeleaf
+  - E-Mail-Versand nur beim Erstellen (nicht beim Bearbeiten) einer Umfrage
+  - SMTP-Konfiguration via Umgebungsvariablen (`.env.example` aktualisiert)
+- ⏱️ **Ablauf-Presets im Poll-Formular**
+  - Schnellauswahl für gängige Ablaufzeiten (z. B. 1 h, 1 d, 1 Woche)
+  - E-Mail-Adresse nur im Erstellungs-Formular sichtbar (nicht im Bearbeitungs-Formular)
+- ☑️ **Multiple Choice für STANDARD-Polls**
+  - Mehrere Antwortoptionen gleichzeitig auswählbar
+  - Einstellbar per Toggle im Poll-Formular
+- ⚡ **Vote-Caching**
+  - Vote-Daten werden in `PollCard` und `PollScreen` gecacht, um redundante API-Aufrufe zu reduzieren
+- 🛡️ **Rate-Limiting-Verbesserungen**
+  - Rate-Limiting-Konfiguration direkt in `docker-compose.yml` und `docker-compose.local.yml` konfigurierbar
+  - Enable/Disable-Option für lokale Entwicklung
+  - CommandLineRunner gibt Konfiguration beim Start aus
+  - Erhöhte Standardlimits (allgemein und Votes)
+
+### 🎨 Changed (2.1.0)
+
+- **Flutter SDK**: Version `3.27.1` → `3.41.2` (Dockerfile gepinnt auf Stable)
+- **PDF-Export**: Nur noch für FEEDBACK-Polls verfügbar (Admin- und öffentliche Ansicht), entfernt für STANDARD-Polls
+- **Anzeige Antworten**: FEEDBACK-Polls zeigen Response-Anzahl statt Vote-Buttons; Vote-Daten werden nur für STANDARD-Polls geladen
+- **`PollResponse`**: Enthält nun `feedbackQuestions`-Liste
+- **`CreatePollRequest` / `UpdatePollRequest`**: Erweitert um `pollType` und `feedbackQuestions`
+- **I18n**: `question`-Feld zu allen Sprach-JSONs hinzugefügt; Poll-Typ-Übersetzungen ergänzt
+- **`home_screen.dart`**: Dynamische Typen durch `Poll`/`Option` ersetzt; fehlender i18n-Key `create.success.withAdmin` ergänzt
+
+### 🐛 Fixed (2.1.0)
+
+- **Flutter Dockerfile**: BOM aus `entrypoint.sh` entfernt; Flutter auf `3.27.1 stable` gepinnt (behebt `CupertinoPageTransitionsBuilder`-Fehler); danach Update auf `3.41.2`
+- **ENTRYPOINT**: Expliziter `/bin/sh`-Interpreter verhindert Exec-Fehler auf NAS-Systemen
+- **`mvnw` / `maven-wrapper.properties`**: Zeilenenden normalisiert (CRLF → LF)
+- **`.env.example`**: Abschließende Kommas in SMTP-Konfiguration entfernt
+
+### 🔧 Upgrade Notes (2.1.0)
+
+1. **`.env` anpassen** – neue SMTP- und AI-Server-Variablen eintragen (siehe `.env.example`):
+   ```
+   SMTP_HOST=smtp.example.com
+   SMTP_PORT=587
+   SMTP_USERNAME=...
+   SMTP_PASSWORD=...
+   AI_SERVER_URL=http://localhost:11434
+   ```
+2. **Stack neu starten**:
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
+3. **Frontend-Code-Generator** nach Änderungen ausführen:
+   ```bash
+   cd frontend
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
 ## [2.0.0] - 2026-02-24 - Architecture Migration (Spring Boot + MongoDB)
 
 ### 💥 Breaking Changes (2.0.0)

@@ -9,7 +9,7 @@
 
 [![CI Frontend](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/frontend-docker-build.yml)
 [![CI Backend](https://github.com/Ahmadre/Pollino/actions/workflows/backend-docker-build.yml/badge.svg)](https://github.com/Ahmadre/Pollino/actions/workflows/backend-docker-build.yml)
-[![Flutter](https://img.shields.io/badge/Flutter-3.27.1-blue.svg)](https://flutter.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.41.2-blue.svg)](https://flutter.dev)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-green.svg)](https://spring.io/projects/spring-boot)
 [![MongoDB](https://img.shields.io/badge/MongoDB-7-brightgreen.svg)](https://www.mongodb.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com)
@@ -23,14 +23,29 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 
 > **📸 Visuelle Dokumentation**: Das Interface zeigt die hauptsächliche Umfrage-Funktionalität mit Echtzeit-Abstimmungen, Like- und Kommentar-System und responsivem Design.
 
-## 🆕 Was ist neu in 2.0.0
+## 🆕 Was ist neu in 2.1.0
 
+- **Poll-Typen (STANDARD & FEEDBACK)**: Klassische Abstimmungen und Freitext-Feedback-Umfragen in einem App
+- **KI-Zusammenfassung**: Automatisch generierte AI-Summary für Feedback-Polls (Markdown, Polling für Live-Status)
+- **E-Mail-Benachrichtigungen**: SMTP-basierter E-Mail-Versand mit HTML-Template bei Poll-Erstellung
+- **Multiple Choice**: Mehrfachauswahl für STANDARD-Polls konfigurierbar
+- **Ablauf-Presets**: Schnellauswahl gängiger Ablaufzeiten im Poll-Formular
+- **Vote-Caching**: Reduzierte API-Aufrufe durch Caching in PollCard und PollScreen
+- **Flutter SDK 3.41.2**: Update von 3.27.1 auf 3.41.2 Stable
+- **Bedingter PDF-Export**: PDF-Export ausschließlich für FEEDBACK-Polls
+- **Rate-Limiting**: Konfigurierbar via Docker-Compose, Enable/Disable für lokale Entwicklung
+
+<details>
+<summary>📋 Frühere Versionen</summary>
+
+### 2.0.0
 - **Architektur-Migration**: Komplett neues Backend — von Supabase (PostgreSQL) auf Spring Boot 3.3 + MongoDB 7
 - **Vereinfachte Infrastruktur**: Nur noch 3 Container (MongoDB, Backend, Frontend) statt 15+ Supabase-Services
 - **Spring Boot REST API**: Eigene API mit Rate Limiting, API-Key-Auth und Actuator Health Checks
-- **Integrierter Cleanup-Service**: Abgelaufene Umfragen werden direkt im Backend per Cron-Job bereinigt (kein separater Container mehr)
-- **CI/CD für Backend**: Neuer GitHub Actions Workflow für automatischen Docker-Build bei Änderungen am Backend
-- **Bugfixes**: TimePicker-Validierung, CRLF-Fixes für Docker-Builds auf Windows
+- **Integrierter Cleanup-Service**: Abgelaufene Umfragen werden direkt im Backend per Cron-Job bereinigt
+- **CI/CD für Backend**: Neuer GitHub Actions Workflow für automatischen Docker-Build
+
+</details>
 
 ## 🚀 Features
 
@@ -40,21 +55,29 @@ Eine moderne, vollständig containerisierte Umfrage-Anwendung, entwickelt mit Fl
 - **⚡ State Management**: BLoC Pattern mit flutter_bloc
 - **💾 Offline Support**: Lokale Datenspeicherung mit Hive
 - **🧭 Navigation**: Routemaster für deklaratives Routing
-- **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen
+- **�️ Poll-Typen (STANDARD & FEEDBACK)**: Klassische Abstimmungen und Freitext-Feedback-Umfragen
+- **📊 Interaktive Umfragen**: Echtzeit-Abstimmungen mit sofortigen Ergebnissen, Multiple Choice für STANDARD-Polls
+- **❓ Feedback-Fragen**: Konfigurierbare Fragen mit verschiedenen Typen für FEEDBACK-Polls
+- **🤖 KI-Zusammenfassung**: AI-generierte Zusammenfassung für Feedback-Polls mit Live-Polling und Markdown-Rendering
 - **↕️ Drag & Drop Reihenfolge**: Antwortoptionen per Drag & Drop sortieren (persistente Reihenfolge)
 - **💬 Kommentarsystem**: Benutzer können Kommentare zu Umfragen hinzufügen und bearbeiten
 - **🔧 Admin-Panel**: Umfangreiche Administrationsfunktionen für Umfrage-Verwaltung
 - **✏️ Poll-Bearbeitung**: Vollständige Bearbeitung bestehender Umfragen mit Admin-Token
 - **🌍 Mehrsprachigkeit**: Unterstützung für 6 Sprachen (DE, EN, FR, ES, JA, AR)
 - **🔒 Anonymitätslogik**: Anonyme Umfragen werden nicht gelistet (nur Direktlink), Tooltips zeigen Namen nur bei nicht-anonymen Stimmen
-- **📄 PDF-Export**: Umfragen als PDF herunterladen
+- **📄 PDF-Export**: FEEDBACK-Umfragen als PDF herunterladen
+- **⏱️ Ablauf-Presets**: Schnellauswahl für gängige Ablaufzeiten im Erstellungs-Formular
+- **⚡ Vote-Caching**: Reduzierte API-Aufrufe durch lokales Caching
 
 ### Backend (Spring Boot + MongoDB)
 
 - **☕ Spring Boot 3.3**: Java 21 basierte REST API
 - **🍃 MongoDB 7**: NoSQL-Datenbank für flexible Datenstruktur
 - **🔐 API-Key-Authentifizierung**: Sicherer Zugriff über API-Key-Filter
-- **⚡ Rate Limiting**: Konfigurierbare Request-Limits (60/min allgemein, 10/min für Votes)
+- **⚡ Rate Limiting**: Konfigurierbare Request-Limits via Docker-Compose, Enable/Disable für lokale Entwicklung
+- **🤖 KI-Zusammenfassung**: `AiSummaryService` generiert AI-Zusammenfassungen für FEEDBACK-Polls
+- **📧 E-Mail-Benachrichtigungen**: SMTP-basierter `EmailService` mit HTML-Template (Thymeleaf) bei Poll-Erstellung
+- **🗳️ Feedback-Service**: `FeedbackController` + `FeedbackService` für Feedback-Polls mit Fragetypen
 - **🔧 Admin-Funktionen**: Token-basierte Administratorrechte für Umfrage-Verwaltung
 - **🧹 Automatischer Cleanup**: Integrierter Cron-Job für abgelaufene Umfragen
 - **💚 Health Checks**: Spring Actuator für Health- und Info-Endpoints
@@ -109,7 +132,7 @@ graph TB
 
 - **Docker** & **Docker Compose** (v2.0+)
 - **Git** für Repository-Management
-- **Flutter SDK** 3.27.1+ (für lokale Entwicklung)
+- **Flutter SDK** 3.41.2+ (für lokale Entwicklung)
 - **Dart SDK** 3.6.0+
 - **Java 21** (für lokale Backend-Entwicklung)
 
@@ -271,6 +294,11 @@ docker compose -f docker-compose.local.yml up -d --build
 | `RATE_LIMIT_VOTE_RPM`   | `10`                         | Vote Rate Limit/min           |
 | `API_BASE_URL`          | `http://localhost:8080`      | Backend URL für Frontend      |
 | `WEB_APP_URL`           | `http://localhost:3001`      | Frontend URL                  |
+| `SMTP_HOST`             | –                            | SMTP-Server für E-Mail-Versand|
+| `SMTP_PORT`             | `587`                        | SMTP-Port                     |
+| `SMTP_USERNAME`         | –                            | SMTP-Benutzername             |
+| `SMTP_PASSWORD`         | –                            | SMTP-Passwort                 |
+| `AI_BASE_URL`         | –                            | URL des KI-Servers (optional) |
 
 ## 📁 Projektstruktur
 
@@ -343,6 +371,15 @@ Pollino/
 | `PUT`    | `/api/comments/{pollId}/{commentId}`      | Kommentar bearbeiten      |
 | `DELETE` | `/api/comments/{pollId}/{commentId}`      | Kommentar löschen         |
 
+### Feedback (`/api/feedback`)
+
+| Methode  | Pfad                                              | Beschreibung                         |
+| -------- | ------------------------------------------------- | ------------------------------------ |
+| `POST`   | `/api/feedback/{pollId}`                          | Feedback-Antwort einreichen          |
+| `GET`    | `/api/feedback/{pollId}/results`                  | Feedback-Ergebnisse abrufen          |
+| `GET`    | `/api/feedback/{pollId}/ai-summary`               | KI-Zusammenfassung abrufen/generieren|
+| `GET`    | `/api/feedback/{pollId}/responses/count`          | Anzahl der Feedback-Antworten        |
+
 ## 🤝 Beitragen
 
 1. **Fork** das Repository
@@ -409,7 +446,7 @@ Dieses Projekt ist unter der [MIT Lizenz](LICENSE) lizenziert.
 
 | Kategorie         | Technologie   | Version | Zweck                     |
 | ----------------- | ------------- | ------- | ------------------------- |
-| **Frontend**      | Flutter       | 3.27.1  | Web UI                    |
+| **Frontend**      | Flutter       | 3.41.2  | Web UI                    |
 | **Backend**       | Spring Boot   | 3.3     | REST API                  |
 | **Runtime**       | Java          | 21      | Backend Runtime           |
 | **Datenbank**     | MongoDB       | 7       | NoSQL Document Store      |
