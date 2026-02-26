@@ -365,6 +365,20 @@ class ApiService {
     }
   }
 
+  /// Get public AI summary for a feedback poll (no admin token required).
+  static Future<Map<String, dynamic>> getPublicAiSummary(String pollId) async {
+    try {
+      final uri =
+          Uri.parse('$_baseUrl/api/polls/$pollId/feedback/public-summary');
+      final response = await _client.get(uri, headers: _headers);
+      _checkResponse(response);
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error in getPublicAiSummary: $e');
+      rethrow;
+    }
+  }
+
   /// Get AI summary for a feedback poll (admin only).
   static Future<Map<String, dynamic>> getAiSummary(
       String pollId, String adminToken) async {

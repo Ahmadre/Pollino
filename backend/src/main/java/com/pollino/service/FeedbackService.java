@@ -128,6 +128,30 @@ public class FeedbackService {
     }
 
     /**
+     * Get the AI summary publicly (no admin token required).
+     * Only returns the text if a summary has already been generated.
+     */
+    public AiSummaryResponse getPublicAiSummary(String pollId) {
+        findFeedbackPollOrThrow(pollId); // validates it's a FEEDBACK poll
+
+        Optional<AiSummary> summary = aiSummaryService.getSummary(pollId);
+
+        if (summary.isPresent()) {
+            AiSummary s = summary.get();
+            return AiSummaryResponse.builder()
+                    .summaryText(s.getSummaryText())
+                    .responseCount(s.getResponseCount())
+                    .generatedAt(s.getGeneratedAt())
+                    .available(true)
+                    .build();
+        }
+
+        return AiSummaryResponse.builder()
+                .available(false)
+                .build();
+    }
+
+    /**
      * Get the AI summary for a feedback poll (admin only).
      */
     public AiSummaryResponse getAiSummary(String pollId, String adminToken) {

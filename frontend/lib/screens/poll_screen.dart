@@ -18,6 +18,7 @@ import 'package:pollino/services/comments_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pollino/services/pdf_service.dart';
 import 'package:pollino/widgets/feedback_answer_widget.dart';
+import 'package:pollino/widgets/feedback_public_summary_widget.dart';
 
 class PollScreen extends StatefulWidget {
   final String pollId;
@@ -522,41 +523,81 @@ class _PollScreenState extends State<PollScreen> {
 
                             const SizedBox(height: 16),
 
-                            // FEEDBACK POLL: show feedback answering UI
+                            // FEEDBACK POLL: responsive 2-column layout
                             if (poll.pollType == 'FEEDBACK') ...[
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    I18nService.instance.translate(
-                                        'feedback.results.responseCount',
-                                        params: {
-                                          'count':
-                                              '${poll.feedbackResponseCount}'
-                                        }),
-                                    style: TextStyle(
-                                        fontSize: 14, color: Colors.grey[600]),
-                                  ),
-                                  if (poll.expiresAt != null) ...[
-                                    const SizedBox(height: 4),
-                                    _ExpirationIndicator(poll: poll),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              FeedbackAnswerWidget(
-                                poll: poll,
-                                onSubmitted: () {
-                                  context
-                                      .read<PollBloc>()
-                                      .add(PollEvent.loadPoll(widget.pollId));
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final isWide = constraints.maxWidth >= 660;
+
+                                  final feedbackForm = Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        I18nService.instance.translate(
+                                            'feedback.results.responseCount',
+                                            params: {
+                                              'count':
+                                                  '${poll.feedbackResponseCount}'
+                                            }),
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.grey[600]),
+                                      ),
+                                      if (poll.expiresAt != null) ...[
+                                        const SizedBox(height: 4),
+                                        _ExpirationIndicator(poll: poll),
+                                      ],
+                                      const SizedBox(height: 20),
+                                      FeedbackAnswerWidget(
+                                        poll: poll,
+                                        onSubmitted: () {
+                                          context
+                                              .read<PollBloc>()
+                                              .add(PollEvent.loadPoll(
+                                                  widget.pollId));
+                                        },
+                                      ),
+                                    ],
+                                  );
+
+                                  final summaryAndComments = Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      FeedbackPublicSummaryWidget(
+                                          pollId: poll.id),
+                                      const SizedBox(height: 20),
+                                      _CommentsSection(pollId: poll.id),
+                                    ],
+                                  );
+
+                                  if (isWide) {
+                                    return Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                            flex: 3, child: feedbackForm),
+                                        const SizedBox(width: 24),
+                                        Expanded(
+                                            flex: 2,
+                                            child: summaryAndComments),
+                                      ],
+                                    );
+                                  }
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      feedbackForm,
+                                      const SizedBox(height: 28),
+                                      summaryAndComments,
+                                      const SizedBox(height: 16),
+                                    ],
+                                  );
                                 },
-                              ),
-                              const SizedBox(height: 24),
-                              _CommentsSection(pollId: poll.id),
-                              Container(
-                                margin: const EdgeInsets.only(top: 16),
-                                padding: const EdgeInsets.only(bottom: 16),
                               ),
                             ] else ...[
                               // STANDARD POLL

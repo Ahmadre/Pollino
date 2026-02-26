@@ -42,6 +42,17 @@ public class FeedbackController {
     }
 
     /**
+     * GET /api/polls/{pollId}/feedback/public-summary
+     * Get AI-generated summary (public, no auth required).
+     */
+    @GetMapping("/public-summary")
+    public ResponseEntity<AiSummaryResponse> getPublicAiSummary(
+            @PathVariable String pollId) {
+        AiSummaryResponse response = feedbackService.getPublicAiSummary(pollId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * GET /api/polls/{pollId}/feedback/summary?adminToken=xxx
      * Get AI-generated summary (admin only).
      */
