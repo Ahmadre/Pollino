@@ -321,32 +321,53 @@ public class PollService {
         poll.setAutoDeleteAfterExpiry(request.isAutoDeleteAfterExpiry());
         poll.setCreatedByName(request.getCreatorName());
 
-        // Update options: preserve votes for existing options, add new ones, remove extras
-        List<PollOption> existingOptions = poll.getOptions();
-        List<PollOption> updatedOptions = new ArrayList<>();
-
-        for (int i = 0; i < request.getOptions().size(); i++) {
-            String newText = request.getOptions().get(i);
-            int newOrder = i + 1;
-
-            if (i < existingOptions.size()) {
-                // Update existing option (preserve votes)
-                PollOption existing = existingOptions.get(i);
-                existing.setText(newText);
-                existing.setOrder(newOrder);
-                updatedOptions.add(existing);
-            } else {
-                // Add new option
-                updatedOptions.add(PollOption.builder()
-                        .id(UUID.randomUUID().toString())
-                        .text(newText)
-                        .votes(0)
-                        .order(newOrder)
-                        .build());
+        if (poll.getPollType() == PollType.FEEDBACK) {
+            // Update feedback questions
+            if (request.getFeedbackQuestions() != null) {
+                List<FeedbackQuestion> updatedQuestions = new ArrayList<>();
+                for (int i = 0; i < request.getFeedbackQuestions().size(); i++) {
+                    FeedbackQuestionRequest fqReq = request.getFeedbackQuestions().get(i);
+                    FeedbackQuestion fq = FeedbackQuestion.builder()
+                            .id(UUID.randomUUID().toString())
+                            .questionText(fqReq.getQuestionText())
+                            .questionType(QuestionType.valueOf(fqReq.getQuestionType()))
+                            .options(fqReq.getOptions() != null ? fqReq.getOptions() : new ArrayList<>())
+                            .order(i + 1)
+                            .build();
+                    updatedQuestions.add(fq);
+                }
+                poll.setFeedbackQuestions(updatedQuestions);
             }
+        } else {
+            // Update options for STANDARD polls: preserve votes for existing options, add new ones, remove extras
+            List<PollOption> existingOptions = poll.getOptions();
+            List<PollOption> updatedOptions = new ArrayList<>();
+            List<String> newOptionTexts = request.getOptions() != null ? request.getOptions() : new ArrayList<>();
+
+            for (int i = 0; i < newOptionTexts.size(); i++) {
+                String newText = newOptionTexts.get(i);
+                int newOrder = i + 1;
+
+                if (i < existingOptions.size()) {
+                    // Update existing option (preserve votes)
+                    PollOption existing = existingOptions.get(i);
+                    existing.setText(newText);
+                    existing.setOrder(newOrder);
+                    updatedOptions.add(existing);
+                } else {
+                    // Add new option
+                    updatedOptions.add(PollOption.builder()
+                            .id(UUID.randomUUID().toString())
+                            .text(newText)
+                            .votes(0)
+                            .order(newOrder)
+                            .build());
+                }
+            }
+
+            poll.setOptions(updatedOptions);
         }
 
-        poll.setOptions(updatedOptions);
         Poll savedPoll = pollRepository.save(poll);
         return PollResponse.fromPoll(savedPoll);
     }
