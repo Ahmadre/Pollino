@@ -322,13 +322,20 @@ public class PollService {
         poll.setCreatedByName(request.getCreatorName());
 
         if (poll.getPollType() == PollType.FEEDBACK) {
-            // Update feedback questions
+            // Update feedback questions — preserve existing IDs by position so that
+            // FeedbackAnswer references (by questionId) remain intact after an edit.
             if (request.getFeedbackQuestions() != null) {
+                List<FeedbackQuestion> existingQuestions = poll.getFeedbackQuestions();
                 List<FeedbackQuestion> updatedQuestions = new ArrayList<>();
                 for (int i = 0; i < request.getFeedbackQuestions().size(); i++) {
                     FeedbackQuestionRequest fqReq = request.getFeedbackQuestions().get(i);
+                    // Reuse the existing question ID if available at this position,
+                    // otherwise generate a new one (question was added).
+                    String questionId = (existingQuestions != null && i < existingQuestions.size())
+                            ? existingQuestions.get(i).getId()
+                            : UUID.randomUUID().toString();
                     FeedbackQuestion fq = FeedbackQuestion.builder()
-                            .id(UUID.randomUUID().toString())
+                            .id(questionId)
                             .questionText(fqReq.getQuestionText())
                             .questionType(QuestionType.valueOf(fqReq.getQuestionType()))
                             .options(fqReq.getOptions() != null ? fqReq.getOptions() : new ArrayList<>())
