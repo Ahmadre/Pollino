@@ -51,8 +51,8 @@ pollino:
 
 # Rate limiting
 rate-limit:
-  requests-per-minute: ${RATE_LIMIT_RPM:60}
-  vote-requests-per-minute: ${RATE_LIMIT_VOTE_RPM:10}
+  requests-per-minute: ${RATE_LIMIT_RPM:200}
+  vote-requests-per-minute: ${RATE_LIMIT_VOTE_RPM:20}
 
 # Actuator endpoints
 management:
