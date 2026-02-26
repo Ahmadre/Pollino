@@ -176,7 +176,12 @@ class _AdminScreenState extends State<AdminScreen> {
           IconButton(
             tooltip: 'Als PDF exportieren (Admin)',
             onPressed: () async {
-              await PdfService.exportAdminPoll(widget.pollId);
+              if (_poll?.pollType == 'FEEDBACK') {
+                await PdfService.exportAdminFeedbackPoll(
+                    widget.pollId, widget.adminToken);
+              } else {
+                await PdfService.exportAdminPoll(widget.pollId);
+              }
             },
             icon: const Icon(Icons.picture_as_pdf),
           )

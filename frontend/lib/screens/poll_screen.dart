@@ -347,7 +347,13 @@ class _PollScreenState extends State<PollScreen> {
                             if (value == 'share') {
                               _sharePoll(poll);
                             } else if (value == 'pdf') {
-                              await PdfService.exportPublicPoll(widget.pollId);
+                              if (poll.pollType == 'FEEDBACK') {
+                                await PdfService.exportPublicFeedbackPoll(
+                                    widget.pollId);
+                              } else {
+                                await PdfService.exportPublicPoll(
+                                    widget.pollId);
+                              }
                             }
                           },
                           itemBuilder: (context) => [
