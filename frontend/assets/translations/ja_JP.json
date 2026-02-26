@@ -363,6 +363,7 @@
     "questions": {
       "title": "フィードバック質問",
       "label": "質問",
+      "question": "質問",
       "placeholder": "質問を入力してください...",
       "type": "質問タイプ",
       "add": "質問を追加",

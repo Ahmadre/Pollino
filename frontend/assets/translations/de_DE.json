@@ -364,6 +364,7 @@
     "questions": {
       "title": "Feedback-Fragen",
       "label": "Frage",
+      "question": "Frage",
       "placeholder": "Gib deine Frage ein...",
       "type": "Fragetyp",
       "add": "Frage hinzufügen",

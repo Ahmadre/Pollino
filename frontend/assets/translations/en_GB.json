@@ -364,6 +364,7 @@
     "questions": {
       "title": "Feedback Questions",
       "label": "Question",
+      "question": "Question",
       "placeholder": "Enter your question...",
       "type": "Question type",
       "add": "Add question",

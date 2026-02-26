@@ -363,6 +363,7 @@
     "questions": {
       "title": "Questions de feedback",
       "label": "Question",
+      "question": "Question",
       "placeholder": "Entrez votre question...",
       "type": "Type de question",
       "add": "Ajouter une question",
