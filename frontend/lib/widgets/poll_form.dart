@@ -89,6 +89,7 @@ class _PollFormState extends State<PollForm> {
   bool _hasExpirationDate = false;
   DateTime? _selectedExpirationDate;
   bool _autoDeleteAfterExpiry = false;
+  String? _selectedPreset;
 
   @override
   void initState() {
@@ -165,9 +166,10 @@ class _PollFormState extends State<PollForm> {
     });
   }
 
-  void _setExpirationTime(Duration duration) {
+  void _setExpirationTime(Duration duration, String preset) {
     setState(() {
       _selectedExpirationDate = TimezoneHelper.nowLocal().add(duration);
+      _selectedPreset = preset;
     });
   }
 
@@ -201,6 +203,7 @@ class _PollFormState extends State<PollForm> {
             time.hour,
             time.minute,
           );
+          _selectedPreset = 'custom';
         });
       }
     }
@@ -677,64 +680,67 @@ class _PollFormState extends State<PollForm> {
 
               const SizedBox(height: 20),
 
-              // E-Mail Adresse (optional)
-              Text(
-                I18nService.instance.translate('create.email.label'),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                I18nService.instance.translate('create.email.description'),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FA),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE9ECEF)),
-                ),
-                child: TextFormField(
-                  controller: _creatorEmailController,
-                  keyboardType: TextInputType.emailAddress,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: I18nService.instance
-                        .translate('create.email.placeholder'),
-                    hintStyle: const TextStyle(
-                      color: Color(0xFFADB5BD),
-                      fontSize: 16,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
-                    prefixIcon: const Icon(
-                      Icons.email_outlined,
-                      color: Color(0xFFADB5BD),
-                    ),
-                  ),
+              // E-Mail Adresse (optional) - nur beim Erstellen
+              if (!widget.isEditMode) ...[
+                Text(
+                  I18nService.instance.translate('create.email.label'),
                   style: const TextStyle(
                     fontSize: 16,
+                    fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
-                  validator: (value) {
-                    if (value != null && value.trim().isNotEmpty) {
-                      final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                      if (!emailRegex.hasMatch(value.trim())) {
-                        return I18nService.instance
-                            .translate('create.email.invalid');
-                      }
-                    }
-                    return null;
-                  },
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  I18nService.instance.translate('create.email.description'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F9FA),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE9ECEF)),
+                  ),
+                  child: TextFormField(
+                    controller: _creatorEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    decoration: InputDecoration(
+                      hintText: I18nService.instance
+                          .translate('create.email.placeholder'),
+                      hintStyle: const TextStyle(
+                        color: Color(0xFFADB5BD),
+                        fontSize: 16,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.all(16),
+                      prefixIcon: const Icon(
+                        Icons.email_outlined,
+                        color: Color(0xFFADB5BD),
+                      ),
+                    ),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                    validator: (value) {
+                      if (value != null && value.trim().isNotEmpty) {
+                        final emailRegex =
+                            RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+                        if (!emailRegex.hasMatch(value.trim())) {
+                          return I18nService.instance
+                              .translate('create.email.invalid');
+                        }
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
 
               const SizedBox(height: 20),
 
@@ -786,6 +792,7 @@ class _PollFormState extends State<PollForm> {
                           if (!value) {
                             _selectedExpirationDate = null;
                             _autoDeleteAfterExpiry = false;
+                            _selectedPreset = null;
                           }
                         });
                       },
@@ -829,41 +836,29 @@ class _PollFormState extends State<PollForm> {
                           _ExpirationChip(
                             label: I18nService.instance
                                 .translate('create.expiration.presets.1hour'),
-                            onTap: () =>
-                                _setExpirationTime(const Duration(hours: 1)),
-                            isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!
-                                        .difference(DateTime.now())
-                                        .inHours ==
-                                    1,
+                            onTap: () => _setExpirationTime(
+                                const Duration(hours: 1), '1hour'),
+                            isSelected: _selectedPreset == '1hour',
                           ),
                           _ExpirationChip(
                             label: I18nService.instance
                                 .translate('create.expiration.presets.1day'),
-                            onTap: () =>
-                                _setExpirationTime(const Duration(days: 1)),
-                            isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!
-                                        .difference(DateTime.now())
-                                        .inDays ==
-                                    1,
+                            onTap: () => _setExpirationTime(
+                                const Duration(days: 1), '1day'),
+                            isSelected: _selectedPreset == '1day',
                           ),
                           _ExpirationChip(
                             label: I18nService.instance
                                 .translate('create.expiration.presets.1week'),
-                            onTap: () =>
-                                _setExpirationTime(const Duration(days: 7)),
-                            isSelected: _selectedExpirationDate != null &&
-                                _selectedExpirationDate!
-                                        .difference(DateTime.now())
-                                        .inDays ==
-                                    7,
+                            onTap: () => _setExpirationTime(
+                                const Duration(days: 7), '1week'),
+                            isSelected: _selectedPreset == '1week',
                           ),
                           _ExpirationChip(
                             label: I18nService.instance
                                 .translate('create.expiration.presets.custom'),
                             onTap: _selectCustomDateTime,
-                            isSelected: false,
+                            isSelected: _selectedPreset == 'custom',
                           ),
                         ],
                       ),
@@ -893,8 +888,10 @@ class _PollFormState extends State<PollForm> {
                                 ),
                               ),
                               IconButton(
-                                onPressed: () => setState(
-                                    () => _selectedExpirationDate = null),
+                                onPressed: () => setState(() {
+                                  _selectedExpirationDate = null;
+                                  _selectedPreset = null;
+                                }),
                                 icon: Icon(Icons.close,
                                     color: Colors.blue[700], size: 18),
                               ),
