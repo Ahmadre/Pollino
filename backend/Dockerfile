@@ -9,7 +9,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
-RUN chmod +x mvnw
+RUN sed -i 's/\r$//' mvnw .mvn/wrapper/maven-wrapper.properties && chmod +x mvnw
 
 # Download dependencies (cached unless pom.xml changes)
 RUN ./mvnw dependency:resolve -B
