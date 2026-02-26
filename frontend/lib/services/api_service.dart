@@ -277,6 +277,7 @@ class ApiService {
     DateTime? expiresAt,
     bool autoDeleteAfterExpiry = false,
     String? creatorName,
+    List<Map<String, dynamic>>? feedbackQuestions,
   }) async {
     try {
       final uri = Uri.parse('$_baseUrl/api/polls/$pollId');
@@ -290,6 +291,7 @@ class ApiService {
         'expiresAt': expiresAt?.toUtc().toIso8601String(),
         'autoDeleteAfterExpiry': autoDeleteAfterExpiry,
         'creatorName': creatorName,
+        if (feedbackQuestions != null) 'feedbackQuestions': feedbackQuestions,
       };
 
       final response =

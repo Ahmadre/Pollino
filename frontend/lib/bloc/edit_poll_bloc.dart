@@ -87,6 +87,9 @@ class EditPollBloc extends Bloc<EditPollEvent, EditPollState> {
               : false,
           creatorName:
               formData.enableAnonymousVoting ? null : formData.creatorName,
+          feedbackQuestions: formData.isFeedback
+              ? formData.feedbackQuestions.map((fq) => fq.toJson()).toList()
+              : null,
         );
 
         emit(EditPollState.updated(updatedPoll));

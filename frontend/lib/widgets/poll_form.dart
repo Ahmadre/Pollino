@@ -58,6 +58,13 @@ class PollFormData {
       description: poll.description,
       pollType: poll.pollType,
       options: poll.options.map((option) => option.text).toList(),
+      feedbackQuestions: poll.feedbackQuestions
+          .map((fq) => FeedbackQuestionData(
+                questionText: fq.questionText,
+                questionType: fq.questionType,
+                options: List<String>.from(fq.options),
+              ))
+          .toList(),
       creatorName: poll.createdByName,
       allowMultipleOptions: poll.allowsMultipleVotes,
       enableAnonymousVoting: poll.isAnonymous,
@@ -137,15 +144,36 @@ class _PollFormState extends State<PollForm> {
       _selectedExpirationDate = data.selectedExpirationDate;
       _autoDeleteAfterExpiry = data.autoDeleteAfterExpiry;
 
-      // Initialize option controllers
+      // Set poll type
+      _pollType = data.pollType;
+
+      // Initialize option controllers (for STANDARD polls)
       for (String option in data.options) {
         final controller = TextEditingController(text: option);
         _optionControllers.add(controller);
       }
 
-      // Ensure minimum 2 options
-      while (_optionControllers.length < 2) {
-        _optionControllers.add(TextEditingController());
+      // Ensure minimum 2 options for STANDARD polls
+      if (data.pollType == 'STANDARD') {
+        while (_optionControllers.length < 2) {
+          _optionControllers.add(TextEditingController());
+        }
+      }
+
+      // Initialize feedback questions (for FEEDBACK polls)
+      if (data.pollType == 'FEEDBACK') {
+        for (final fq in data.feedbackQuestions) {
+          final state = _FeedbackQuestionState();
+          state.questionController.text = fq.questionText;
+          state.questionType = fq.questionType;
+          for (final opt in fq.options) {
+            state.optionControllers.add(TextEditingController(text: opt));
+          }
+          _feedbackQuestions.add(state);
+        }
+        if (_feedbackQuestions.isEmpty) {
+          _feedbackQuestions.add(_FeedbackQuestionState());
+        }
       }
     } else {
       // Default initialization for create mode
