@@ -324,5 +324,57 @@
       "viewPoll": "View Poll",
       "backToAdmin": "Back to Management"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "Please answer all questions below. Your feedback is valuable!"
+    },
+    "type": {
+      "freeText": "Free text",
+      "singleChoice": "Single choice",
+      "multipleChoice": "Multiple choice"
+    },
+    "submit": {
+      "button": "Submit Feedback",
+      "success": "Feedback submitted!",
+      "thankYou": "Thank you for your feedback. Your response has been recorded.",
+      "answerRequired": "Please answer all free text questions.",
+      "selectRequired": "Please select at least one option for each question."
+    },
+    "results": {
+      "responseCount": "{{count}} Responses",
+      "responses": "Responses",
+      "questions": "Questions",
+      "detailedTitle": "Detailed Results",
+      "noAnswers": "No answers yet"
+    },
+    "ai": {
+      "title": "AI Summary",
+      "basedOn": "Based on {{count}} responses",
+      "regenerate": "Regenerate summary",
+      "notAvailable": "No AI summary available yet. Generate one to get an overview of all feedback.",
+      "generate": "Generate AI Summary",
+      "generating": "Generating AI summary..."
+    },
+    "create": {
+      "pollType": {
+        "label": "Poll Type",
+        "standard": "Standard",
+        "feedback": "Feedback"
+      },
+      "questions": {
+        "title": "Feedback Questions",
+        "label": "Question",
+        "placeholder": "Enter your question...",
+        "type": "Question type",
+        "add": "Add question",
+        "addOption": "Add option",
+        "optionPlaceholder": "Option {{number}}"
+      },
+      "validation": {
+        "questionRequired": "Please add at least one question.",
+        "optionsMinimum": "Choice questions need at least 2 options."
+      }
+    }
   }
 }

@@ -323,5 +323,57 @@
       "viewPoll": "Ver Encuesta",
       "backToAdmin": "Volver a Gestión"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "¡Por favor responde todas las preguntas. ¡Tu feedback es valioso!"
+    },
+    "type": {
+      "freeText": "Texto libre",
+      "singleChoice": "Selección única",
+      "multipleChoice": "Selección múltiple"
+    },
+    "submit": {
+      "button": "Enviar feedback",
+      "success": "¡Feedback enviado!",
+      "thankYou": "Gracias por tu feedback. Tu respuesta ha sido registrada.",
+      "answerRequired": "Por favor responde todas las preguntas de texto libre.",
+      "selectRequired": "Por favor selecciona al menos una opción para cada pregunta."
+    },
+    "results": {
+      "responseCount": "{{count}} Respuestas",
+      "responses": "Respuestas",
+      "questions": "Preguntas",
+      "detailedTitle": "Resultados detallados",
+      "noAnswers": "Aún no hay respuestas"
+    },
+    "ai": {
+      "title": "Resumen IA",
+      "basedOn": "Basado en {{count}} respuestas",
+      "regenerate": "Regenerar resumen",
+      "notAvailable": "Aún no hay resumen IA disponible. Genera uno para obtener una visión general del feedback.",
+      "generate": "Generar resumen IA",
+      "generating": "Generando resumen IA..."
+    },
+    "create": {
+      "pollType": {
+        "label": "Tipo de encuesta",
+        "standard": "Estándar",
+        "feedback": "Feedback"
+      },
+      "questions": {
+        "title": "Preguntas de feedback",
+        "label": "Pregunta",
+        "placeholder": "Escribe tu pregunta...",
+        "type": "Tipo de pregunta",
+        "add": "Añadir pregunta",
+        "addOption": "Añadir opción",
+        "optionPlaceholder": "Opción {{number}}"
+      },
+      "validation": {
+        "questionRequired": "Por favor añade al menos una pregunta.",
+        "optionsMinimum": "Las preguntas de selección necesitan al menos 2 opciones."
+      }
+    }
   }
 }

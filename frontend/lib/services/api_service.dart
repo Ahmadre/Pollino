@@ -69,13 +69,15 @@ class ApiService {
     bool autoDeleteAfterExpiry = false,
     String? creatorName,
     String? creatorEmail,
+    String pollType = 'STANDARD',
+    List<Map<String, dynamic>>? feedbackQuestions,
   }) async {
     try {
       final uri = Uri.parse('$_baseUrl/api/polls');
-      final body = {
+      final body = <String, dynamic>{
         'title': title,
         'description': description ?? '',
-        'options': optionTexts,
+        'pollType': pollType,
         'anonymous': isAnonymous,
         'allowsMultipleVotes': allowsMultipleVotes,
         'expiresAt': expiresAt?.toUtc().toIso8601String(),
@@ -83,6 +85,12 @@ class ApiService {
         'creatorName': creatorName,
         'creatorEmail': creatorEmail,
       };
+
+      if (pollType == 'FEEDBACK' && feedbackQuestions != null) {
+        body['feedbackQuestions'] = feedbackQuestions;
+      } else {
+        body['options'] = optionTexts;
+      }
 
       final headers = Map<String, String>.from(_headers);
       headers['X-Web-App-Url'] = Environment.webAppUrl;
@@ -312,6 +320,97 @@ class ApiService {
   }
 
   // ──────────────────────────────────────────────
+  // Feedback Operations
+  // ──────────────────────────────────────────────
+
+  /// Submit feedback answers for a feedback poll.
+  static Future<Map<String, dynamic>> submitFeedback({
+    required String pollId,
+    String? respondentName,
+    required List<Map<String, dynamic>> answers,
+  }) async {
+    try {
+      final uri = Uri.parse('$_baseUrl/api/polls/$pollId/feedback');
+      final body = {
+        'respondentName': respondentName,
+        'answers': answers,
+      };
+
+      final response =
+          await _client.post(uri, headers: _headers, body: jsonEncode(body));
+      _checkResponse(response);
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error in submitFeedback: $e');
+      rethrow;
+    }
+  }
+
+  /// Get feedback results for a poll (admin only).
+  static Future<Map<String, dynamic>> getFeedbackResults(
+      String pollId, String adminToken) async {
+    try {
+      final uri = Uri.parse(
+          '$_baseUrl/api/polls/$pollId/feedback?adminToken=${Uri.encodeComponent(adminToken)}');
+      final response = await _client.get(uri, headers: _headers);
+      _checkResponse(response);
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error in getFeedbackResults: $e');
+      rethrow;
+    }
+  }
+
+  /// Get AI summary for a feedback poll (admin only).
+  static Future<Map<String, dynamic>> getAiSummary(
+      String pollId, String adminToken) async {
+    try {
+      final uri = Uri.parse(
+          '$_baseUrl/api/polls/$pollId/feedback/summary?adminToken=${Uri.encodeComponent(adminToken)}');
+      final response = await _client.get(uri, headers: _headers);
+      _checkResponse(response);
+
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error in getAiSummary: $e');
+      rethrow;
+    }
+  }
+
+  /// Trigger AI summary regeneration (admin only).
+  static Future<void> regenerateAiSummary(
+      String pollId, String adminToken) async {
+    try {
+      final uri = Uri.parse(
+          '$_baseUrl/api/polls/$pollId/feedback/summary/regenerate?adminToken=${Uri.encodeComponent(adminToken)}');
+      final response = await _client.post(uri, headers: _headers);
+      _checkResponse(response);
+    } catch (e) {
+      debugPrint('Error in regenerateAiSummary: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if user has already responded to a feedback poll.
+  static Future<bool> hasRespondedToFeedback(
+      String pollId, String respondentName) async {
+    try {
+      final uri = Uri.parse(
+          '$_baseUrl/api/polls/$pollId/feedback/has-responded?respondentName=${Uri.encodeComponent(respondentName)}');
+      final response = await _client.get(uri, headers: _headers);
+      _checkResponse(response);
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return data['hasResponded'] as bool? ?? false;
+    } catch (e) {
+      debugPrint('Error in hasRespondedToFeedback: $e');
+      return false;
+    }
+  }
+
+  // ──────────────────────────────────────────────
   // Utility Methods (kept from SupabaseService)
   // ──────────────────────────────────────────────
 
@@ -380,6 +479,22 @@ class ApiService {
       );
     }).toList();
 
+    // Parse feedback questions if present
+    final fbQuestionsList = (json['feedbackQuestions'] as List<dynamic>?) ?? [];
+    final feedbackQuestions = fbQuestionsList.map((fq) {
+      final fqMap = fq as Map<String, dynamic>;
+      return FeedbackQuestion(
+        id: fqMap['id']?.toString() ?? '',
+        questionText: fqMap['questionText']?.toString() ?? '',
+        questionType: fqMap['questionType']?.toString() ?? 'FREE_TEXT',
+        options: (fqMap['options'] as List<dynamic>?)
+                ?.map((o) => o.toString())
+                .toList() ??
+            [],
+        order: (fqMap['order'] as num?)?.toInt() ?? 0,
+      );
+    }).toList();
+
     return Poll(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
@@ -394,6 +509,10 @@ class ApiService {
           : null,
       autoDeleteAfterExpiry: json['autoDeleteAfterExpiry'] as bool? ?? false,
       likesCount: (json['likesCount'] as num?)?.toInt() ?? 0,
+      pollType: json['pollType']?.toString() ?? 'STANDARD',
+      feedbackQuestions: feedbackQuestions,
+      feedbackResponseCount:
+          (json['feedbackResponseCount'] as num?)?.toInt() ?? 0,
     );
   }
 }

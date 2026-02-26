@@ -324,5 +324,57 @@
       "viewPoll": "Umfrage ansehen",
       "backToAdmin": "Zurück zur Verwaltung"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "Bitte beantworte alle Fragen unten. Dein Feedback ist wertvoll!"
+    },
+    "type": {
+      "freeText": "Freitext",
+      "singleChoice": "Einfachauswahl",
+      "multipleChoice": "Mehrfachauswahl"
+    },
+    "submit": {
+      "button": "Feedback absenden",
+      "success": "Feedback abgesendet!",
+      "thankYou": "Vielen Dank für dein Feedback. Deine Antwort wurde gespeichert.",
+      "answerRequired": "Bitte beantworte alle Freitext-Fragen.",
+      "selectRequired": "Bitte wähle mindestens eine Option für jede Frage."
+    },
+    "results": {
+      "responseCount": "{{count}} Antworten",
+      "responses": "Antworten",
+      "questions": "Fragen",
+      "detailedTitle": "Detaillierte Ergebnisse",
+      "noAnswers": "Noch keine Antworten"
+    },
+    "ai": {
+      "title": "KI-Zusammenfassung",
+      "basedOn": "Basierend auf {{count}} Antworten",
+      "regenerate": "Zusammenfassung neu generieren",
+      "notAvailable": "Noch keine KI-Zusammenfassung verfügbar. Erstelle eine, um einen Überblick über alle Feedbacks zu erhalten.",
+      "generate": "KI-Zusammenfassung generieren",
+      "generating": "KI-Zusammenfassung wird erstellt..."
+    },
+    "create": {
+      "pollType": {
+        "label": "Umfrage-Typ",
+        "standard": "Standard",
+        "feedback": "Feedback"
+      },
+      "questions": {
+        "title": "Feedback-Fragen",
+        "label": "Frage",
+        "placeholder": "Gib deine Frage ein...",
+        "type": "Fragetyp",
+        "add": "Frage hinzufügen",
+        "addOption": "Option hinzufügen",
+        "optionPlaceholder": "Option {{number}}"
+      },
+      "validation": {
+        "questionRequired": "Bitte füge mindestens eine Frage hinzu.",
+        "optionsMinimum": "Auswahlfragen benötigen mindestens 2 Optionen."
+      }
+    }
   }
 }

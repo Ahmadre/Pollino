@@ -29,6 +29,8 @@ Future<void> main() async {
   Hive.registerAdapter<Poll>(PollAdapter());
   Hive.registerAdapter<Option>(
       SafeOptionAdapter()); // Sicherer Adapter für order-Feld
+  Hive.registerAdapter<FeedbackQuestion>(
+      SafeFeedbackQuestionAdapter()); // Adapter für Feedback-Fragen
   final hiveBox = await Hive.openBox<Poll>('polls');
 
   // Initialize LikeService for local like storage

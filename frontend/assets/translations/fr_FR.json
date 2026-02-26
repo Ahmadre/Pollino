@@ -323,5 +323,57 @@
       "viewPoll": "Voir le Sondage",
       "backToAdmin": "Retour à la Gestion"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "Veuillez répondre à toutes les questions ci-dessous. Votre feedback est précieux !"
+    },
+    "type": {
+      "freeText": "Texte libre",
+      "singleChoice": "Choix unique",
+      "multipleChoice": "Choix multiple"
+    },
+    "submit": {
+      "button": "Envoyer le feedback",
+      "success": "Feedback envoyé !",
+      "thankYou": "Merci pour votre feedback. Votre réponse a été enregistrée.",
+      "answerRequired": "Veuillez répondre à toutes les questions texte libre.",
+      "selectRequired": "Veuillez sélectionner au moins une option pour chaque question."
+    },
+    "results": {
+      "responseCount": "{{count}} Réponses",
+      "responses": "Réponses",
+      "questions": "Questions",
+      "detailedTitle": "Résultats détaillés",
+      "noAnswers": "Pas encore de réponses"
+    },
+    "ai": {
+      "title": "Résumé IA",
+      "basedOn": "Basé sur {{count}} réponses",
+      "regenerate": "Regénérer le résumé",
+      "notAvailable": "Pas encore de résumé IA disponible. Générez-en un pour obtenir un aperçu des feedbacks.",
+      "generate": "Générer un résumé IA",
+      "generating": "Génération du résumé IA..."
+    },
+    "create": {
+      "pollType": {
+        "label": "Type de sondage",
+        "standard": "Standard",
+        "feedback": "Feedback"
+      },
+      "questions": {
+        "title": "Questions de feedback",
+        "label": "Question",
+        "placeholder": "Entrez votre question...",
+        "type": "Type de question",
+        "add": "Ajouter une question",
+        "addOption": "Ajouter une option",
+        "optionPlaceholder": "Option {{number}}"
+      },
+      "validation": {
+        "questionRequired": "Veuillez ajouter au moins une question.",
+        "optionsMinimum": "Les questions à choix nécessitent au moins 2 options."
+      }
+    }
   }
 }

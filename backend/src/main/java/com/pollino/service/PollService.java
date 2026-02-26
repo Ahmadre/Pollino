@@ -4,10 +4,9 @@ import com.pollino.dto.*;
 import com.pollino.exception.BusinessException;
 import com.pollino.exception.ResourceNotFoundException;
 import com.pollino.exception.UnauthorizedException;
-import com.pollino.model.Poll;
-import com.pollino.model.PollOption;
-import com.pollino.model.Vote;
+import com.pollino.model.*;
 import com.pollino.repository.CommentRepository;
+import com.pollino.repository.FeedbackResponseRepository;
 import com.pollino.repository.PollRepository;
 import com.pollino.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,8 @@ public class PollService {
     private final PollRepository pollRepository;
     private final VoteRepository voteRepository;
     private final CommentRepository commentRepository;
+    private final FeedbackResponseRepository feedbackResponseRepository;
+    private final AiSummaryService aiSummaryService;
     private final EmailService emailService;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -72,19 +73,15 @@ public class PollService {
     public CreatePollResponse createPoll(CreatePollRequest request, String webAppUrl) {
         String adminToken = generateAdminToken();
 
-        List<PollOption> options = IntStream.range(0, request.getOptions().size())
-                .mapToObj(i -> PollOption.builder()
-                        .id(UUID.randomUUID().toString())
-                        .text(request.getOptions().get(i))
-                        .votes(0)
-                        .order(i + 1)
-                        .build())
-                .toList();
+        PollType pollType = PollType.STANDARD;
+        if (request.getPollType() != null && "FEEDBACK".equalsIgnoreCase(request.getPollType())) {
+            pollType = PollType.FEEDBACK;
+        }
 
-        Poll poll = Poll.builder()
+        Poll.PollBuilder pollBuilder = Poll.builder()
                 .title(request.getTitle())
                 .description(request.getDescription() != null ? request.getDescription() : "")
-                .options(new ArrayList<>(options))
+                .pollType(pollType)
                 .anonymous(request.isAnonymous())
                 .allowsMultipleVotes(request.isAllowsMultipleVotes())
                 .expiresAt(request.getExpiresAt())
@@ -92,10 +89,62 @@ public class PollService {
                 .createdByName(request.getCreatorName())
                 .adminToken(adminToken)
                 .active(true)
-                .likesCount(0)
-                .build();
+                .likesCount(0);
 
-        Poll savedPoll = pollRepository.save(poll);
+        if (pollType == PollType.FEEDBACK) {
+            // Validate feedback questions
+            if (request.getFeedbackQuestions() == null || request.getFeedbackQuestions().isEmpty()) {
+                throw new BusinessException("Feedback polls require at least one question");
+            }
+
+            List<FeedbackQuestion> feedbackQuestions = IntStream.range(0, request.getFeedbackQuestions().size())
+                    .mapToObj(i -> {
+                        var fqr = request.getFeedbackQuestions().get(i);
+                        QuestionType questionType;
+                        try {
+                            questionType = QuestionType.valueOf(fqr.getQuestionType().toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            throw new BusinessException("Invalid question type: " + fqr.getQuestionType());
+                        }
+
+                        // Validate that choice questions have options
+                        if ((questionType == QuestionType.SINGLE_CHOICE || questionType == QuestionType.MULTIPLE_CHOICE)
+                                && (fqr.getOptions() == null || fqr.getOptions().size() < 2)) {
+                            throw new BusinessException("Choice questions must have at least 2 options");
+                        }
+
+                        return FeedbackQuestion.builder()
+                                .id(UUID.randomUUID().toString())
+                                .questionText(fqr.getQuestionText())
+                                .questionType(questionType)
+                                .options(fqr.getOptions() != null ? fqr.getOptions() : new ArrayList<>())
+                                .order(i + 1)
+                                .build();
+                    })
+                    .toList();
+
+            pollBuilder.feedbackQuestions(new ArrayList<>(feedbackQuestions));
+            pollBuilder.options(new ArrayList<>()); // No standard options for feedback polls
+            pollBuilder.feedbackResponseCount(0);
+        } else {
+            // Standard poll: validate and create options
+            if (request.getOptions() == null || request.getOptions().size() < 2) {
+                throw new BusinessException("Standard polls require at least 2 options");
+            }
+
+            List<PollOption> options = IntStream.range(0, request.getOptions().size())
+                    .mapToObj(i -> PollOption.builder()
+                            .id(UUID.randomUUID().toString())
+                            .text(request.getOptions().get(i))
+                            .votes(0)
+                            .order(i + 1)
+                            .build())
+                    .toList();
+
+            pollBuilder.options(new ArrayList<>(options));
+        }
+
+        Poll savedPoll = pollRepository.save(pollBuilder.build());
 
         String adminUrl = webAppUrl + "/admin/" + savedPoll.getId() + "/" + adminToken;
         String pollUrl = webAppUrl + "/poll/" + savedPoll.getId();
@@ -312,9 +361,11 @@ public class PollService {
             throw new UnauthorizedException("Invalid admin token");
         }
 
-        // Delete associated votes and comments
+        // Delete associated votes, comments, and feedback data
         voteRepository.deleteByPollId(pollId);
         commentRepository.deleteByPollId(pollId);
+        feedbackResponseRepository.deleteByPollId(pollId);
+        aiSummaryService.deleteSummary(pollId);
         pollRepository.delete(poll);
 
         log.info("Poll {} deleted successfully", pollId);
@@ -326,6 +377,8 @@ public class PollService {
     public void deletePollInternal(String pollId) {
         voteRepository.deleteByPollId(pollId);
         commentRepository.deleteByPollId(pollId);
+        feedbackResponseRepository.deleteByPollId(pollId);
+        aiSummaryService.deleteSummary(pollId);
         pollRepository.deleteById(pollId);
         log.info("Poll {} cleaned up (internal)", pollId);
     }

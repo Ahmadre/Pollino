@@ -29,7 +29,16 @@ public class Poll {
     private String description;
 
     @Builder.Default
+    private PollType pollType = PollType.STANDARD;
+
+    @Builder.Default
     private List<PollOption> options = new ArrayList<>();
+
+    @Builder.Default
+    private List<FeedbackQuestion> feedbackQuestions = new ArrayList<>();
+
+    @Builder.Default
+    private int feedbackResponseCount = 0;
 
     @Builder.Default
     private boolean anonymous = true;

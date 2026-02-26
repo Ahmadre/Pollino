@@ -344,5 +344,57 @@
       "viewPoll": "عرض الاستطلاع",
       "backToAdmin": "العودة للإدارة"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "يرجى الإجابة على جميع الأسئلة أدناه. ملاحظاتك قيّمة!"
+    },
+    "type": {
+      "freeText": "نص حر",
+      "singleChoice": "اختيار واحد",
+      "multipleChoice": "اختيار متعدد"
+    },
+    "submit": {
+      "button": "إرسال الملاحظات",
+      "success": "تم إرسال الملاحظات!",
+      "thankYou": "شكراً لملاحظاتك. تم تسجيل إجابتك.",
+      "answerRequired": "يرجى الإجابة على جميع أسئلة النص الحر.",
+      "selectRequired": "يرجى اختيار خيار واحد على الأقل لكل سؤال."
+    },
+    "results": {
+      "responseCount": "{{count}} إجابات",
+      "responses": "إجابات",
+      "questions": "أسئلة",
+      "detailedTitle": "النتائج التفصيلية",
+      "noAnswers": "لا توجد إجابات بعد"
+    },
+    "ai": {
+      "title": "ملخص الذكاء الاصطناعي",
+      "basedOn": "بناءً على {{count}} إجابات",
+      "regenerate": "إعادة إنشاء الملخص",
+      "notAvailable": "لا يوجد ملخص ذكاء اصطناعي بعد. قم بإنشاء واحد للحصول على نظرة عامة.",
+      "generate": "إنشاء ملخص الذكاء الاصطناعي",
+      "generating": "جارٍ إنشاء ملخص الذكاء الاصطناعي..."
+    },
+    "create": {
+      "pollType": {
+        "label": "نوع الاستطلاع",
+        "standard": "قياسي",
+        "feedback": "ملاحظات"
+      },
+      "questions": {
+        "title": "أسئلة الملاحظات",
+        "label": "سؤال",
+        "placeholder": "أدخل سؤالك...",
+        "type": "نوع السؤال",
+        "add": "إضافة سؤال",
+        "addOption": "إضافة خيار",
+        "optionPlaceholder": "خيار {{number}}"
+      },
+      "validation": {
+        "questionRequired": "يرجى إضافة سؤال واحد على الأقل.",
+        "optionsMinimum": "أسئلة الاختيار تحتاج إلى خيارين على الأقل."
+      }
+    }
   }
 }

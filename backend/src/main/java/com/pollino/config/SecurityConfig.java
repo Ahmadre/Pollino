@@ -42,6 +42,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/polls").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/polls/*/like").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/comments/**").permitAll()
+                        // Feedback endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/polls/*/feedback").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/polls/*/feedback/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/polls/*/feedback/**").permitAll()
                         // Public endpoints - comment edit/delete (ownership checked in service)
                         .requestMatchers(HttpMethod.PUT, "/api/comments/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/comments/**").permitAll()

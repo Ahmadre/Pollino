@@ -323,5 +323,57 @@
       "viewPoll": "アンケートを表示",
       "backToAdmin": "管理に戻る"
     }
+  },
+  "feedback": {
+    "info": {
+      "banner": "以下のすべての質問にお答えください。あなたのフィードバックは貴重です！"
+    },
+    "type": {
+      "freeText": "自由記述",
+      "singleChoice": "単一選択",
+      "multipleChoice": "複数選択"
+    },
+    "submit": {
+      "button": "フィードバックを送信",
+      "success": "フィードバックを送信しました！",
+      "thankYou": "フィードバックありがとうございます。回答が記録されました。",
+      "answerRequired": "すべての自由記述の質問に回答してください。",
+      "selectRequired": "各質問で少なくとも1つのオプションを選択してください。"
+    },
+    "results": {
+      "responseCount": "{{count}} 件の回答",
+      "responses": "回答",
+      "questions": "質問",
+      "detailedTitle": "詳細結果",
+      "noAnswers": "まだ回答がありません"
+    },
+    "ai": {
+      "title": "AI要約",
+      "basedOn": "{{count}} 件の回答に基づく",
+      "regenerate": "要約を再生成",
+      "notAvailable": "AI要約はまだありません。フィードバックの概要を取得するために生成してください。",
+      "generate": "AI要約を生成",
+      "generating": "AI要約を生成中..."
+    },
+    "create": {
+      "pollType": {
+        "label": "アンケートタイプ",
+        "standard": "標準",
+        "feedback": "フィードバック"
+      },
+      "questions": {
+        "title": "フィードバック質問",
+        "label": "質問",
+        "placeholder": "質問を入力してください...",
+        "type": "質問タイプ",
+        "add": "質問を追加",
+        "addOption": "オプションを追加",
+        "optionPlaceholder": "オプション {{number}}"
+      },
+      "validation": {
+        "questionRequired": "少なくとも1つの質問を追加してください。",
+        "optionsMinimum": "選択式の質問には少なくとも2つのオプションが必要です。"
+      }
+    }
   }
 }

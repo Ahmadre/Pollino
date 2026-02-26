@@ -10,6 +10,7 @@ import 'package:pollino/core/localization/i18n_service.dart';
 import 'package:pollino/widgets/edit_poll_modal_sheet.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:pollino/services/pdf_service.dart';
+import 'package:pollino/widgets/feedback_results_widget.dart';
 
 class AdminScreen extends StatefulWidget {
   final String pollId;
@@ -284,22 +285,35 @@ class _AdminScreenState extends State<AdminScreen> {
                   spacing: 8,
                   runSpacing: 5,
                   children: [
-                    _InfoChip(
-                      icon: Icons.how_to_vote,
-                      label:
-                          '${poll.options.fold<int>(0, (sum, opt) => sum + opt.votes)} ${I18nService.instance.translate('poll.votes')}',
-                    ),
-                    _InfoChip(
-                      icon: Icons.list,
-                      label:
-                          '${poll.options.length} ${I18nService.instance.translate('poll.options')}',
-                    ),
-                    if (poll.allowsMultipleVotes)
+                    if (poll.pollType == 'FEEDBACK') ...[
                       _InfoChip(
-                        icon: Icons.checklist,
-                        label: I18nService.instance
-                            .translate('poll.multipleChoice'),
+                        icon: Icons.feedback_outlined,
+                        label:
+                            '${poll.feedbackResponseCount} ${I18nService.instance.translate('feedback.results.responses')}',
                       ),
+                      _InfoChip(
+                        icon: Icons.quiz_outlined,
+                        label:
+                            '${poll.feedbackQuestions.length} ${I18nService.instance.translate('feedback.results.questions')}',
+                      ),
+                    ] else ...[
+                      _InfoChip(
+                        icon: Icons.how_to_vote,
+                        label:
+                            '${poll.options.fold<int>(0, (sum, opt) => sum + opt.votes)} ${I18nService.instance.translate('poll.votes')}',
+                      ),
+                      _InfoChip(
+                        icon: Icons.list,
+                        label:
+                            '${poll.options.length} ${I18nService.instance.translate('poll.options')}',
+                      ),
+                      if (poll.allowsMultipleVotes)
+                        _InfoChip(
+                          icon: Icons.checklist,
+                          label: I18nService.instance
+                              .translate('poll.multipleChoice'),
+                        ),
+                    ],
                   ],
                 ),
               ],
@@ -307,6 +321,15 @@ class _AdminScreenState extends State<AdminScreen> {
           ),
 
           const SizedBox(height: 24),
+
+          // Feedback Results (only for FEEDBACK polls)
+          if (poll.pollType == 'FEEDBACK') ...[
+            FeedbackResultsWidget(
+              pollId: widget.pollId,
+              adminToken: widget.adminToken,
+            ),
+            const SizedBox(height: 24),
+          ],
 
           // Admin Actions
           Text(

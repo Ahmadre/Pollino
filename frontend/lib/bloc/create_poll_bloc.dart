@@ -72,6 +72,13 @@ class CreatePollBloc extends Bloc<CreatePollEvent, CreatePollState> {
             TimezoneHelper.localToUtc(formData.selectedExpirationDate!);
       }
 
+      // Build feedback questions if this is a feedback poll
+      List<Map<String, dynamic>>? feedbackQuestions;
+      if (formData.isFeedback) {
+        feedbackQuestions =
+            formData.feedbackQuestions.map((q) => q.toJson()).toList();
+      }
+
       final result = await ApiService.createPoll(
         title: formData.question,
         description: formData.description,
@@ -84,6 +91,8 @@ class CreatePollBloc extends Bloc<CreatePollEvent, CreatePollState> {
         creatorName:
             formData.enableAnonymousVoting ? null : formData.creatorName,
         creatorEmail: formData.creatorEmail,
+        pollType: formData.pollType,
+        feedbackQuestions: feedbackQuestions,
       );
 
       emit(CreatePollState.created(result));
