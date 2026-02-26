@@ -143,11 +143,13 @@ public class FeedbackService {
                     .responseCount(s.getResponseCount())
                     .generatedAt(s.getGeneratedAt())
                     .available(true)
+                    .generating(aiSummaryService.isGenerating(pollId))
                     .build();
         }
 
         return AiSummaryResponse.builder()
                 .available(false)
+                .generating(aiSummaryService.isGenerating(pollId))
                 .build();
     }
 
@@ -171,11 +173,13 @@ public class FeedbackService {
                     .responseCount(s.getResponseCount())
                     .generatedAt(s.getGeneratedAt())
                     .available(true)
+                    .generating(aiSummaryService.isGenerating(pollId))
                     .build();
         }
 
         return AiSummaryResponse.builder()
                 .available(false)
+                .generating(aiSummaryService.isGenerating(pollId))
                 .build();
     }
 

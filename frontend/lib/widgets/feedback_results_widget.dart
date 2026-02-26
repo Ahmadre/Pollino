@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:markdown/markdown.dart' as md;
@@ -21,16 +22,23 @@ class FeedbackResultsWidget extends StatefulWidget {
 
 class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
   bool _isLoading = true;
-  bool _isLoadingSummary = false;
-  bool _isRegenerating = false;
+  bool _isGenerating = false; // true while backend is generating
+  bool _isRegenerating = false; // true while we initiated and are still polling
   String? _error;
   Map<String, dynamic>? _results;
   Map<String, dynamic>? _aiSummary;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -56,11 +64,15 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
       }
 
       if (mounted) {
+        final generating = summary?['generating'] == true;
         setState(() {
           _results = results;
           _aiSummary = summary;
+          _isGenerating = generating;
           _isLoading = false;
         });
+        // If already generating on load (e.g. after submit), start polling
+        if (generating) _startPolling();
       }
     } catch (e) {
       if (mounted) {
@@ -73,41 +85,61 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
   }
 
   Future<void> _regenerateSummary() async {
-    setState(() => _isRegenerating = true);
+    setState(() {
+      _isRegenerating = true;
+      _isGenerating = true;
+    });
     try {
       await ApiService.regenerateAiSummary(
         widget.pollId,
         widget.adminToken,
       );
-      // Wait a bit for generation to start, then poll
-      await Future.delayed(const Duration(seconds: 3));
-      await _loadSummary();
+      // Start polling immediately — no fixed delay
+      _startPolling();
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _isRegenerating = false;
+          _isGenerating = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isRegenerating = false);
     }
   }
 
-  Future<void> _loadSummary() async {
-    setState(() => _isLoadingSummary = true);
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      _pollSummaryState();
+    });
+  }
+
+  Future<void> _pollSummaryState() async {
+    if (!mounted) {
+      _pollingTimer?.cancel();
+      return;
+    }
     try {
       final summary = await ApiService.getAiSummary(
         widget.pollId,
         widget.adminToken,
       );
-      if (mounted) {
-        setState(() {
-          _aiSummary = summary;
-          _isLoadingSummary = false;
-        });
+      if (!mounted) return;
+
+      final generating = summary['generating'] == true;
+      setState(() {
+        _aiSummary = summary;
+        _isGenerating = generating;
+      });
+
+      if (!generating) {
+        _pollingTimer?.cancel();
+        setState(() => _isRegenerating = false);
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoadingSummary = false);
+      // Keep polling on transient errors
     }
   }
 
@@ -210,6 +242,7 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header row
           Row(
             children: [
               Container(
@@ -218,8 +251,15 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
                   color: const Color(0xFF4F46E5).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.auto_awesome,
-                    color: Color(0xFF4F46E5), size: 22),
+                child: _isGenerating
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Color(0xFF4F46E5)),
+                      )
+                    : const Icon(Icons.auto_awesome,
+                        color: Color(0xFF4F46E5), size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -234,115 +274,140 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
                         color: Color(0xFF1E1B4B),
                       ),
                     ),
-                    if (responseCount != null)
+                    if (_isGenerating)
+                      Text(
+                        I18nService.instance
+                            .translate('feedback.ai.generating'),
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF4F46E5)),
+                      )
+                    else if (responseCount != null)
                       Text(
                         I18nService.instance.translate(
                           'feedback.ai.basedOn',
                           params: {'count': '$responseCount'},
                         ),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        style:
+                            TextStyle(fontSize: 12, color: Colors.grey[500]),
                       ),
                   ],
                 ),
               ),
-              if (summaryAvailable)
+              // Regenerate button — only visible when not currently generating
+              if (summaryAvailable && !_isGenerating)
                 IconButton(
                   onPressed: _isRegenerating ? null : _regenerateSummary,
-                  tooltip:
-                      I18nService.instance.translate('feedback.ai.regenerate'),
-                  icon: _isRegenerating
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh, color: Color(0xFF4F46E5)),
+                  tooltip: I18nService.instance
+                      .translate('feedback.ai.regenerate'),
+                  icon:
+                      const Icon(Icons.refresh, color: Color(0xFF4F46E5)),
                 ),
             ],
           ),
           const SizedBox(height: 16),
-          if (_isLoadingSummary || _isRegenerating)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(color: Color(0xFF4F46E5)),
-                    SizedBox(height: 12),
-                    Text(
-                      '🤖 KI-Zusammenfassung wird erstellt...',
-                      style: TextStyle(color: Color(0xFF4F46E5), fontSize: 14),
+
+          // Summary body
+          if (summaryAvailable && summaryText != null)
+            // Show existing summary (possibly slightly dimmed while regenerating)
+            AnimatedOpacity(
+              opacity: _isGenerating ? 0.4 : 1.0,
+              duration: const Duration(milliseconds: 400),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE9ECEF)),
+                ),
+                child: MarkdownBody(
+                  data: summaryText,
+                  selectable: true,
+                  extensionSet: md.ExtensionSet(
+                    md.ExtensionSet.gitHubFlavored.blockSyntaxes,
+                    <md.InlineSyntax>[
+                      md.EmojiSyntax(),
+                      ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes,
+                    ],
+                  ),
+                  styleSheet: MarkdownStyleSheet(
+                    p: const TextStyle(
+                      fontSize: 14,
+                      height: 1.7,
+                      color: Color(0xFF374151),
                     ),
-                  ],
-                ),
-              ),
-            )
-          else if (summaryAvailable && summaryText != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE9ECEF)),
-              ),
-              child: MarkdownBody(
-                data: summaryText,
-                selectable: true,
-                extensionSet: md.ExtensionSet(
-                  md.ExtensionSet.gitHubFlavored.blockSyntaxes,
-                  <md.InlineSyntax>[
-                    md.EmojiSyntax(),
-                    ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes,
-                  ],
-                ),
-                styleSheet: MarkdownStyleSheet(
-                  p: const TextStyle(
-                    fontSize: 14,
-                    height: 1.7,
-                    color: Color(0xFF374151),
-                  ),
-                  h2: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E1B4B),
-                  ),
-                  h3: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E1B4B),
-                  ),
-                  h4: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF374151),
-                  ),
-                  strong: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF111827),
-                  ),
-                  em: const TextStyle(
-                    fontStyle: FontStyle.italic,
-                    color: Color(0xFF374151),
-                  ),
-                  listBullet: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF4F46E5),
-                  ),
-                  blockSpacing: 8,
-                  listIndent: 20,
-                  horizontalRuleDecoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: Color(0xFFE9ECEF),
-                        width: 1,
+                    h2: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E1B4B),
+                    ),
+                    h3: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1E1B4B),
+                    ),
+                    h4: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF374151),
+                    ),
+                    strong: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                    ),
+                    em: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Color(0xFF374151),
+                    ),
+                    listBullet: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF4F46E5),
+                    ),
+                    blockSpacing: 8,
+                    listIndent: 20,
+                    horizontalRuleDecoration: const BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: Color(0xFFE9ECEF),
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             )
+          else if (_isGenerating)
+            // No existing summary yet, show spinner
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4F46E5).withOpacity(0.04),
+                borderRadius: BorderRadius.circular(12),
+                border:
+                    Border.all(color: const Color(0xFF4F46E5).withOpacity(0.2)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Color(0xFF4F46E5)),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    I18nService.instance
+                        .translate('feedback.ai.generating'),
+                    style: const TextStyle(
+                        color: Color(0xFF4F46E5), fontSize: 14),
+                  ),
+                ],
+              ),
+            )
           else
+            // Not available, not generating — show generate button
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -356,16 +421,20 @@ class _FeedbackResultsWidgetState extends State<FeedbackResultsWidget> {
                       color: Colors.grey[400], size: 32),
                   const SizedBox(height: 8),
                   Text(
-                    I18nService.instance.translate('feedback.ai.notAvailable'),
-                    style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    I18nService.instance
+                        .translate('feedback.ai.notAvailable'),
+                    style:
+                        TextStyle(color: Colors.grey[500], fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
-                    onPressed: _isRegenerating ? null : _regenerateSummary,
+                    onPressed:
+                        _isRegenerating ? null : _regenerateSummary,
                     icon: const Icon(Icons.auto_awesome, size: 18),
                     label: Text(
-                      I18nService.instance.translate('feedback.ai.generate'),
+                      I18nService.instance
+                          .translate('feedback.ai.generate'),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF4F46E5),

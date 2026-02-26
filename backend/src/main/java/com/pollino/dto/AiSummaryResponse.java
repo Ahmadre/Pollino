@@ -17,4 +17,6 @@ public class AiSummaryResponse {
     private int responseCount;
     private Instant generatedAt;
     private boolean available;
+    /** True while a new summary is currently being generated in the background. */
+    private boolean generating;
 }

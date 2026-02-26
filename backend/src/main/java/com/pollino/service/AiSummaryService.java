@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,6 +26,9 @@ public class AiSummaryService {
 
     private final AiSummaryRepository aiSummaryRepository;
     private final FeedbackResponseRepository feedbackResponseRepository;
+
+    /** Tracks which pollIds currently have an async generation in progress. */
+    private final Set<String> generatingPolls = ConcurrentHashMap.newKeySet();
 
     @Value("${pollino.ai.base-url:http://localhost:1234/v1}")
     private String aiBaseUrl;
@@ -37,6 +41,13 @@ public class AiSummaryService {
 
     @Value("${pollino.ai.api-key:}")
     private String aiApiKey;
+
+    /**
+     * Returns true if an AI summary generation is currently in progress for this poll.
+     */
+    public boolean isGenerating(String pollId) {
+        return generatingPolls.contains(pollId);
+    }
 
     /**
      * Get an existing AI summary for a poll, if available.
@@ -55,6 +66,7 @@ public class AiSummaryService {
             return;
         }
 
+        generatingPolls.add(pollId);
         try {
             List<FeedbackResponse> responses = feedbackResponseRepository.findByPollId(pollId);
             if (responses.isEmpty()) {
@@ -81,6 +93,8 @@ public class AiSummaryService {
             }
         } catch (Exception e) {
             log.error("Failed to generate AI summary for poll {}: {}", pollId, e.getMessage(), e);
+        } finally {
+            generatingPolls.remove(pollId);
         }
     }
 
