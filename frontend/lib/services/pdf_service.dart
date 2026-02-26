@@ -171,8 +171,8 @@ class PdfService {
     // Strip common markdown to keep PDF readable
     final clean = text
         .replaceAll(RegExp(r'#{1,6}\s*'), '')
-        .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'$1')
-        .replaceAll(RegExp(r'\*(.+?)\*'), r'$1')
+        .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'')
+        .replaceAll(RegExp(r'\*(.+?)\*'), r'')
         .replaceAll('---', '')
         .trim();
     return pw.Container(

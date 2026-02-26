@@ -24,6 +24,9 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
 
+    @Value("${rate-limit.enabled:true}")
+    private boolean rateLimitEnabled;
+
     @Value("${rate-limit.requests-per-minute:200}")
     private int requestsPerMinute;
 
@@ -36,6 +39,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        // Rate limiting disabled (e.g. local dev mode)
+        if (!rateLimitEnabled) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Skip OPTIONS preflight requests (CORS handshake — not real API traffic)
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             filterChain.doFilter(request, response);

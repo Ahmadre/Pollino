@@ -51,6 +51,7 @@ pollino:
 
 # Rate limiting
 rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
   requests-per-minute: ${RATE_LIMIT_RPM:200}
   vote-requests-per-minute: ${RATE_LIMIT_VOTE_RPM:20}
 
