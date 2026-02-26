@@ -142,7 +142,7 @@ public class AiSummaryService {
         }
 
         sb.append("---\n\n");
-        sb.append("Erstelle nun die Zusammenfassung. ");
+        sb.append("Erstelle nun die Zusammenfassung. Sie darf maximal 1000 Zeichen lang sein. ");
         sb.append("Beginne direkt mit der inhaltlichen Zusammenfassung — ohne Einleitung wie \"Hier ist die Zusammenfassung\" o.ä. ");
         sb.append("Gliedere nach inhaltlichen Themen. Benenne keine Personen und keine Teilnehmerzahl.");
 
