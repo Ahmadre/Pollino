@@ -177,6 +177,11 @@
         "goBack": "Zurück",
         "continue": "Trotzdem fortfahren"
       }
+    },
+    "pollType": {
+      "label": "Umfrage-Typ",
+      "standard": "Standard",
+      "feedback": "Feedback"
     }
   },
   "time": {
@@ -356,25 +361,18 @@
       "generate": "KI-Zusammenfassung generieren",
       "generating": "KI-Zusammenfassung wird erstellt..."
     },
-    "create": {
-      "pollType": {
-        "label": "Umfrage-Typ",
-        "standard": "Standard",
-        "feedback": "Feedback"
-      },
-      "questions": {
-        "title": "Feedback-Fragen",
-        "label": "Frage",
-        "placeholder": "Gib deine Frage ein...",
-        "type": "Fragetyp",
-        "add": "Frage hinzufügen",
-        "addOption": "Option hinzufügen",
-        "optionPlaceholder": "Option {{number}}"
-      },
-      "validation": {
-        "questionRequired": "Bitte füge mindestens eine Frage hinzu.",
-        "optionsMinimum": "Auswahlfragen benötigen mindestens 2 Optionen."
-      }
+    "questions": {
+      "title": "Feedback-Fragen",
+      "label": "Frage",
+      "placeholder": "Gib deine Frage ein...",
+      "type": "Fragetyp",
+      "add": "Frage hinzufügen",
+      "addOption": "Option hinzufügen",
+      "optionPlaceholder": "Option {{number}}"
+    },
+    "validation": {
+      "questionRequired": "Bitte füge mindestens eine Frage hinzu.",
+      "optionsMinimum": "Auswahlfragen benötigen mindestens 2 Optionen."
     }
   }
 }

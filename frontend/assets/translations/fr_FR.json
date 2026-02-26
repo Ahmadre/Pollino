@@ -177,6 +177,11 @@
         "goBack": "Retour",
         "continue": "Continuer quand même"
       }
+    },
+    "pollType": {
+      "label": "Type de sondage",
+      "standard": "Standard",
+      "feedback": "Feedback"
     }
   },
   "time": {
@@ -355,25 +360,18 @@
       "generate": "Générer un résumé IA",
       "generating": "Génération du résumé IA..."
     },
-    "create": {
-      "pollType": {
-        "label": "Type de sondage",
-        "standard": "Standard",
-        "feedback": "Feedback"
-      },
-      "questions": {
-        "title": "Questions de feedback",
-        "label": "Question",
-        "placeholder": "Entrez votre question...",
-        "type": "Type de question",
-        "add": "Ajouter une question",
-        "addOption": "Ajouter une option",
-        "optionPlaceholder": "Option {{number}}"
-      },
-      "validation": {
-        "questionRequired": "Veuillez ajouter au moins une question.",
-        "optionsMinimum": "Les questions à choix nécessitent au moins 2 options."
-      }
+    "questions": {
+      "title": "Questions de feedback",
+      "label": "Question",
+      "placeholder": "Entrez votre question...",
+      "type": "Type de question",
+      "add": "Ajouter une question",
+      "addOption": "Ajouter une option",
+      "optionPlaceholder": "Option {{number}}"
+    },
+    "validation": {
+      "questionRequired": "Veuillez ajouter au moins une question.",
+      "optionsMinimum": "Les questions à choix nécessitent au moins 2 options."
     }
   }
 }

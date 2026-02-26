@@ -177,6 +177,11 @@
         "goBack": "الرجوع",
         "continue": "المتابعة على أي حال"
       }
+    },
+    "pollType": {
+      "label": "نوع الاستطلاع",
+      "standard": "قياسي",
+      "feedback": "ملاحظات"
     }
   },
   "time": {
@@ -376,25 +381,18 @@
       "generate": "إنشاء ملخص الذكاء الاصطناعي",
       "generating": "جارٍ إنشاء ملخص الذكاء الاصطناعي..."
     },
-    "create": {
-      "pollType": {
-        "label": "نوع الاستطلاع",
-        "standard": "قياسي",
-        "feedback": "ملاحظات"
-      },
-      "questions": {
-        "title": "أسئلة الملاحظات",
-        "label": "سؤال",
-        "placeholder": "أدخل سؤالك...",
-        "type": "نوع السؤال",
-        "add": "إضافة سؤال",
-        "addOption": "إضافة خيار",
-        "optionPlaceholder": "خيار {{number}}"
-      },
-      "validation": {
-        "questionRequired": "يرجى إضافة سؤال واحد على الأقل.",
-        "optionsMinimum": "أسئلة الاختيار تحتاج إلى خيارين على الأقل."
-      }
+    "questions": {
+      "title": "أسئلة الملاحظات",
+      "label": "سؤال",
+      "placeholder": "أدخل سؤالك...",
+      "type": "نوع السؤال",
+      "add": "إضافة سؤال",
+      "addOption": "إضافة خيار",
+      "optionPlaceholder": "خيار {{number}}"
+    },
+    "validation": {
+      "questionRequired": "يرجى إضافة سؤال واحد على الأقل.",
+      "optionsMinimum": "أسئلة الاختيار تحتاج إلى خيارين على الأقل."
     }
   }
 }

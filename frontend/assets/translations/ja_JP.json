@@ -177,6 +177,11 @@
         "goBack": "戻る",
         "continue": "このまま続行"
       }
+    },
+    "pollType": {
+      "label": "アンケートタイプ",
+      "standard": "標準",
+      "feedback": "フィードバック"
     }
   },
   "time": {
@@ -355,25 +360,18 @@
       "generate": "AI要約を生成",
       "generating": "AI要約を生成中..."
     },
-    "create": {
-      "pollType": {
-        "label": "アンケートタイプ",
-        "standard": "標準",
-        "feedback": "フィードバック"
-      },
-      "questions": {
-        "title": "フィードバック質問",
-        "label": "質問",
-        "placeholder": "質問を入力してください...",
-        "type": "質問タイプ",
-        "add": "質問を追加",
-        "addOption": "オプションを追加",
-        "optionPlaceholder": "オプション {{number}}"
-      },
-      "validation": {
-        "questionRequired": "少なくとも1つの質問を追加してください。",
-        "optionsMinimum": "選択式の質問には少なくとも2つのオプションが必要です。"
-      }
+    "questions": {
+      "title": "フィードバック質問",
+      "label": "質問",
+      "placeholder": "質問を入力してください...",
+      "type": "質問タイプ",
+      "add": "質問を追加",
+      "addOption": "オプションを追加",
+      "optionPlaceholder": "オプション {{number}}"
+    },
+    "validation": {
+      "questionRequired": "少なくとも1つの質問を追加してください。",
+      "optionsMinimum": "選択式の質問には少なくとも2つのオプションが必要です。"
     }
   }
 }
