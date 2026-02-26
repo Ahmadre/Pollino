@@ -771,60 +771,62 @@ class _PollFormState extends State<PollForm> {
               ),
               const SizedBox(height: 16),
 
-              // Allow people to choose Multiple Options
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _allowMultipleOptions
-                        ? const Color(0xFF4F46E5)
-                        : const Color(0xFFE9ECEF),
-                    width: _allowMultipleOptions ? 2 : 1,
+              if (_pollType == 'STANDARD') ...[
+                // Allow people to choose Multiple Options
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _allowMultipleOptions
+                          ? const Color(0xFF4F46E5)
+                          : const Color(0xFFE9ECEF),
+                      width: _allowMultipleOptions ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              I18nService.instance
+                                  .translate('create.settings.multiple.title'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              I18nService.instance.translate(
+                                  'create.settings.multiple.description'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      CupertinoSwitch(
+                        value: _allowMultipleOptions,
+                        onChanged: (value) {
+                          setState(() {
+                            _allowMultipleOptions = value;
+                          });
+                        },
+                        activeTrackColor: const Color(0xFF4F46E5),
+                      ),
+                    ],
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            I18nService.instance
-                                .translate('create.settings.multiple.title'),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            I18nService.instance.translate(
-                                'create.settings.multiple.description'),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    CupertinoSwitch(
-                      value: _allowMultipleOptions,
-                      onChanged: (value) {
-                        setState(() {
-                          _allowMultipleOptions = value;
-                        });
-                      },
-                      activeTrackColor: const Color(0xFF4F46E5),
-                    ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
+              ],
 
               // Enable Anonymous Voting
               Container(
